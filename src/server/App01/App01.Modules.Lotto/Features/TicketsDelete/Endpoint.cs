@@ -29,7 +29,6 @@ public static class Endpoint
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .AddEndpointFilter<XTokenFilter>()
-        .RequireAuthorization()
-        .WithOpenApi();
+        .RequireAuthorization();
     }
 }

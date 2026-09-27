@@ -23,7 +23,6 @@ public static class Endpoint
         .Produces<Contracts.Response>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .AddEndpointFilter<XTokenFilter>()
-        .WithOpenApi();
+        .AddEndpointFilter<XTokenFilter>();
     }
 }

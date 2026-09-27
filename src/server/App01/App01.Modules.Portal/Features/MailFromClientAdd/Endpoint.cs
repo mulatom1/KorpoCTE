@@ -20,7 +20,6 @@ public static class Endpoint
         .WithTags("Portal")
         .Produces<Contracts.Response>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
-        .AddEndpointFilter<XTokenFilter>()
-        .WithOpenApi();
+        .AddEndpointFilter<XTokenFilter>();
     }
 }

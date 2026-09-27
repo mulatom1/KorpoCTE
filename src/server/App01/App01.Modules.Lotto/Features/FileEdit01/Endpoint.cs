@@ -22,7 +22,6 @@ public static class Endpoint
         .WithName("LottoFileEdit01")
         .WithTags("Lotto")
         .WithDescription("Edits/replace a character in a data file at a specified position.")
-        .Produces(StatusCodes.Status200OK)
-        .WithOpenApi();
+        .Produces(StatusCodes.Status200OK);
     }
 }

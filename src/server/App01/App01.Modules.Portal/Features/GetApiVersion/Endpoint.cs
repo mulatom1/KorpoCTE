@@ -19,7 +19,6 @@ public static class Endpoint
         })
         .WithName("PortalGetApiVersion")
         .WithTags("Portal")
-        .Produces<Contracts.Response>(StatusCodes.Status200OK)
-        .WithOpenApi();
+        .Produces<Contracts.Response>(StatusCodes.Status200OK);
     }
 }
