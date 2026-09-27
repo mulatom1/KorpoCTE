@@ -1,200 +1,161 @@
 ---
 project: APPS (tomsoft1.pl — App01)
-assessed_at: 2026-09-27T09:00:00+02:00
+assessed_at: 2026-09-27T18:43:50Z
 agent_readiness: ready-with-compensation
 context_type: brownfield
 stack_components:
-  language: C# (.NET 8) + TypeScript 5.9
-  framework: ASP.NET Core 8 Minimal APIs (modular monolith, MediatR + FluentValidation + EF Core 8) + React 19 SPA (React Router 7, Tailwind 4)
-  build_tool: dotnet SDK / MSBuild + Vite 7
-  test_runner: xUnit 2.5 (server); frontend — brak
-  package_manager: NuGet + npm
-  ci_provider: null
+  language: C# (.NET 10) + TypeScript 5.9
+  framework: ASP.NET Core 10 Minimal APIs (modularny monolit, MediatR 12.5 + FluentValidation 12.1 + EF Core 10 / SQL Server) + React 19 SPA (React Router 7 deklaratywnie, Tailwind 4)
+  build_tool: dotnet SDK 10 / MSBuild + Vite 7
+  test_runner: xUnit 2.9.3 + WebApplicationFactory (serwer); frontend — brak
+  package_manager: NuGet (lock files, --locked-mode) + npm (package-lock.json)
+  ci_provider: GitHub Actions
   deployment_target: folder publish (FileSystem publish profile), SPA serwowane przez ASP.NET Core
-gates_passed: 14
-gates_failed: 2
+gates_passed: 16
+gates_failed: 0
 ---
 
 ## Stack Components
 
-**Język (serwer) — C# na .NET 8.** Wszystkie projekty w `APPS.sln` mają `<TargetFramework>net8.0</TargetFramework>`, `<Nullable>enable</Nullable>` i `<ImplicitUsings>enable</ImplicitUsings>`. Typowanie statyczne z włączoną analizą nulli.
+**Język (serwer) — C# na .NET 10.** Wszystkie 8 projektów w `APPS.sln` ma `<TargetFramework>net10.0</TargetFramework>` i `<Nullable>enable</Nullable>`. `global.json` przypina SDK `10.0.100` z `rollForward: latestMajor`. Migracja z .NET 8 nastąpiła w commicie `c8c50e9` („migrate to dotnet 10"), a kolejne commity (`27193ea`, `dab100f`, `626af8c`) usunęły przestarzałe API i pakiety.
 
-**Język (klient) — TypeScript ~5.9.3.** `src/client/app01/tsconfig.app.json` ma `"strict": true`, `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax`, `erasableSyntaxOnly`. Build (`tsc -b && vite build`) blokuje błędy typów.
+**Język (klient) — TypeScript ~5.9.3.** `src/client/app01/tsconfig.app.json` ma `strict: true`, `noUnusedLocals`, `noUnusedParameters`, `erasableSyntaxOnly`, `verbatimModuleSyntax`.
 
-**Framework (serwer) — ASP.NET Core 8 Minimal APIs jako modularny monolit.** Odpowiedź na Open Question nr 4 z PRD: architektura to **modularny monolit** — jeden host `App01.Bootstrapper.Api` (Program.cs) składający moduły `App01.Modules.Portal`, `App01.Modules.Lotto`, `App01.Modules.Flashcards` oraz warstwy współdzielone `App01.Shared.Abstractions` (pakiety NuGet), `App01.Shared.Application` (encje, wyjątki, filtry, interfejsy, middleware) i `App01.Shared.Infrastructure` (`AppDbContext`, konfiguracje EF, migracje, serwisy JWT/X-TOKEN/OpenRouter). Każda funkcja to pionowy wycinek `Features/<Nazwa>/{Contracts,Endpoint,Handler,Validator}.cs` oparty o MediatR 12.5 i FluentValidation 12.1. Dane: EF Core 8 na SQL Server (`UseSqlServer(..., sql => sql.UseCompatibilityLevel(110))`), jedna baza i jeden `AppDbContext` dla wszystkich modułów. Logowanie: Serilog. Uwierzytelnianie: JWT Bearer + nagłówek aplikacyjny `X-TOKEN` (`XTokenFilter`). Moduł Lotto i Portal mają hosted workers (wyłączone w środowisku `Test`).
+**Framework (serwer) — ASP.NET Core 10 Minimal APIs, modularny monolit.** Host `App01.Bootstrapper.Api` składa moduły `Portal`, `Lotto`, `Flashcards`. Funkcje są cięte pionowo (`Features/<Nazwa>/{Contracts,Validator,Handler,Endpoint}.cs`) i obsługiwane przez MediatR 12.5.0 + FluentValidation 12.1.1. Dane: EF Core 10.0.12 (SQL Server, `UseCompatibilityLevel(110)`), testy na EF InMemory. OpenAPI przez Swashbuckle 10.2.3 (`AddServerSwagger()`, `UseSwagger()` warunkowo przez `Swagger:Enable`). Logowanie przez Serilog.AspNetCore 10.0.0.
 
-**Framework (klient) — React 19 SPA.** React 19.1, React Router 7.9 w trybie deklaratywnym (`<BrowserRouter>/<Routes>/<Route>` w `src/main.tsx`, import z `"react-router"`), Tailwind CSS 4.1 w konfiguracji CSS-first (`@import "tailwindcss"` w `src/index.css`, plugin `@tailwindcss/vite`, brak `tailwind.config.js`). Markdown przez `react-markdown` + `remark-gfm` + `rehype-highlight` + `rehype-raw` + `remark-frontmatter` (istotne dla FR-002). Build SPA ląduje w `wwwroot` hosta i jest serwowany przez `MapFallbackToFile("index.html")`.
+**Framework (klient) — React 19 + React Router 7 (tryb deklaratywny) + Tailwind 4.** Renderowanie Markdown: `react-markdown` + `remark-gfm` + `rehype-highlight` + `rehype-raw` + `remark-frontmatter`. Poza tym `mermaid`, `hls.js`, `dayjs`, `react-datepicker`.
 
-**Build tool.** Serwer: dotnet SDK / MSBuild, publikacja przez `Properties/PublishProfiles/FolderProfile*.pubxml` (`WebPublishMethod=FileSystem`). Klient: Vite 7.1 z trybami `dev`, `prod1`, `prod2` (`.env.*`, `VITE_BASE_URL`).
+**Narzędzia budowania — dotnet SDK/MSBuild + Vite 7.** `Directory.Build.props` włącza `RestorePackagesWithLockFile`. Po stronie klienta `npm run build` = `tsc -b && vite build --mode dev`, plus warianty `build:prod1` i `build:prod2`.
 
-**Test runner.** Serwer: xUnit 2.5.3 + `Microsoft.AspNetCore.Mvc.Testing` (`WebApplicationFactory<Program>`) + EF Core InMemory + Moq; testy endpointów w `tests/server/App01/App01.Api.Tests/Features/<Moduł>/<Funkcja>/EndpointTests.cs` (26 plików). Klient: brak runnera testów — jedyne bramki to `tsc -b` i `eslint`.
+**Testy — xUnit 2.9.3** z `Microsoft.AspNetCore.Mvc.Testing` 10.0.12, Moq, `coverlet.collector`. Testy endpointów leżą w `tests/server/App01/App01.Api.Tests/Features/<Moduł>/<Funkcja>/`. Frontend nie ma testów.
 
-**CI/CD i wdrożenie.** Brak `.github/workflows` i innych plików CI. Wdrożenie ręczne: folder publish + wgranie plików. Brak Dockerfile.
+**CI/CD — GitHub Actions** (`.github/workflows/pull-request.yml`, na każdy push/PR). Backend: `dotnet restore --locked-mode`, `dotnet list package --vulnerable --include-transitive`, `dotnet format --verify-no-changes`, build, testy z pokryciem i raportem HTML. Frontend: `npm ci`, `npm audit --audit-level=high`, `prettier --check`, `npm run lint`, `npm run build`.
 
-**Pliki instrukcji.** `CLAUDE.md` w korzeniu opisuje wyłącznie materiał kursowy (łańcuch skilli), nic o samym projekcie. `src/client/app01/README.md` opisuje strukturę frontendu, ale jest częściowo nieaktualny (np. wymienia `pages/home/`, a strony portalu leżą w `pages/portal/*`). Brak `AGENTS.md`.
+**Wdrożenie** — profile `FolderProfile*.pubxml` (FileSystem). Brak Dockerfile i konfiguracji PaaS.
+
+**Pliki instrukcji** — `CLAUDE.md` (bogaty: mapa repo, przepis na slice/moduł, migracje, bezpieczeństwo, frontend, wersje, checklista) oraz `AGENTS.md` (odsyła do `CLAUDE.md`). `.editorconfig` z regułami stylu .NET.
 
 ## Quality Gate Assessment
 
-| Komponent | Typowanie | Konwencje | Dane treningowe | Dokumentacja | Werdykt |
-|---|---|---|---|---|---|
-| Język serwera — C# / .NET 8 | ✓ | — | — | — | pass |
-| Framework serwera — ASP.NET Core 8 Minimal APIs + MediatR/FluentValidation/EF Core | — | ~ | ✓ | ✓ | pass-with-compensation |
-| Build serwera — dotnet SDK / MSBuild | — | ✓ | ✓ | ✓ | pass |
-| Testy serwera — xUnit + WebApplicationFactory | — | — | ✓ | ✓ | pass |
-| Język klienta — TypeScript strict | ✓ | — | — | — | pass |
-| Framework klienta — React 19 + React Router 7 (deklaratywny) + Tailwind 4 | — | ~ | ✓ | ✓ | pass-with-compensation |
-| Build klienta — Vite 7 | — | ✓ | ✓ | ✓ | pass |
-| Testy klienta | — | — | — | — | brak runnera (luka poza kryteriami) |
+| Komponent | Typed | Convention | Training Data | Documented | Werdykt |
+| --- | --- | --- | --- | --- | --- |
+| C# (.NET 10) | ✓ | — | — | — | pass |
+| TypeScript 5.9 | ✓ | — | — | — | pass |
+| ASP.NET Core 10 Minimal APIs + MediatR + FluentValidation + EF Core | — | ~ | ✓ | ✓ | pass (z uwagą) |
+| React 19 + React Router 7 (deklaratywnie) + Tailwind 4 | — | ~ | ✓ | ✓ | pass (z uwagą) |
+| dotnet SDK / MSBuild | — | ✓ | ✓ | ✓ | pass |
+| Vite 7 | — | ✓ | ✓ | ✓ | pass |
+| xUnit 2.9 + WebApplicationFactory | — | — | ✓ | ✓ | pass |
 
-Legenda: ✓ = spełnia, ✗ = nie spełnia, ~ = częściowo (wymaga uzupełnienia w pliku instrukcji), — = nie dotyczy.
+Legenda: ✓ = pass, ✗ = fail, ~ = partial (pass-with-note: konwencje dostarcza `CLAUDE.md`, nie framework), — = nie dotyczy.
 
-Wynik: 14 z 16 sprawdzonych kryteriów spełnionych w pełni, 2 częściowo (oba dotyczą konwencji).
+Wynik: 16 z 16 kryteriów spełnionych, w tym 2 częściowo (dzięki `CLAUDE.md`). Żadne kryterium nie jest oblane. Jest jednak jedna luka spoza kryteriów, istotna dla agenta: **`CLAUDE.md` rozjechał się ze stanem kodu po migracji na .NET 10** (szczegóły niżej).
 
 ### Gate Details
 
-**Typowanie**
-- C#: ✓ — typowany język; każdy `*.csproj` ma `<Nullable>enable</Nullable>`. Kontrakty API to rekordy (`Contracts.Request : IRequest<Response>`, `Contracts.Response`, DTO), walidacja wejścia przez `AbstractValidator<Contracts.Request>`.
-- TypeScript: ✓ — `tsconfig.app.json` → `"strict": true` plus dodatkowe flagi lintujące. Kontrakty API po stronie klienta w `src/services/contracts/*.ts` jako `interface`.
-- Uwaga (nie obniża oceny): kontrakty TS są **ręcznie przepisywane** z rekordów C#. `NSwag.ApiDescription.Client` jest w `App01.Shared.Abstractions.csproj`, ale nie generuje klienta TS — ryzyko dryfu kontraktów między serwerem a klientem.
+#### Typed
 
-**Konwencje**
-- ASP.NET Core: ~ — framework sam w sobie jest opiniowany (DI, konfiguracja, middleware pipeline), ale kształt projektu jest **autorski**: modularny monolit, pionowe wycinki MediatR, ręczna rejestracja każdego endpointu w `ModuleDI.UseModule<X>Endpoints()`, encje wszystkich modułów w `App01.Shared.Application/Entities/<Moduł>/`, jeden `AppDbContext` w `Shared.Infrastructure`, walidacja wywoływana ręcznie w handlerze (nie przez pipeline behavior), admin sprawdzany przez `IJwtService.GetIsAdminFromJwt()` w handlerze. Wzorzec jest bardzo spójny (każda z ~45 funkcji ma te same 4 pliki), ale nigdzie nieopisany — agent musi go wywnioskować z kodu.
-- dotnet/MSBuild: ✓ — standardowe `.sln` + `.csproj`, SDK-style.
-- React + React Router 7: ~ — Vite + React nie narzuca układu; routing deklaratywny zebrany w jednym `src/main.tsx` (nie file-based). Projekt ma własną, spójną konwencję (`pages/<moduł>/<Nazwa>Page.tsx`, `services/api-<moduł>-service.ts`, `services/contracts/<moduł>-<funkcja>-request|response.ts`, `<RequireAuth/>` jako layout route), częściowo opisaną w `README.md`, ale nieaktualną i nie w pliku instrukcji agenta.
-- Vite: ✓ — standardowy `vite.config.ts`, tryby przez `--mode`.
+- C#: ✓ — `<Nullable>enable</Nullable>` we wszystkich 8 `.csproj` (np. `src/server/App01/App01.Shared.Abstractions/App01.Shared.Abstractions.csproj`). Kontrakty to `record`y w `Contracts.cs`.
+- TypeScript: ✓ — `src/client/app01/tsconfig.app.json`: `"strict": true` i dodatkowe flagi lintujące. Kontrakty API to `interface`y w `src/services/contracts/`.
+- Uwaga: między C# a TS nie ma generatora kontraktów. Granica API jest typowana po obu stronach, ale utrzymywana ręcznie. `CLAUDE.md` już to opisuje („zmiana rekordu C# wymaga aktualizacji interfejsu TS w tej samej zmianie").
 
-**Dane treningowe (w obrębie rodziny języka)**
-- ASP.NET Core, EF Core, MediatR, FluentValidation, xUnit, Serilog: ✓ — mainstream ekosystemu .NET; wzorzec „vertical slice + MediatR" jest szeroko obecny.
-- React, Vite, Tailwind, React Router: ✓ — top ekosystemu JS. Uwaga na **dryf wersji**: Tailwind 4 (CSS-first, bez `tailwind.config.js`) i React Router 7 (pakiet `react-router` zamiast `react-router-dom`, trzy tryby: deklaratywny / data / framework) są nowszymi majorami — korpus treningowy jest zdominowany przez Tailwind 3 i React Router 6. Kompensacja poniżej.
-- MediatR: w wersji 13+ zmieniła się licencja (komercyjna) — projekt jest na 12.5, co trzeba przypiąć.
+#### Convention-based
 
-**Dokumentacja**
-- ✓ dla wszystkich: learn.microsoft.com (ASP.NET Core 8, EF Core 8 — wersjonowane), docs.fluentvalidation.net, xunit.net, react.dev, reactrouter.com (osobne sekcje per tryb), tailwindcss.com/docs (v4), vite.dev.
+- ASP.NET Core Minimal APIs: ~ — Minimal APIs z definicji nie narzucają układu katalogów, rejestracji tras ani obsługi błędów (w przeciwieństwie do MVC z kontrolerami). Konwencje projektu są jednak twarde i spisane w `CLAUDE.md`: sekcje „przepis na wycinek funkcji" i „przepis na nowy moduł", 4 pliki na slice, nazewnictwo tras `api/<moduł>/<kebab>`, `ModuleDI.UseModule<X>Endpoints()`. Wzorzec referencyjny `App01.Modules.Portal/Features/UserList/` istnieje i jest spójny z opisem (poza `.WithOpenApi()`, patrz Luki).
+- React + Vite + React Router (deklaratywnie): ~ — Vite + React bez frameworka nie narzuca struktury, a tryb deklaratywny Routera nie ma routingu plikowego. Kompensację zapewnia `CLAUDE.md`, sekcja „Frontend": trasy w `src/main.tsx`, strony w `src/pages/<moduł>/<Nazwa>Page.tsx`, serwisy `Api<Moduł>Service` + `apiFetch`, kontrakty w `src/services/contracts/`.
+- dotnet SDK / Vite: ✓ — oba mają ustandaryzowany układ projektu (`.csproj`/`.sln`, `vite.config.ts`).
+
+#### Popular in training data (liczone w obrębie rodziny języka)
+
+- ASP.NET Core: ✓ — główny framework webowy w C#. Minimal APIs istnieją od .NET 6 i są dobrze reprezentowane. MediatR + FluentValidation + EF Core to kanoniczny zestaw „vertical slice" w .NET.
+- React 19 / React Router 7 / Tailwind 4 / Vite 7: ✓ — mainstream w JS/TS. Uwaga: React Router 7 ma dwa tryby (deklaratywny i framework), a Tailwind 4 zmienił konfigurację na CSS-first. Agent z przyzwyczajenia może sięgać po `react-router-dom`, `createBrowserRouter` albo `tailwind.config.js`. `CLAUDE.md` już temu zapobiega.
+- xUnit: ✓ — domyślny wybór w ekosystemie .NET.
+- Ryzyko specyficzne dla wersji: .NET 10 i EF Core 10 są w danych treningowych słabiej reprezentowane niż .NET 8. Agent może proponować API oznaczone w .NET 10 jako przestarzałe (np. `.WithOpenApi()` — ASPDEPR002). Tym bardziej potrzebne jest poprawne przypięcie wersji w `CLAUDE.md`.
+
+#### Well-documented
+
+- ASP.NET Core / EF Core: ✓ — learn.microsoft.com, wersjonowane (`?view=aspnetcore-10.0`).
+- MediatR: ✓ — wiki na GitHubie, stabilne API 12.x. FluentValidation: ✓ — docs.fluentvalidation.net.
+- React / React Router (sekcja „Declarative Mode") / Tailwind v4 / Vite: ✓ — oficjalne, wersjonowane dokumentacje.
+- xUnit: ✓ — xunit.net, osobne sekcje dla v2 i v3.
 
 ## Gaps & Compensation
 
-**1. Autorska architektura serwera (konwencje ~).** Agent dodający moduł Kursy musi utworzyć nowy projekt, podpiąć go w 4 miejscach (sln, Program.cs ×2–3, projekt testów), dodać encje we współdzielonej warstwie, konfigurację EF, DbSet i migrację — i zrobić to dokładnie tak jak istniejące moduły. Bez opisu łatwo o: brak rejestracji endpointu (wycinek istnieje, a endpoint zwraca fallback SPA `index.html` zamiast 404), brak `XTokenFilter`, encję wewnątrz modułu zamiast w `Shared.Application`, walidator niewywołany w handlerze. **Kompensacja:** sekcje „Architektura serwera", „Przepis na wycinek funkcji", „Przepis na nowy moduł", „Dane i migracje", „Bezpieczeństwo endpointów" poniżej.
+### Luka 1 (najważniejsza): `CLAUDE.md` opisuje .NET 8, a kod jest na .NET 10
 
-**2. Konwencje klienta (konwencje ~).** Routing w jednym pliku, ręcznie pisane kontrakty, serwisy API per moduł, Tailwind 4 i React Router 7 z ryzykiem generowania kodu pod starsze majory. **Kompensacja:** sekcje „Frontend" i „Wersje przypięte".
+**Co jest nie tak (dowody):**
+- `CLAUDE.md` (sekcja „Wersje przypięte"): „.NET 8 / ASP.NET Core 8 / EF Core 8 · … · Serilog.AspNetCore 9". Tymczasem `App01.Shared.Abstractions.csproj` ma `Microsoft.EntityFrameworkCore` 10.0.12, `Serilog.AspNetCore` 10.0.0, a `global.json` przypina SDK 10.0.100.
+- `CLAUDE.md` (sekcja „mapa repozytorium"): „modularny monolit ASP.NET Core 8".
+- `CLAUDE.md` (sekcja „przepis na nowy moduł", krok 1): „net8.0". Nowy moduł `Courses` utworzony według tego przepisu dostanie `net8.0` i nie zbuduje się z referencją do projektów `net10.0`.
+- `CLAUDE.md` (sekcja „przepis na wycinek funkcji", krok 4): łańcuch ma kończyć się na `.WithOpenApi()`. Kod po commicie `27193ea` nie ma już ani jednego wywołania `WithOpenApi` (0 plików w `src/server`), bo w .NET 10 jest ono przestarzałe. Agent trzymający się `CLAUDE.md` przywróci przestarzałe API.
+- `CLAUDE.md` (Dokumentacja): „learn.microsoft.com/aspnet/core (8.0)".
+- Poza `CLAUDE.md`: oba pliki `Properties/PublishProfiles/FolderProfile*.pubxml` wciąż mają `PublishUrl` = `bin\Release\net8.0\publish\`.
 
-**3. Brak testów frontendu (poza kryteriami).** Weryfikacja zmian UI to tylko `tsc -b` + `eslint`. Kompensacja minimalna: reguła, że każda zmiana klienta kończy się `npm run build` i `npm run lint`, a logika domenowa (weryfikacja odpowiedzi, przyznawanie flag, ranking, wskaźniki) żyje po stronie serwera, gdzie są testy endpointów. Decyzja o dodaniu Vitest należy do `/10x-health-check` / planu technicznego.
+**Dlaczego to ważne dla agenta:** pliki instrukcji mają wyższy priorytet niż to, co agent wyczyta z kodu. Nieaktualna reguła jest gorsza niż jej brak. Agent zbuduje moduł `Courses` na złym TFM, dopisze przestarzałe `.WithOpenApi()` i poszuka odpowiedzi w dokumentacji .NET 8.
 
-**4. Brak CI (poza kryteriami).** Nic automatycznie nie uruchamia `dotnet test` przed wdrożeniem. Kompensacja: reguła „przed zakończeniem zadania uruchom `dotnet test APPS.sln`" w pliku instrukcji; decyzja o CI poza zakresem tej oceny.
+**Kompensacja:** zaktualizować wskazane fragmenty `CLAUDE.md` (gotowe bloki niżej) i poprawić `PublishUrl` w profilach publikacji.
 
-**5. Ryzyko dryfu kontraktów C# ↔ TS.** Kompensacja: reguła aktualizacji obu stron w tej samej zmianie.
+### Luka 2: Minimal APIs i Vite + React nie niosą konwencji same z siebie
+
+Oba kryteria są spełnione częściowo, bo konwencje żyją w `CLAUDE.md`, a nie we frameworku. Obecne pokrycie jest dobre. Warto je uzupełnić o dwie reguły, które agent łamie najczęściej, a CI je wyłapie: formatowanie (`dotnet format --verify-no-changes`, `prettier --check`) i kolejność/grupowanie `using` (`.editorconfig`: `dotnet_separate_import_directive_groups = true`).
+
+### Luka 3 (poza kryteriami): brak testów frontendu
+
+Stack tego nie wymaga, a `CLAUDE.md` już to kompensuje (logika domenowa po stronie serwera). Uwaga dla `/10x-health-check`: weryfikacja UI modułu Kursy (FR-001, FR-002, hangar) będzie wyłącznie manualna.
 
 ### Recommended Instruction File Additions
 
-Poniższe bloki można wkleić bezpośrednio do `CLAUDE.md` (lub `AGENTS.md`) w korzeniu repozytorium — najlepiej jako osobna sekcja „Projekt: App01" pod treścią kursową.
-
-```markdown
-## Projekt App01 — mapa repozytorium
-
-- `APPS.sln` — solucja. Serwer: `src/server/App01/`. Klient: `src/client/app01/`. Testy: `tests/server/App01/App01.Api.Tests/`.
-- Architektura: **modularny monolit** ASP.NET Core 8 (Minimal APIs). Jeden host `App01.Bootstrapper.Api` składa moduły:
-  - `App01.Modules.Portal` — użytkownicy, logowanie, poczta z formularza kontaktowego, wersja API
-  - `App01.Modules.Lotto` — losowania, kupony, statystyki, workery
-  - `App01.Modules.Flashcards` — generowanie fiszek (OpenRouter)
-- Warstwy współdzielone (kierunek zależności: Modules → Shared.Infrastructure → Shared.Application → Shared.Abstractions):
-  - `App01.Shared.Abstractions` — tylko pakiety NuGet + `FrameworkReference Microsoft.AspNetCore.App`. Nowe pakiety NuGet dodawaj TUTAJ.
-  - `App01.Shared.Application` — encje (`Entities/<Moduł>/`), wyjątki (`ApiException`, `ForbiddenException`, `NotFoundException`), `Filters/XTokenFilter`, interfejsy serwisów, `Middlewares/ExceptionHandlingMiddleware`.
-  - `App01.Shared.Infrastructure` — `Repositories/AppDbContext.cs`, `Repositories/Configurations/<Moduł>/`, `Migrations/`, implementacje serwisów (`JwtService`, `XTokenService`, `OpenRouterService`, `CacheDataService`).
-- Moduły NIE referencjonują się nawzajem. Wspólne rzeczy idą do `Shared.*`.
-```
-
-```markdown
-## Serwer — przepis na wycinek funkcji (vertical slice)
-
-Każda funkcja to katalog `App01.Modules.<Moduł>/Features/<NazwaFunkcji>/` z DOKŁADNIE czterema plikami. Namespace: `App01.Modules.<Moduł>.Features.<NazwaFunkcji>`. Wzorzec referencyjny: `App01.Modules.Portal/Features/UserList/`.
-
-1. `Contracts.cs` — `public class Contracts` z zagnieżdżonymi rekordami:
-   `public record Request(...) : IRequest<Response>;`, `public record Response(...);` oraz DTO jako rekordy.
-2. `Validator.cs` — `public class Validator : AbstractValidator<Contracts.Request>` (FluentValidation, komunikaty `.WithMessage(...)`).
-3. `Handler.cs` — `public class <NazwaFunkcji>Handler : IRequestHandler<Contracts.Request, Contracts.Response>`.
-   - Konstruktor wstrzykuje `ILogger<...>`, `IValidator<Contracts.Request>`, `AppDbContext` i potrzebne serwisy (pola `_camelCase`).
-   - PIERWSZY krok `Handle`: `var validationResult = await _validator.ValidateAsync(request, cancellationToken); if (!validationResult.IsValid) throw new ValidationException(validationResult.Errors);` — walidacja NIE jest wpięta w pipeline MediatR, trzeba ją wywołać ręcznie.
-   - Uprawnienia admina: `if (!await _jwtService.GetIsAdminFromJwt()) throw new ForbiddenException("...");`
-   - Błędy zgłaszaj wyjątkami (`ValidationException` → 400, `ForbiddenException` → 403, `NotFoundException` → 404, `ApiException`); mapuje je `ExceptionHandlingMiddleware`. Nie zwracaj `Results.BadRequest` z handlera.
-   - Zapytania EF zawsze z `cancellationToken`; projekcja do DTO przez `.Select(...)`.
-4. `Endpoint.cs` — `public static class Endpoint { public static void AddEndpoint(this WebApplication app) { ... } }`:
-   - Trasa: `api/<moduł-lowercase>/<nazwa-kebab-case>` (np. `api/portal/user-list`), `app.MapGet/MapPost(...)` z `IMediator mediator` → `mediator.Send(request)` → `Results.Ok(result)`.
-   - Łańcuch: `.WithName("<Moduł><NazwaFunkcji>")`, `.WithTags("<Moduł>")`, `.Produces<Contracts.Response>(200)` + kody błędów, `.AddEndpointFilter<XTokenFilter>()`, `.RequireAuthorization()` (pominąć tylko dla endpointów publicznych), `.WithOpenApi()`.
-5. **Rejestracja (łatwo zapomnieć):** dopisz `Features.<NazwaFunkcji>.Endpoint.AddEndpoint(app);` w `ModuleDI.UseModule<Moduł>Endpoints()`. Niezarejestrowany endpoint NIE zwraca 404 — trafia w `MapFallbackToFile("index.html")` i zwraca HTML SPA.
-6. Test: `tests/server/App01/App01.Api.Tests/Features/<Moduł>/<NazwaFunkcji>/EndpointTests.cs` (wzorzec: `Features/Portal/UserList/EndpointTests.cs`).
-```
-
-```markdown
-## Serwer — przepis na nowy moduł (np. Courses)
-
-1. Utwórz `src/server/App01/App01.Modules.<Moduł>/App01.Modules.<Moduł>.csproj` (kopia `App01.Modules.Portal.csproj`: net8.0, Nullable, ImplicitUsings, `ProjectReference` do `App01.Shared.Infrastructure`).
-2. `dotnet sln APPS.sln add src/server/App01/App01.Modules.<Moduł>/App01.Modules.<Moduł>.csproj --solution-folder src/server/App01`
-3. `ModuleDI.cs` w namespace `App01.Modules.<Moduł>` z metodami: `AddModule<Moduł>Services(this IServiceCollection)` (MediatR + validators z `Assembly.GetExecutingAssembly()`), `UseModule<Moduł>Endpoints(this WebApplication)`, opcjonalnie `AddModule<Moduł>Workers`.
-4. `App01.Bootstrapper.Api.csproj` — dodaj `ProjectReference`; `Program.cs` — `using App01.Modules.<Moduł>;`, `builder.Services.AddModule<Moduł>Services();` obok pozostałych, `app.UseModule<Moduł>Endpoints();` PRZED `app.MapFallbackToFile(...)`; workery tylko w bloku `if (!isTestEnvironment)`.
-5. Projekt testów `App01.Bootstrapper.Api.Tests.csproj` — dodaj `ProjectReference` do nowego modułu.
-6. Nie zmieniaj istniejących modułów, tras ani `ExceptionHandlingMiddleware` — PRD wymaga, by Portal/Lotto/Flashcards działały bez zmian.
-```
-
-```markdown
-## Dane i migracje (EF Core 8, SQL Server)
-
-- Encje: `App01.Shared.Application/Entities/<Moduł>/<Encja>.cs` (NIE w projekcie modułu).
-- Konfiguracja: `App01.Shared.Infrastructure/Repositories/Configurations/<Moduł>/<Encja>Configuration.cs` (`IEntityTypeConfiguration<T>`).
-- `DbSet<T>` dopisz w `AppDbContext.cs` w sekcji danego modułu, z `= null!;`.
-- Migracja (z katalogu repo):
-  `dotnet ef migrations add <Moduł><Opis> --project src/server/App01/App01.Shared.Infrastructure --startup-project src/server/App01/App01.Bootstrapper.Api`
-  Nazwa migracji z prefiksem modułu (np. `CoursesInitial`). Nigdy nie edytuj istniejących migracji.
-- `UseCompatibilityLevel(110)` w `SharedInfrastructureDI.cs` jest celowe (docelowy SQL Server) — nie zmieniaj; przez to EF nie używa `OPENJSON` dla `Contains` na kolekcjach.
-- Unikalność (np. „flaga zdobyta raz na użytkownika") wymuszaj indeksem unikalnym w konfiguracji EF, nie tylko sprawdzeniem w handlerze.
-- Testy używają EF InMemory — nie polegaj w logice na funkcjach specyficznych dla SQL Server (surowy SQL, `FromSql`), bo testy ich nie wykryją.
-```
-
-```markdown
-## Bezpieczeństwo endpointów
-
-- Każdy endpoint wymaga nagłówka aplikacyjnego `X-TOKEN` przez `.AddEndpointFilter<XTokenFilter>()` (wyjątki istniejące: `GetApiVersion`, `FileEdit01`, `TransformNumbers` — nie powielaj ich bez powodu).
-- Endpointy dla zalogowanych: `.RequireAuthorization()` (JWT Bearer). Endpointy publiczne (np. lista kafelków kursów) — bez `RequireAuthorization()`, ale z `XTokenFilter`, i zwracają WYŁĄCZNIE pola publiczne (DTO bez treści kursu).
-- Rola admina = claim `isAdmin` w JWT; sprawdzenie w handlerze przez `IJwtService.GetIsAdminFromJwt()`. Nie dodawaj nowych ról ani policy.
-- Id bieżącego użytkownika pobieraj z JWT przez `IJwtService`, nigdy z body requestu.
-```
-
-```markdown
-## Frontend (src/client/app01)
-
-- React 19 + TypeScript strict + Vite 7 + Tailwind 4 + React Router 7 w trybie **deklaratywnym**.
-- Routing: wszystkie trasy w `src/main.tsx` (`<BrowserRouter>/<Routes>/<Route>`). Importy z `"react-router"` (NIE `react-router-dom`). NIE używaj trybu framework/data (`createBrowserRouter`, loaderów, `@react-router/dev`, `routes.ts`).
-- Trasy dla zalogowanych umieszczaj wewnątrz `<Route element={<RequireAuth />}>`. Widoczność elementów tylko dla admina: `getIsAdminFromToken()` z `src/utils/jwt.ts`.
-- Strony: `src/pages/<moduł>/<Nazwa>Page.tsx` (default export). Wspólne komponenty: `src/components/` (używaj istniejących `Card`, `ButtonPrimary`, `FormCard`, `ConfirmModal`, `Layout`, `SubMenu` zamiast nowych).
-- Menu główne i layout: `src/components/Layout.tsx` — zmiana dotyka każdej strony; dodawaj tylko nową pozycję, nie przestawiaj istniejących.
-- API: klasa `Api<Moduł>Service` w `src/services/api-<moduł>-service.ts` (wzorzec: `api-portal-service.ts`), wywołania WYŁĄCZNIE przez `apiFetch` z `src/services/api-fetch.ts` (obsługa 401/wygaśnięcia sesji), nagłówki `X-TOKEN` + `Authorization: Bearer`.
-- Kontrakty: `src/services/contracts/<moduł>-<funkcja-kebab>-request.ts` / `-response.ts`, `export interface`, pola camelCase odpowiadające 1:1 rekordom `Contracts` w C#. Nie ma generatora — **zmiana rekordu C# wymaga aktualizacji interfejsu TS w tej samej zmianie.**
-- Tailwind 4: konfiguracja CSS-first (`@import "tailwindcss";` w `src/index.css`, plugin `@tailwindcss/vite`). NIE twórz `tailwind.config.js` ani `postcss.config.js`; własne tokeny przez `@theme` w CSS.
-- Markdown: `react-markdown` + `remark-gfm` + `rehype-highlight` (+ `rehype-raw`, `remark-frontmatter`) — używaj tych pakietów, nie dodawaj innego parsera.
-- Teksty UI i komentarze po polsku (zgodnie z istniejącym kodem).
-```
+**1. Zamiennik sekcji „Wersje przypięte" w `CLAUDE.md`:**
 
 ```markdown
 ## Wersje przypięte — nie podbijaj majorów bez polecenia
 
-.NET 8 / ASP.NET Core 8 / EF Core 8 · MediatR 12.x (v13+ ma licencję komercyjną) · FluentValidation 12 · xUnit 2.x (nie v3) · Serilog.AspNetCore 9 · React 19 · React Router 7 · Tailwind CSS 4 · Vite 7 · TypeScript 5.9.
-Dokumentacja: learn.microsoft.com/aspnet/core (8.0), learn.microsoft.com/ef/core, docs.fluentvalidation.net, reactrouter.com (sekcja „Declarative Mode"), tailwindcss.com/docs (v4), vite.dev.
+.NET 10 (SDK przypięty w `global.json`: 10.0.100) / ASP.NET Core 10 / EF Core 10 · MediatR 12.x (v13+ ma licencję komercyjną) · FluentValidation 12 · xUnit 2.x (nie v3) · Serilog.AspNetCore 10 · Swashbuckle.AspNetCore 10 · React 19 · React Router 7 · Tailwind CSS 4 · Vite 7 · TypeScript 5.9.
+Dokumentacja: learn.microsoft.com/aspnet/core (wersja 10.0 — `?view=aspnetcore-10.0`), learn.microsoft.com/ef/core (EF Core 10), docs.fluentvalidation.net, reactrouter.com (sekcja „Declarative Mode"), tailwindcss.com/docs (v4), vite.dev.
+- Projekt jest po migracji z .NET 8. Nie używaj API oznaczonych w .NET 10 jako przestarzałe (m.in. `.WithOpenApi()` na endpointach — ASPDEPR002). Ostrzeżenia `obsolete` przy buildzie traktuj jak błąd do naprawy, nie do wyciszenia.
+- Pakiety NuGet są przypięte lock-filami (`RestorePackagesWithLockFile` w `Directory.Build.props`, CI robi `dotnet restore --locked-mode`). Po dodaniu lub zmianie pakietu zacommituj zaktualizowane `packages.lock.json`.
 ```
+
+**2. Poprawki punktowe w innych sekcjach `CLAUDE.md`:**
 
 ```markdown
-## Weryfikacja przed zakończeniem zadania
-
-- Serwer: `dotnet build APPS.sln` i `dotnet test APPS.sln` — muszą przejść.
-- Klient (z `src/client/app01`): `npm run build` (zawiera `tsc -b`) i `npm run lint`. Brak testów frontendu — dlatego logikę domenową (weryfikacja odpowiedzi, przyznawanie flag, ranking, wskaźniki) trzymaj po stronie serwera, gdzie jest pokryta testami endpointów.
-- Nowy endpoint = nowy `EndpointTests.cs` z przypadkiem: sukces, 400 (walidacja), 401 (brak JWT), 403 (gdy dotyczy), brak `X-TOKEN`.
+- Mapa repozytorium: „modularny monolit ASP.NET Core 10 (Minimal APIs)".
+- Przepis na nowy moduł, krok 1: „(kopia `App01.Modules.Portal.csproj`: net10.0, Nullable, ImplicitUsings, `ProjectReference` do `App01.Shared.Infrastructure`)".
+- Przepis na wycinek funkcji, krok 4 — łańcuch: `.WithName("<Moduł><NazwaFunkcji>")`, `.WithTags("<Moduł>")`, `.Produces<Contracts.Response>(StatusCodes.Status200OK)` + `.Produces(StatusCodes.Status4xx…)` dla kodów błędów, `.AddEndpointFilter<XTokenFilter>()`, `.RequireAuthorization()` (pominąć tylko dla endpointów publicznych). NIE dodawaj `.WithOpenApi()` — przestarzałe w .NET 10; metadane OpenAPI zbiera Swashbuckle z `WithName`/`WithTags`/`Produces`.
 ```
+
+**3. Nowy blok — formatowanie pilnowane przez CI:**
+
+```markdown
+## Formatowanie (CI odrzuca niesformatowany kod)
+
+- Serwer: przed zakończeniem zadania uruchom `dotnet format APPS.sln`. CI wykonuje `dotnet format --verify-no-changes`. Styl wynika z `.editorconfig`: 4 spacje w `.cs`, `using System*` pierwsze, grupy `using` rozdzielone pustą linią (`dotnet_separate_import_directive_groups = true`), namespace file-scoped zgodny z katalogiem.
+- Klient (z `src/client/app01`): `npm run format` (prettier). CI wykonuje `npx prettier --check "src/**/*.{ts,tsx,css}"` oraz `npm audit --audit-level=high`.
+- Nie wyłączaj reguł `.editorconfig` ani ESLint, żeby przepchnąć zmianę.
+```
+
+**4. Uzupełnienie checklisty „Weryfikacja przed zakończeniem zadania":**
+
+```markdown
+- Pełna lista kroków CI (`.github/workflows/pull-request.yml`) do odtworzenia lokalnie: `dotnet restore --locked-mode`, `dotnet format --verify-no-changes`, `dotnet build APPS.sln`, `dotnet test APPS.sln`; w `src/client/app01`: `npx prettier --check "src/**/*.{ts,tsx,css}"`, `npm run lint`, `npm run build`.
+```
+
+**Poza plikami instrukcji (do zrobienia ręcznie):** w `src/server/App01/App01.Bootstrapper.Api/Properties/PublishProfiles/FolderProfile.pubxml` i `FolderProfile1.pubxml` zmienić `bin\Release\net8.0\publish\` na `bin\Release\net10.0\publish\`.
 
 ## Summary
 
-**Ogólna gotowość dla agenta: gotowy po uzupełnieniu instrukcji.** Stack jest mocny pod pracę z agentem: typowany end-to-end (C# z nullable + TypeScript strict), zbudowany z mainstreamowych i dobrze udokumentowanych składników ekosystemów .NET i JS, z istniejącą siatką testów endpointów po stronie serwera.
+**Ogólna gotowość: ready-with-compensation.** Wszystkie 16 kryteriów jest spełnionych, 2 z nich częściowo dzięki `CLAUDE.md`.
 
-**Mocne strony:** wyjątkowo spójny wzorzec pionowych wycinków (Contracts/Endpoint/Handler/Validator) powtórzony w ~45 funkcjach — agent łatwo go skopiuje, jeśli wie, gdzie patrzeć; centralna obsługa błędów przez middleware; testy integracyjne na `WebApplicationFactory` gotowe do rozszerzenia o moduł Kursy.
+**Mocne strony:**
+- Typowanie end-to-end: C# z nullable i TypeScript strict.
+- Mainstreamowe, dobrze udokumentowane technologie w obu ekosystemach.
+- Bardzo szczegółowy `CLAUDE.md` z przepisami krok po kroku, wzorcem referencyjnym i checklistą.
+- Testy endpointów na `WebApplicationFactory`.
+- Od niedawna pełne CI w GitHub Actions: locked restore, skan podatności, format, lint, build, testy z pokryciem.
 
-**Główne luki:** (1) autorska architektura modularnego monolitu nie jest nigdzie opisana dla agenta — w szczególności ręczna rejestracja endpointów i cicha pułapka fallbacku SPA; (2) konwencje frontendu i ryzyko generowania kodu pod Tailwind 3 / React Router 6; (3) ręcznie synchronizowane kontrakty C# ↔ TS; (4) brak testów frontendu i brak CI. Wszystkie pokrywają bloki powyżej — po wklejeniu ich do `CLAUDE.md` agent ma komplet informacji do dodania modułu Kursy bez naruszania modułów zachowanych przez PRD (FR-012–FR-014).
+**Kluczowe luki:**
+1. `CLAUDE.md` nie nadąża za migracją na .NET 10: zły TFM w przepisie na moduł, przestarzałe `.WithOpenApi()` w przepisie na slice, dokumentacja 8.0, złe wersje EF/Serilog. To trzeba naprawić **przed** rozpoczęciem pracy agenta nad modułem Kursy, bo przepis na nowy moduł zostanie użyty dosłownie.
+2. Konwencje Minimal APIs i Vite + React żyją wyłącznie w `CLAUDE.md` — trzeba je utrzymywać przy każdej zmianie wzorca.
+3. Brak testów frontendu (skompensowany regułą „logika domenowa po stronie serwera").
 
-**Przy okazji:** ta ocena rozstrzyga Open Question nr 4 z PRD (architektura = modularny monolit ASP.NET Core 8 + React SPA serwowane z tego samego hosta) — warto przenieść to do sekcji Current System Overview w `prd.md`.
-
-**Następny krok:** `/10x-health-check`.
+**Następny krok:** `/10x-health-check` — audyt zależności (NuGet po skoku na .NET 10, npm), skan bezpieczeństwa (m.in. pliki `.env*` w `src/client/app01`) i weryfikacja, czy CI przechodzi na zielono.

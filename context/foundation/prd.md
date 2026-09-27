@@ -21,7 +21,7 @@ timeline_budget:
 
 **Cel systemu:** tomsoft1.pl to wielomodułowy portal webowy prowadzony przez jednego właściciela, udostępniający jego aplikacje, gry i informacje o nim samym.
 
-**Stack techniczny:** architektura = modularny monolit ASP.NET Core 8 + React SPA serwowane z tego samego hosta, logowanie oparte o JWT; dwie role — zwykły użytkownik oraz administrator, rozróżniane flagą `IsAdmin` na obiekcie User; wspólny layout i menu główne współdzielone przez wszystkie moduły.
+**Stack techniczny:** architektura = modularny monolit ASP.NET Core 10 + React SPA serwowane z tego samego hosta, logowanie oparte o JWT; dwie role — zwykły użytkownik oraz administrator, rozróżniane flagą `IsAdmin` na obiekcie User; wspólny layout i menu główne współdzielone przez wszystkie moduły.
 
 # TODO: kształt architektury portalu (monolit / usługi rozdzielone / inne) — see Open Questions
 
