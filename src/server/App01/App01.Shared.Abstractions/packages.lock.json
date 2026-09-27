@@ -117,16 +117,6 @@
         "resolved": "13.0.4",
         "contentHash": "pdgNNMai3zv51W5aq268sujXUyx7SNdE2bj1wZcWjAQrKMFZV260lbqYop1d2GM67JI1huLRwxo9ZqnfF/lC6A=="
       },
-      "NSwag.ApiDescription.Client": {
-        "type": "Direct",
-        "requested": "[14.7.1, )",
-        "resolved": "14.7.1",
-        "contentHash": "Nus+Bhpl/eqY4LN9x1NGBJLuuHyRlOIA/bZqilzxctwRzvb1PWZ6Av+fY4ojOQkIjbPL28wn7yX4J/7AuI5S5A==",
-        "dependencies": {
-          "Microsoft.Extensions.ApiDescription.Client": "8.0.14",
-          "NSwag.MSBuild": "14.7.1"
-        }
-      },
       "Serilog.AspNetCore": {
         "type": "Direct",
         "requested": "[10.0.0, )",
@@ -419,11 +409,6 @@
         "dependencies": {
           "System.CodeDom": "6.0.0"
         }
-      },
-      "NSwag.MSBuild": {
-        "type": "Transitive",
-        "resolved": "14.7.1",
-        "contentHash": "4ks/+vtuFoP5D1Vsc0h7yCYyL8Rhhmnvwb9iHEm1//1y9oluQViQD9spqLaGjPv2Itjz5TQPLdkeky/wgRx8dg=="
       },
       "Serilog": {
         "type": "Transitive",
