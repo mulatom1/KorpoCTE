@@ -44,7 +44,7 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 
-
+appsettings.json
 appsettings.*.json
 !appsettings.Example.json
 

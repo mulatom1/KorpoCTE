@@ -1,6 +1,6 @@
 ---
 project: APPS (tomsoft1.pl — App01)
-checked_at: 2026-09-27T20:50:45Z
+checked_at: 2026-09-27T21:30:00Z
 health_status: healthy
 context_type: brownfield
 language_family: multi
@@ -19,7 +19,7 @@ audit_findings:
   low: 0
 test_runner_detected: true
 ci_provider: GitHub Actions
-recommended_fixes: 2
+recommended_fixes: 3
 ---
 
 ## Dependency Health
@@ -31,7 +31,7 @@ Status: present — NuGet packages.lock.json (8/8 projektów) + src/client/app01
 Package manager: dotnet (NuGet) + npm
 ```
 
-`Directory.Build.props` włącza `RestorePackagesWithLockFile` i `NuGetAuditMode=all`, a `NU1903`/`NU1904` (podatności high/critical) traktuje jako błędy builda. CI robi `dotnet restore --locked-mode` i `npm ci`.
+`Directory.Build.props` włącza `RestorePackagesWithLockFile` i `NuGetAuditMode=all`, a `NU1903`/`NU1904` (podatności high/critical) traktuje jako błędy builda. CI wykonuje `dotnet restore --locked-mode` oraz `npm ci`.
 
 ### Security Audit
 
@@ -44,20 +44,23 @@ Direct vs transitive: sprawdzono oba (--include-transitive); brak podatnych paki
 ```
 Tool: npm audit --json (src/client/app01)
 Summary: 0 CRITICAL, 0 HIGH, 0 MODERATE, 0 LOW
-Direct vs transitive: 512 zależności (284 prod, 152 dev); brak podatności
+Direct vs transitive: 512 zależności (284 prod, 152 dev, 77 optional); brak podatności
 ```
+
+Pliki `.env`, `.env.dev`, `.env.prod1` i `.env.prod2` w `src/client/app01` są ignorowane przez `.gitignore` (reguły `.env` i `.env.*`). Do repozytorium trafia tylko `.env.example`. Zawartości plików `.env*` nie odczytywano. `appsettings.json` jest śledzony przez git (obok `appsettings.Example.json`), a jego zawartości też nie sprawdzano pod kątem sekretów. Patrz poprawka nr 3.
 
 ### Outdated Dependencies
 
 ```
-Packages with major version gaps: 12 (NuGet: 1, npm: 11) — bez zmian od poprzedniego przebiegu
+Packages with major version gaps: 12 (NuGet: 1, npm: 11)
 ```
 
-NuGet:
+NuGet (`dotnet list package --outdated`):
 
-- **MediatR**: 12.5.0 → 14.2.0 (2 majory). **Nie podbijać**: v13+ ma licencję komercyjną (reguła w `CLAUDE.md`).
+- **MediatR**: 12.5.0 → 14.2.0 (2 majory). **Nie podbijać**: od v13 obowiązuje licencja komercyjna (reguła w `CLAUDE.md`).
+- Poza tym nic nie wymaga aktualizacji w obrębie tej samej wersji minor (`--highest-minor`: brak wyników).
 
-npm (wszędzie `wanted` = `current`, czyli wersje są przypięte świadomie, zgodnie z `CLAUDE.md`):
+npm (`npm outdated`; wszędzie `wanted` = `current`, czyli zakresy w `package.json` celowo zatrzymują się na bieżących majorach):
 
 - **typescript**: 5.9.3 → 7.0.2 (2 majory)
 - **@types/node**: 24.19.0 → 26.6.3 (2 majory)
@@ -67,14 +70,14 @@ npm (wszędzie `wanted` = `current`, czyli wersje są przypięte świadomie, zgo
 - **mermaid**: 11.17.2 → 12.0.0
 - **eslint**: 9.39.5 → 10.11.0; **@eslint/js**: 9.39.5 → 10.0.1; **globals**: 16.5.0 → 17.12.0; **eslint-plugin-react-refresh**: 0.4.26 → 0.5.7
 
-Luki majorowe służą tylko jako informacja. Agent nie może podbijać tych wersji przy okazji innych zmian, a `CLAUDE.md` już mu tego zabrania.
+Te luki są tylko informacją. Wersje są przypięte zgodnie z sekcją „Wersje przypięte" w `CLAUDE.md`, a agent nie może podbijać majorów przy okazji innych zmian.
 
 ## Test Suite
 
 ```
 Test runner: xUnit 2.9.3 (+ Microsoft.AspNetCore.Mvc.Testing / WebApplicationFactory, EF InMemory)
 Tests found: 343
-Test execution: passing (343/343, 0 pominiętych, ~20 s)
+Test execution: passing (343/343, 0 pominiętych, ~14 s)
 ```
 
 ```
@@ -82,46 +85,40 @@ Configuration: tests/server/App01/App01.Api.Tests/App01.Bootstrapper.Api.Tests.c
 Framework: xUnit 2.9.3, Moq, coverlet.collector
 ```
 
-Build `APPS.sln`: 0 błędów, 0 ostrzeżeń.
-
-Frontend (`src/client/app01`) nie ma testów. Przechodzą za to wszystkie bramki statyczne: `tsc -b` (strict), `prettier --check` i `eslint .`. ESLint zwraca teraz **0 błędów i 0 ostrzeżeń**, bo 3 ostrzeżenia `react-hooks/exhaustive-deps` naprawiono w `9be2f37`. `vite build` przechodzi z ostrzeżeniem o rozmiarze chunka (`index-*.js` ma 680 kB, 185 kB po gzip). To informacja, nie błąd.
+Frontend (`src/client/app01`) nie ma test runnera. Jego rolę pełnią `tsc -b` (strict), `eslint --max-warnings 0` i `prettier --check`, które przechodzą lokalnie. Zgodnie z `CLAUDE.md` logika domenowa zostaje po stronie serwera, gdzie pokrywają ją testy endpointów.
 
 ## CI/CD
 
 ```
 Provider: GitHub Actions
-Configuration: .github/workflows/pull-request.yml (push + pull_request, wszystkie gałęzie)
+Configuration: .github/workflows/pull-request.yml (push i pull_request na wszystkie gałęzie)
 ```
 
-| Stage      | Status | Notes |
-|------------|--------|-------|
-| Lint       | ✓      | backend: `dotnet format --verify-no-changes`; frontend: `npx prettier --check` + `npm run lint` (ESLint, bez `--max-warnings 0`, patrz Poprawka 1) |
-| Test       | ✓      | `dotnet test` z pokryciem (coverlet → ReportGenerator 5.5.11 → artefakt HTML); frontend nie ma testów |
-| Build      | ✓      | `dotnet build --no-restore`; `npm run build` |
-| Type check | ✓      | kompilator C# (nullable) w buildzie; `tsc -b` w `npm run build` |
-| Security   | ✓      | `dotnet list package --vulnerable --include-transitive` (fail na High/Critical); `npm audit --audit-level=high`; NuGetAudit w restore |
+| Stage      | Status | Notes                                                                                       |
+|------------|--------|---------------------------------------------------------------------------------------------|
+| Lint       | ✓      | `dotnet format --verify-no-changes`; `npx prettier --check`, `npm run lint` (ESLint, 0 ostrzeżeń) |
+| Test       | ✓      | `dotnet test` z pokryciem (coverlet → ReportGenerator → artefakt HTML)                      |
+| Build      | ✓      | `dotnet build --no-restore`; `npm run build`                                                 |
+| Type check | ✓      | kompilator C# (nullable) + `tsc -b` w `npm run build`                                       |
+| Security   | ✓      | `dotnet list package --vulnerable` (fail na High/Critical); `npm audit --audit-level=high`    |
 
-Wszystkie kroki CI przechodzą lokalnie: `dotnet format --verify-no-changes`, build, testy, prettier, lint i `npm run build`.
+Lokalne odtworzenie kroków CI (27.09.2026): `dotnet format --verify-no-changes` → exit 0; `dotnet build` → 0 ostrzeżeń; `dotnet test` → 343/343; `prettier --check` → OK; `npm run lint` → OK; `npm run build` → OK. Jedyny komunikat to ostrzeżenie Vite o chunku JS > 500 kB (680 kB, gzip 185 kB). Stanu przebiegów w GitHub Actions nie sprawdzano, bo `gh` CLI nie jest zainstalowane.
 
 ## Configuration
 
 ### High severity
 
-Brak luk o wysokiej wadze. `.gitignore` jest obecny (w root, `src/server/` i `src/client/app01/`), a `tsconfig.app.json` ma `strict: true`.
+Brak.
 
 ### Medium severity
 
-- **`src/client/app01/package.json` → `"lint": "eslint ."`**: ESLint kończy się kodem 0 nawet przy ostrzeżeniach, więc CI przepuści nowe ostrzeżenia `exhaustive-deps` wprowadzone przez agenta. Fix: Poprawka 1.
+Brak. Formatter (`.prettierrc.json`, `dotnet format` + `.editorconfig`), linter (`eslint.config.js`) oraz `tsconfig.app.json` ze `"strict": true` są na miejscu.
 
 ### Low severity
 
-- **Brak `appsettings.Example.json`**: serwer nie dokumentuje wymaganych kluczy (`Tokens:X-TOKEN`, `Tokens:Key`, `ConnectionStrings:DefaultConnection`, `ApiKey`) poza pustym `appsettings.json`. Frontend ma `.env.example`. Dotyczy tylko stawiania nowego środowiska. Fix: Poprawka 2.
-- **`.nvmrc` = 22, lokalnie Node v24.17.0**: CI używa Node 22 i build przechodzi na obu wersjach. Rozjazd jest tylko informacyjny. Jeśli zobaczysz lokalnie coś, czego CI nie odtwarza, przełącz się poleceniem `nvm use`.
-- Profile publikacji `Properties/PublishProfiles/*.pubxml` są ignorowane przez git (`src/server/.gitignore`). Lokalnie oba wskazują na `net10.0` (0 wystąpień `net8.0`). To tylko informacja.
+- **Chunk JS 680 kB** (`dist/assets/index-*.js`). Nie dotyczy pracy agenta, ale ostrzeżenie Vite pojawia się przy każdym buildzie i łatwo przeoczyć przy nim prawdziwe ostrzeżenie. Poprawka: podział kodu przez `React.lazy(() => import(...))` dla ciężkich stron (np. korzystających z `mermaid` / `hls.js`) albo `build.rollupOptions.output.manualChunks` w `vite.config.ts`.
 
-Sekrety: w repozytorium nie jest śledzony żaden plik `.env*` poza `.env.example`. Śledzony `appsettings.json` ma wszystkie wrażliwe pola puste (`""`), a `appsettings.Development.json` leży lokalnie i jest ignorowany. `CLAUDE.md` zawiera regułę zakazującą wpisywania sekretów do śledzonych plików.
-
-Rozwiązane od poprzedniego przebiegu: 3 ostrzeżenia `react-hooks/exhaustive-deps` na stronach Lotto (commit `9be2f37`).
+Obecne pliki: `.editorconfig`, `.gitignore` (root + klient), `.env.example`, `appsettings.Example.json`, `.nvmrc`, `global.json`, `Directory.Build.props`, `CLAUDE.md`, `AGENTS.md`. Brak `tailwind.config.*` i `postcss.config.*`, co jest poprawne dla Tailwind 4 (CSS-first).
 
 ## Stack Assessment Cross-Reference
 
@@ -130,59 +127,77 @@ Stack assessment: context/foundation/stack-assessment.md
 Agent readiness (from stack-assess): ready-with-compensation
 ```
 
-| Quality Gate Gap | Health-Check Finding | Status |
-|---|---|---|
-| Luka 1: `CLAUDE.md` opisuje .NET 8, kod jest na .NET 10 | `CLAUDE.md` jest zaktualizowany: .NET 10, `net10.0` w przepisie na moduł, zakaz `.WithOpenApi()`, dokumentacja 10.0, nagłówek sekcji danych „EF Core 10, SQL Server 2012” (ostatnia pozostałość „EF Core 8” poprawiona po tym przebiegu). W `src/server` nie ma żadnego wywołania `WithOpenApi`, build nie zgłasza ostrzeżeń, a profile publikacji wskazują na `net10.0`. | Mitigated |
-| Luka 2: konwencje Minimal APIs / Vite + React żyją tylko w `CLAUDE.md` | Sekcja „Formatowanie” i pełna lista kroków CI są w `CLAUDE.md`. `dotnet format --verify-no-changes`, `prettier --check` i `eslint` przechodzą bez uwag. | Mitigated |
-| Luka 3: brak testów frontendu | Potwierdzone: frontend ma 0 testów. Kompensują to `tsc` strict, ESLint (teraz 0 ostrzeżeń) i Prettier w CI oraz reguła „logika domenowa po stronie serwera” (343 testy endpointów). Weryfikacja UI modułu Kursy pozostaje manualna. | Reinforced (świadomie zaakceptowane) |
-| Kompensacja: rekomendowane wpisy do `CLAUDE.md` | Są wszystkie 4 bloki ze stack-assessment oraz reguła o sekretach. `AGENTS.md` istnieje. | Mitigated |
+| Quality Gate Gap                                              | Health-Check Finding                                                                                                                                                         | Status    |
+|---------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| Luka 1: `CLAUDE.md` opisuje .NET 8, kod jest na .NET 10       | `CLAUDE.md` ma już sekcję „Wersje przypięte" dla .NET 10, `net10.0` w przepisie na moduł, zakaz `.WithOpenApi()` i dokumentację 10.0. W `src/server` nie ma wywołań `WithOpenApi`. Żaden `*.pubxml` nie zawiera już `net8.0`. Build: 0 ostrzeżeń. | Mitigated |
+| Luka 2: konwencje Minimal APIs / Vite+React żyją tylko w `CLAUDE.md` | Sekcja „Formatowanie (CI odrzuca niesformatowany kod)" i pełna lista kroków CI są w `CLAUDE.md`. `dotnet format` i `prettier --check` przechodzą. | Mitigated |
+| Luka 3: brak testów frontendu                                 | Nadal brak runnera po stronie klienta. Kompensacja: reguła „logika domenowa po stronie serwera" w `CLAUDE.md` plus `tsc` strict, ESLint i prettier w CI. UI modułu Kursy wymaga weryfikacji manualnej. | Accepted  |
+| Typed / Convention / Training data / Documented (16/16 pass)  | Typowanie potwierdzone (`strict: true`, nullable, 0 ostrzeżeń builda). Przypięte wersje ograniczają ryzyko sięgania agenta po API nowszych majorów.                           | Reinforced |
+
+Wszystkie wpisy kompensacyjne rekomendowane przez stack-assess są obecne w `CLAUDE.md`.
 
 ## Recommended Fixes
 
 ### Fix before agent work (Category A)
 
-### 1. Zablokuj nowe ostrzeżenia ESLint w CI
+### 1. Brak testów frontendu przy planowanej pracy nad UI modułu Kursy
 
-**Impact**: lint jest teraz czysty, ale `eslint .` kończy się kodem 0 nawet przy ostrzeżeniach. Agent może więc wprowadzić `useEffect` z niepełnymi zależnościami, a CI tego nie zatrzyma. Z flagą `--max-warnings 0` każde nowe ostrzeżenie staje się twardym sygnałem „zepsułem coś”.
-**Severity**: medium
-**Effort**: quick (< 5 min)
+**Impact**: agent nie zweryfikuje automatycznie zachowania nowych stron (kafelki kursów, widok kursu, hangar). Wykryje tylko błędy typów, lintu i formatowania. Każdą zmianę UI trzeba sprawdzić ręcznie.
+**Severity**: low (świadomie skompensowane regułą w `CLAUDE.md`)
+**Effort**: moderate (15–30 min) na konfigurację, jeśli się zdecydujesz
 **Fix**:
 
-W `src/client/app01/package.json` zmień:
+Opcjonalnie, tylko jeśli w module Kursy pojawi się logika po stronie klienta (np. stan postępu, filtrowanie):
 
-```json
-"lint": "eslint . --max-warnings 0",
+```bash
+cd src/client/app01
+npm install -D vitest@^3 @testing-library/react @testing-library/jest-dom jsdom
+# package.json → "scripts": { "test": "vitest run" }
+# vite.config.ts → test: { environment: "jsdom" }
 ```
 
-Następnie w `src/client/app01` uruchom `npm run lint` (powinno przejść, bo teraz jest 0 ostrzeżeń).
+W przeciwnym razie zostaw obecną regułę i dopisz do planu zmiany krok manualnej weryfikacji UI.
 
-### 2. Dodaj `appsettings.Example.json` z listą wymaganych kluczy
+### 2. Podział bundla JS (680 kB)
 
-**Impact**: agent (albo nowa osoba) stawiająca środowisko nie wie, które klucze trzeba ustawić w `appsettings.Development.json` lub `dotnet user-secrets`. Może wtedy zgadywać albo wpisać wartość do śledzonego `appsettings.json`.
+**Impact**: niski dla agenta. Stałe ostrzeżenie w logu `npm run build` zagłusza nowe ostrzeżenia, które agent powinien zauważyć.
 **Severity**: low
+**Effort**: moderate (15–30 min)
+**Fix**:
+
+W `src/main.tsx` zamień importy ciężkich stron na `const XPage = lazy(() => import("./pages/..."));` i owiń `<Routes>` w `<Suspense>`. Alternatywnie wydziel `mermaid`/`hls.js` przez `build.rollupOptions.output.manualChunks` w `vite.config.ts`.
+
+### 3. Potwierdź, że śledzony `appsettings.json` nie zawiera sekretów
+
+**Impact**: `CLAUDE.md` zabrania trzymania sekretów w `appsettings.json`, ale plik jest w repozytorium. Jeśli trafił do niego klucz JWT, `ApiKey` albo hasło w connection stringu, agent może go powielić lub ujawnić w diffie.
+**Severity**: low (nieweryfikowane — health-check nie odczytywał wartości)
 **Effort**: quick (< 5 min)
 **Fix**:
 
-Skopiuj `src/server/App01/App01.Bootstrapper.Api/appsettings.json` do `appsettings.Example.json` w tym samym katalogu. W wartościach wpisz opisowe placeholdery, np. `"<ustaw w user-secrets>"`, a nie prawdziwe dane. Upewnij się, że plik nie trafia do publikacji (`<Content Update="appsettings.Example.json" CopyToPublishDirectory="Never" />` w `.csproj`).
+```bash
+git log -p --follow -- src/server/App01/App01.Bootstrapper.Api/appsettings.json | grep -iE "key|secret|password|pwd"
+```
 
-*Świadomie bez akcji:* majory npm (TypeScript 7, Vite 8, React Router 8, ESLint 10 itd.), MediatR 14 (licencja) i xUnit v3 zostają przypięte zgodnie z `CLAUDE.md`. Ostrzeżenie o rozmiarze chunka (680 kB) można potraktować jako kandydata do code-splittingu (`React.lazy` na stronach modułów), ale nie blokuje ono pracy agenta.
+Jeśli coś znajdziesz: przenieś wartości do `dotnet user-secrets` / `appsettings.Development.json` i zrotuj ujawnione klucze.
 
 ### Addressed in upcoming lessons (Category B)
 
-### Konfiguracja wdrożenia (tylko FileSystem publish, profile poza gitem, brak Dockerfile/PaaS)
+### Konfiguracja wdrożenia (folder publish, bez kontenera/PaaS)
 
 **Lesson**: [Sprint Zero z Agentem: infrastruktura, walking skeleton i pierwszy deploy (M1L5)](https://platforma.przeprogramowani.pl/external/10xdevs-3/m1-l5)
-**What you'll do there**: zdefiniujesz docelową infrastrukturę, zrobisz pierwszy deploy i zautomatyzujesz go w CI.
+**What you'll do there**: zautomatyzujesz wdrożenie i rozszerzysz istniejący pipeline GitHub Actions o krok deploy.
 
-### Pliki instrukcji agenta (`CLAUDE.md` / `AGENTS.md`)
+### Utrzymanie `CLAUDE.md` / `AGENTS.md`
 
 **Lesson**: [Agent Onboarding: Agents.md, AI Rules i feedback loops (M1L4)](https://platforma.przeprogramowani.pl/external/10xdevs-3/m1-l4)
-**What you'll do there**: uporządkujesz istniejące, już aktualne pliki instrukcji w warstwy reguł i dodasz pętle informacji zwrotnej.
+**What you'll do there**: pliki już istnieją i są aktualne. Na lekcji dopracujesz je i ustawisz pętle feedbacku, żeby nadążały za kodem.
 
 ## Summary
 
+```
 Health status: healthy
+```
 
-Projekt jest gotowy do pracy z agentem. Zależności są czyste (0 podatności w NuGet i npm) i przypięte lock-filami. 343 testy przechodzą, build nie ma ostrzeżeń, a lint jest czysty. CI pokrywa lint, typy, build, testy i bezpieczeństwo, a `CLAUDE.md` jest spójny z kodem. Zostały dwie drobne poprawki: bramka `--max-warnings 0`, która utrwali obecny czysty lint, oraz przykładowy plik konfiguracji serwera.
+Projekt jest w dobrej kondycji. Obie strony (NuGet i npm) mają zero znanych podatności i przypięte lock-file'y. 343 testy serwera przechodzą. Wszystkie kroki CI (format, lint, build, typy, skan bezpieczeństwa, testy) odtwarzają się lokalnie na zielono, a build .NET nie zgłasza ostrzeżeń. Luki wskazane przez stack-assess zostały zamknięte: `CLAUDE.md` opisuje .NET 10 i zasady formatowania, a profile publikacji nie odwołują się już do `net8.0`. Zostają drobiazgi: brak testów frontendu (świadomie skompensowany), duży bundle JS i niezweryfikowana zawartość śledzonego `appsettings.json`.
 
-Next step: zrób Poprawkę 1 (minuta), opcjonalnie Poprawkę 2, a potem przejdź do agent onboardingu.
+Next step: opcjonalnie sprawdź `appsettings.json` (poprawka nr 3), a potem przejdź do agent onboardingu.
