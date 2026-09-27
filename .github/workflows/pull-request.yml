@@ -49,7 +49,7 @@ jobs:
 
       - name: Install ReportGenerator
         run: |
-          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.0.4
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.5.11
           echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Generate HTML coverage report
