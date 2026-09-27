@@ -129,6 +129,7 @@ Każda funkcja to katalog `App01.Modules.<Moduł>/Features/<NazwaFunkcji>/` z DO
 - Endpointy dla zalogowanych: `.RequireAuthorization()` (JWT Bearer). Endpointy publiczne (np. lista kafelków kursów) — bez `RequireAuthorization()`, ale z `XTokenFilter`, i zwracają WYŁĄCZNIE pola publiczne (DTO bez treści kursu).
 - Rola admina = claim `isAdmin` w JWT; sprawdzenie w handlerze przez `IJwtService.GetIsAdminFromJwt()`. Nie dodawaj nowych ról ani policy.
 - Id bieżącego użytkownika pobieraj z JWT przez `IJwtService`, nigdy z body requestu.
+- Nie wpisuj sekretów (klucze JWT, ApiKey, hasła w connection stringach) do `appsettings.json` ani `src/client/app01/.env*` — lokalnie `appsettings.Development.json` (ignorowany) lub `dotnet user-secrets`; zmienne `VITE_*` trafiają do bundla przeglądarki i nigdy nie są sekretne.
 
 ## Frontend (src/client/app01)
 

@@ -177,8 +177,17 @@ function LottoTicketsPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Pobieranie tylko przy zmianie strony – filtry stosuje wyszukiwanie.
+  // Ref trzyma najnowszą wersję fetchTickets, więc efekt nie zależy od jej tożsamości.
+  const fetchTicketsRef = useRef<() => Promise<void>>(async () => {});
+
+  // Musi być przed efektem [page] – efekty uruchamiają się w kolejności deklaracji.
   useEffect(() => {
-    fetchTickets();
+    fetchTicketsRef.current = fetchTickets;
+  });
+
+  useEffect(() => {
+    fetchTicketsRef.current();
   }, [page]);
 
   // Reset results when filters change

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { ApiLottoService } from "../../services/api-lotto-service";
 import type {
@@ -121,8 +121,19 @@ function LottoWinningTicketsPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Pobieranie tylko przy montowaniu – kolejne strony i filtry obsługują handlery.
+  // Ref trzyma najnowszą wersję fetchWinningTickets, więc efekt nie zależy od jej tożsamości.
+  const fetchWinningTicketsRef = useRef<(page?: number) => Promise<void>>(
+    async () => {},
+  );
+
+  // Musi być przed efektem montowania – efekty uruchamiają się w kolejności deklaracji.
   useEffect(() => {
-    fetchWinningTickets();
+    fetchWinningTicketsRef.current = fetchWinningTickets;
+  });
+
+  useEffect(() => {
+    fetchWinningTicketsRef.current();
   }, []);
 
   // Reset results when filters change

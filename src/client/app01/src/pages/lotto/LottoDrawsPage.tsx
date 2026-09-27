@@ -127,8 +127,17 @@ function LottoDrawsPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Pobieranie tylko przy zmianie strony – filtry stosuje przycisk "Szukaj" (handleSearch).
+  // Ref trzyma najnowszą wersję fetchDraws, więc efekt nie zależy od jej tożsamości.
+  const fetchDrawsRef = useRef<() => Promise<void>>(async () => {});
+
+  // Musi być przed efektem [page] – efekty uruchamiają się w kolejności deklaracji.
   useEffect(() => {
-    fetchDraws();
+    fetchDrawsRef.current = fetchDraws;
+  });
+
+  useEffect(() => {
+    fetchDrawsRef.current();
   }, [page]);
 
   // Reset results when filters change
