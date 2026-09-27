@@ -1120,19 +1120,7 @@
         }
       },
       "app01.bootstrapper.api": {
-        "type": "Project",
-        "dependencies": {
-          "App01.Modules.Flashcards": "[1.0.0, )",
-          "App01.Modules.Lotto": "[1.0.0, )",
-          "App01.Modules.Portal": "[1.0.0, )",
-          "App01.Shared.Infrastructure": "[1.0.0, )"
-        }
-      },
-      "app01.modules.flashcards": {
-        "type": "Project",
-        "dependencies": {
-          "App01.Shared.Infrastructure": "[1.0.0, )"
-        }
+        "type": "Project"
       },
       "app01.modules.lotto": {
         "type": "Project",

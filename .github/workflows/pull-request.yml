@@ -33,6 +33,9 @@ jobs:
       - name: Check vulnerable NuGet packages
         run: dotnet list package --vulnerable --include-transitive
 
+      - name: Check formatting
+        run: dotnet format --verify-no-changes
+
       - name: Build
         run: dotnet build --no-restore
 
