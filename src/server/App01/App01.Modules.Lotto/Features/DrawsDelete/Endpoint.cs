@@ -1,0 +1,32 @@
+using App01.Shared.Application.Filters;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+
+namespace App01.Modules.Lotto.Features.DrawsDelete;
+
+
+public static class Endpoint
+{
+    public static void AddEndpoint(this WebApplication app)
+    {
+        app.MapDelete("api/lotto/draws-delete", async (
+            IMediator mediator,
+            long drawId) =>
+        {
+            var result = await mediator.Send(new Contracts.Request(drawId));
+            return Results.Ok(result);
+        })
+        .WithName("LottoDrawsDelete")
+        .WithTags("Lotto")
+        .Produces<Contracts.Response>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter<XTokenFilter>()
+        .RequireAuthorization()
+        .WithOpenApi();
+    }
+}

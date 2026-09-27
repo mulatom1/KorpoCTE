@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+    <ItemGroup>
+    <Folder Include="Logs\" />
+    <Folder Include="TMP\" />
+  </ItemGroup>
+
+    <ItemGroup>      
+      <ProjectReference Include="..\App01.Modules.Flashcards\App01.Modules.Flashcards.csproj" />
+      <ProjectReference Include="..\App01.Modules.Lotto\App01.Modules.Lotto.csproj" />
+      <ProjectReference Include="..\App01.Modules.Portal\App01.Modules.Portal.csproj" />
+      <ProjectReference Include="..\App01.Shared.Infrastructure\App01.Shared.Infrastructure.csproj" />
+    </ItemGroup>
+
+</Project>

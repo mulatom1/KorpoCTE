@@ -1,0 +1,23 @@
+# Editor directories and files
+.vs/*
+.vscode/*
+!.vscode/extensions.json
+.idea
+database/*
+nul
+
+# ===============================================
+# Konfiguracja narzędzi AI (Claude)
+# ===============================================
+# GitHub Copilot respektuje powyższe reguły i nie wymaga osobnych wpisów.
+
+# Ignoruj lokalne, osobiste ustawienia Claude.
+.claude
+
+
+# Ignoruj lokalne, osobiste ustawienia Agents.
+.agents
+
+
+# Ignoruj lokalne, osobiste ustawienia Kurs.
+kurs
