@@ -130,6 +130,7 @@ Każda funkcja to katalog `App01.Modules.<Moduł>/Features/<NazwaFunkcji>/` z DO
 - Rola admina = claim `isAdmin` w JWT; sprawdzenie w handlerze przez `IJwtService.GetIsAdminFromJwt()`. Nie dodawaj nowych ról ani policy.
 - Id bieżącego użytkownika pobieraj z JWT przez `IJwtService`, nigdy z body requestu.
 - Nie wpisuj sekretów (klucze JWT, ApiKey, hasła w connection stringach) do `appsettings.json` ani `src/client/app01/.env*` — lokalnie `appsettings.Development.json` (ignorowany) lub `dotnet user-secrets`; zmienne `VITE_*` trafiają do bundla przeglądarki i nigdy nie są sekretne.
+- `appsettings.json` i `appsettings.*.json` są ignorowane przez git (`src/server/.gitignore`); jedynym śledzonym plikiem jest `appsettings.Example.json`. Lokalnie: `cp src/server/App01/App01.Bootstrapper.Api/appsettings.Example.json src/server/App01/App01.Bootstrapper.Api/appsettings.json` i uzupełnij wartości. Nowy klucz konfiguracji dopisz najpierw do `appsettings.Example.json` (z pustą/przykładową wartością).
 
 ## Frontend (src/client/app01)
 
@@ -146,7 +147,7 @@ Każda funkcja to katalog `App01.Modules.<Moduł>/Features/<NazwaFunkcji>/` z DO
 
 ## Wersje przypięte — nie podbijaj majorów bez polecenia
 
-.NET 10 (SDK przypięty w `global.json`: 10.0.100) / ASP.NET Core 10 / EF Core 10 · MediatR 12.x (v13+ ma licencję komercyjną) · FluentValidation 12 · xUnit 2.x (nie v3) · Serilog.AspNetCore 10 · Swashbuckle.AspNetCore 10 · React 19 · React Router 7 · Tailwind CSS 4 · Vite 7 · TypeScript 5.9.
+.NET 10 (SDK przypięty w `global.json`: 10.0.100) / ASP.NET Core 10 / EF Core 10 · MediatR 12.x (v13+ ma licencję komercyjną) · FluentValidation 12 · xUnit 2.x (nie v3) · Serilog.AspNetCore 10 · Swashbuckle.AspNetCore 10 · React 19 · React Router 7 · Tailwind CSS 4 · Vite 7 · TypeScript 5.9 · Vitest 5.
 Dokumentacja: learn.microsoft.com/aspnet/core (wersja 10.0 — `?view=aspnetcore-10.0`), learn.microsoft.com/ef/core (EF Core 10), docs.fluentvalidation.net, reactrouter.com (sekcja „Declarative Mode"), tailwindcss.com/docs (v4), vite.dev.
 - Projekt jest po migracji z .NET 8 do .NET 10. Nie używaj API oznaczonych w .NET 10 jako przestarzałe (m.in. `.WithOpenApi()` na endpointach — ASPDEPR002). Ostrzeżenia `obsolete` przy buildzie traktuj jak błąd do naprawy, nie do wyciszenia.
 - Pakiety NuGet są przypięte lock-filami (`RestorePackagesWithLockFile` w `Directory.Build.props`, CI robi `dotnet restore --locked-mode`). Po dodaniu lub zmianie pakietu zacommituj zaktualizowane `packages.lock.json`.
@@ -154,9 +155,9 @@ Dokumentacja: learn.microsoft.com/aspnet/core (wersja 10.0 — `?view=aspnetcore
 ## Weryfikacja przed zakończeniem zadania
 
 - Serwer: `dotnet build APPS.sln` i `dotnet test APPS.sln` — muszą przejść.
-- Klient (z `src/client/app01`): `npm run build` (zawiera `tsc -b`) i `npm run lint`. Brak testów frontendu — dlatego logikę domenową (weryfikacja odpowiedzi, przyznawanie flag, ranking, wskaźniki) trzymaj po stronie serwera, gdzie jest pokryta testami endpointów.
+- Klient (z `src/client/app01`): `npm run build` (zawiera `tsc -b`), `npm run lint` i `npm test` (Vitest + jsdom + Testing Library, konfiguracja w bloku `test` w `vite.config.ts`, setup w `src/test/setup.ts`). Testy frontendu leżą obok testowanego pliku jako `<Nazwa>.test.ts(x)`, importy (`describe`/`it`/`expect`/`vi`) jawnie z `"vitest"` (bez globals). Testuj helpery z `src/utils/` i zachowanie komponentów (kliknięcia, warunkowe renderowanie), nie klasy Tailwind. Logikę domenową (weryfikacja odpowiedzi, przyznawanie flag, ranking, wskaźniki) nadal trzymaj po stronie serwera, gdzie jest pokryta testami endpointów.
 - Nowy endpoint = nowy `EndpointTests.cs` z przypadkiem: sukces, 400 (walidacja), 401 (brak JWT), 403 (gdy dotyczy), brak `X-TOKEN`.
-- Pełna lista kroków CI (`.github/workflows/pull-request.yml`) do odtworzenia lokalnie: `dotnet restore --locked-mode`, `dotnet format --verify-no-changes`, `dotnet build APPS.sln`, `dotnet test APPS.sln`; w `src/client/app01`: `npx prettier --check "src/**/*.{ts,tsx,css}"`, `npm run lint`, `npm run build`.
+- Pełna lista kroków CI (`.github/workflows/pull-request.yml`) do odtworzenia lokalnie: `dotnet restore --locked-mode`, `dotnet format --verify-no-changes`, `dotnet build APPS.sln`, `dotnet test APPS.sln`; w `src/client/app01`: `npx prettier --check "src/**/*.{ts,tsx,css}"`, `npm run lint`, `npm test`, `npm run build`.
 
 ## Formatowanie (CI odrzuca niesformatowany kod)
 

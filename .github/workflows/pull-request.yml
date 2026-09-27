@@ -96,6 +96,10 @@ jobs:
         run: npm run lint
         working-directory: src/client/app01
 
+      - name: Test frontend
+        run: npm test
+        working-directory: src/client/app01
+
       - name: Build frontend
         run: npm run build
         working-directory: src/client/app01

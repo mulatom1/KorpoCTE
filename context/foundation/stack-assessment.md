@@ -21,7 +21,7 @@ gates_failed: 0
 
 **Język (klient) — TypeScript ~5.9.3.** `src/client/app01/tsconfig.app.json` ma `strict: true`, `noUnusedLocals`, `noUnusedParameters`, `erasableSyntaxOnly`, `verbatimModuleSyntax`.
 
-**Framework (serwer) — ASP.NET Core 10 Minimal APIs, modularny monolit.** Host `App01.Bootstrapper.Api` składa moduły `Portal`, `Lotto`, `Flashcards`. Funkcje są cięte pionowo (`Features/<Nazwa>/{Contracts,Validator,Handler,Endpoint}.cs`) i obsługiwane przez MediatR 12.5.0 + FluentValidation 12.1.1. Dane: EF Core 10.0.12 (SQL Server, `UseCompatibilityLevel(110)`), testy na EF InMemory. OpenAPI przez Swashbuckle 10.2.3 (`AddServerSwagger()`, `UseSwagger()` warunkowo przez `Swagger:Enable`). Logowanie przez Serilog.AspNetCore 10.0.0.
+**Framework (serwer) — ASP.NET Core 10 Minimal APIs, modularny monolit.** Host `App01.Bootstrapper.Api` składa moduły `Portal`, `Lotto`, `Flashcards`. Funkcje są cięte pionowo (`Features/<Nazwa>/{Contracts,Validator,Handler,Endpoint}.cs`) i obsługiwane przez MediatR 12.5.0 + FluentValidation 12.1.1. Dane: EF Core 10.0.12 (SQL Server, `UseCompatibilityLevel(110)`), testy na EF InMemory. OpenAPI przez Swashbuckle 10.2.3 (`AddServerSwagger()`, `UseSwagger()` warunkowo przez `Swagger:Enabled`). Logowanie przez Serilog.AspNetCore 10.0.0.
 
 **Framework (klient) — React 19 + React Router 7 (tryb deklaratywny) + Tailwind 4.** Renderowanie Markdown: `react-markdown` + `remark-gfm` + `rehype-highlight` + `rehype-raw` + `remark-frontmatter`. Poza tym `mermaid`, `hls.js`, `dayjs`, `react-datepicker`.
 

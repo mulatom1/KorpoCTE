@@ -61,7 +61,7 @@ var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 
-if (builder.Configuration.GetValue("Swagger:Enable", false))
+if (builder.Configuration.GetValue("Swagger:Enabled", false))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
