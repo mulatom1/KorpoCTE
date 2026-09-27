@@ -31,7 +31,9 @@ jobs:
         run: dotnet restore --locked-mode
 
       - name: Check vulnerable NuGet packages
-        run: dotnet list package --vulnerable --include-transitive
+        run: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee vuln.txt
+          ! grep -qE "\b(High|Critical)\b" vuln.txt        
 
       - name: Check formatting
         run: dotnet format --verify-no-changes
