@@ -10,7 +10,7 @@
       },
       "Microsoft.AspNetCore.Mvc.Testing": {
         "type": "Direct",
-        "requested": "[8.0.*, )",
+        "requested": "[8.0.31, )",
         "resolved": "8.0.31",
         "contentHash": "UMxUZC02mDQ0uFASoaUJzMJeGyTyq2h0+NzzK7oP9KlvuPPKmWQR1gXwnWBYvx/mR4bQCC2ceHDqt/EsiVKnMA==",
         "dependencies": {
@@ -21,7 +21,7 @@
       },
       "Microsoft.EntityFrameworkCore.InMemory": {
         "type": "Direct",
-        "requested": "[8.0.*, )",
+        "requested": "[8.0.31, )",
         "resolved": "8.0.31",
         "contentHash": "2I/fD35g3NG5BKxhqvOEAlLnTnqOre2i2r8NlgFiP4OIGLpHO87Shl4UhzAfVEdIPbsaNeycHDbJjIt89Ob0Tw==",
         "dependencies": {
