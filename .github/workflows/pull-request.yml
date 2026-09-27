@@ -38,8 +38,8 @@ jobs:
 
       - name: Run tests with code coverage
         env:
-          ASPNETCORE_ENVIRONMENT: Testing
-          ConnectionStrings__DefaultConnection: XXX
+          ASPNETCORE_ENVIRONMENT: Test
+          DOTNET_ENVIRONMENT: Test
         run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=cobertura" --results-directory TestResults
 
       - name: Install ReportGenerator
