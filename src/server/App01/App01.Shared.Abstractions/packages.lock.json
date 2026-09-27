@@ -105,12 +105,6 @@
           "Microsoft.EntityFrameworkCore.Design": "10.0.12"
         }
       },
-      "Microsoft.Extensions.ApiDescription.Client": {
-        "type": "Direct",
-        "requested": "[10.0.12, )",
-        "resolved": "10.0.12",
-        "contentHash": "shctl5l+RZqNR3YcGIpV4jfq7mY2LEqjcF9mmZNdT3q73NugyarJAh+eXKUOjeNZ0exvAgu3sbG8G2V3VH2Kcw=="
-      },
       "Newtonsoft.Json": {
         "type": "Direct",
         "requested": "[13.0.4, )",
