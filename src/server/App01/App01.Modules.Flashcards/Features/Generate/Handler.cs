@@ -1,14 +1,18 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using App01.Shared.Application.Exceptions;
-using Microsoft.Extensions.Logging;
-using App01.Shared.Infrastructure.Repositories;
-using App01.Shared.Application.Interfaces;
-using App01.Shared.Application.Entities.Lotto;
-using Microsoft.Extensions.Configuration;
-using System.Text.Json;
 using System.Text;
+using System.Text.Json;
+
+using App01.Shared.Application.Entities.Lotto;
+using App01.Shared.Application.Exceptions;
+using App01.Shared.Application.Interfaces;
+using App01.Shared.Infrastructure.Repositories;
+
+using FluentValidation;
+
+using MediatR;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 
 namespace App01.Modules.Flashcards.Features.Generate;

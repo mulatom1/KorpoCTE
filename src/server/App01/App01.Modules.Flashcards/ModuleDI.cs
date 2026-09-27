@@ -1,7 +1,9 @@
-﻿using FluentValidation;
+﻿using System.Reflection;
+
+using FluentValidation;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace App01.Modules.Flashcards;
 

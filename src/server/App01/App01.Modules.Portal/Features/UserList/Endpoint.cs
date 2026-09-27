@@ -1,7 +1,9 @@
+using App01.Shared.Application.Filters;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using App01.Shared.Application.Filters;
 
 
 namespace App01.Modules.Portal.Features.UserList;

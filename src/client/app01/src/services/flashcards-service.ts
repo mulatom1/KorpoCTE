@@ -5,7 +5,7 @@ export interface Flashcard {
   groupName?: string;
   createdAt: string;
   updatedAt: string;
-  source?: 'manual' | 'ai';
+  source?: "manual" | "ai";
 }
 
 export interface FlashcardGroup {
@@ -18,7 +18,7 @@ interface FlashcardsStorage {
   lastUpdated: string;
 }
 
-const STORAGE_KEY = 'flashcards';
+const STORAGE_KEY = "flashcards";
 const MAX_FLASHCARDS = 500;
 const WARNING_THRESHOLD = 400;
 
@@ -51,15 +51,23 @@ export function getGroups(): FlashcardGroup[] {
   const flashcards = loadStorage().flashcards;
   const groupMap = new Map<string, number>();
   for (const f of flashcards) {
-    const name = f.groupName || '';
+    const name = f.groupName || "";
     if (name) {
       groupMap.set(name, (groupMap.get(name) || 0) + 1);
     }
   }
-  return Array.from(groupMap.entries()).map(([name, count]) => ({ name, count }));
+  return Array.from(groupMap.entries()).map(([name, count]) => ({
+    name,
+    count,
+  }));
 }
 
-export function add(data: { question: string; answer: string; groupName?: string; source?: 'manual' | 'ai' }): Flashcard {
+export function add(data: {
+  question: string;
+  answer: string;
+  groupName?: string;
+  source?: "manual" | "ai";
+}): Flashcard {
   const storage = loadStorage();
   if (storage.flashcards.length >= MAX_FLASHCARDS) {
     throw new Error(`Osiągnięto limit ${MAX_FLASHCARDS} fiszek.`);
@@ -72,18 +80,21 @@ export function add(data: { question: string; answer: string; groupName?: string
     groupName: data.groupName,
     createdAt: now,
     updatedAt: now,
-    source: data.source || 'manual',
+    source: data.source || "manual",
   };
   storage.flashcards.push(flashcard);
   saveStorage(storage);
   return flashcard;
 }
 
-export function update(id: string, data: Partial<Pick<Flashcard, 'question' | 'answer' | 'groupName'>>): Flashcard {
+export function update(
+  id: string,
+  data: Partial<Pick<Flashcard, "question" | "answer" | "groupName">>,
+): Flashcard {
   const storage = loadStorage();
   const index = storage.flashcards.findIndex((f) => f.id === id);
   if (index === -1) {
-    throw new Error('Fiszka nie znaleziona.');
+    throw new Error("Fiszka nie znaleziona.");
   }
   const flashcard = storage.flashcards[index];
   if (data.question !== undefined) flashcard.question = data.question;
@@ -101,11 +112,20 @@ export function remove(id: string): void {
   saveStorage(storage);
 }
 
-export function addBatch(items: { question: string; answer: string; groupName?: string; source?: 'manual' | 'ai' }[]): Flashcard[] {
+export function addBatch(
+  items: {
+    question: string;
+    answer: string;
+    groupName?: string;
+    source?: "manual" | "ai";
+  }[],
+): Flashcard[] {
   const storage = loadStorage();
   const remaining = MAX_FLASHCARDS - storage.flashcards.length;
   if (items.length > remaining) {
-    throw new Error(`Można dodać maksymalnie ${remaining} fiszek (limit: ${MAX_FLASHCARDS}).`);
+    throw new Error(
+      `Można dodać maksymalnie ${remaining} fiszek (limit: ${MAX_FLASHCARDS}).`,
+    );
   }
   const now = new Date().toISOString();
   const newFlashcards: Flashcard[] = items.map((item) => ({
@@ -115,7 +135,7 @@ export function addBatch(items: { question: string; answer: string; groupName?: 
     groupName: item.groupName,
     createdAt: now,
     updatedAt: now,
-    source: item.source || 'manual',
+    source: item.source || "manual",
   }));
   storage.flashcards.push(...newFlashcards);
   saveStorage(storage);
@@ -131,6 +151,9 @@ export function isNearLimit(): boolean {
 }
 
 export function clear(): void {
-  const storage: FlashcardsStorage = { flashcards: [], lastUpdated: new Date().toISOString() };
+  const storage: FlashcardsStorage = {
+    flashcards: [],
+    lastUpdated: new Date().toISOString(),
+  };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
 }

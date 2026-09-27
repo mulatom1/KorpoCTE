@@ -1,41 +1,40 @@
-import { useEffect, useState, useRef } from 'react';
-import { useSearchParams } from 'react-router';
-import { getIsAdminFromToken } from '../../utils/jwt';
-import { ApiLottoService } from '../../services/api-lotto-service';
-import type { LottoDrawsGetListDraw } from '../../services/contracts/lotto-draws-get-list-response';
-import type { LottoDrawsImportRequest } from '../../services/contracts/lotto-draws-import-request';
-import type { LottoDrawsGetPrizesListResponse } from '../../services/contracts/lotto-draws-get-prizes-list-response';
+import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "react-router";
+import { getIsAdminFromToken } from "../../utils/jwt";
+import { ApiLottoService } from "../../services/api-lotto-service";
+import type { LottoDrawsGetListDraw } from "../../services/contracts/lotto-draws-get-list-response";
+import type { LottoDrawsImportRequest } from "../../services/contracts/lotto-draws-import-request";
+import type { LottoDrawsGetPrizesListResponse } from "../../services/contracts/lotto-draws-get-prizes-list-response";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import ButtonPrimary from '../../components/ButtonPrimary';
-import ButtonSecondary from '../../components/ButtonSecondary';
-import ButtonEdit from '../../components/ButtonEdit';
-import ButtonDelete from '../../components/ButtonDelete';
-import DateTimePicker from '../../components/DateTimePicker';
-import ListSelect from '../../components/ListSelect';
-import Card from '../../components/Card';
-import CardListItem from '../../components/CardListItem';
-import SubMenu from '../../components/SubMenu';
-import ConfirmModal from '../../components/ConfirmModal';
-import FormCard from '../../components/FormCard';
+import ButtonPrimary from "../../components/ButtonPrimary";
+import ButtonSecondary from "../../components/ButtonSecondary";
+import ButtonEdit from "../../components/ButtonEdit";
+import ButtonDelete from "../../components/ButtonDelete";
+import DateTimePicker from "../../components/DateTimePicker";
+import ListSelect from "../../components/ListSelect";
+import Card from "../../components/Card";
+import CardListItem from "../../components/CardListItem";
+import SubMenu from "../../components/SubMenu";
+import ConfirmModal from "../../components/ConfirmModal";
+import FormCard from "../../components/FormCard";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const DRAW_TYPES = [
-  { id: 1, name: 'Lotto', numbersCount: 6 },
-  { id: 2, name: 'Lotto Plus', numbersCount: 6 },
-  { id: 3, name: 'Mini Lotto', numbersCount: 5 },
-  { id: 4, name: 'Ekstra Pensja', numbersCount: 5 },
-  { id: 5, name: 'Ekstra Premia', numbersCount: 5 },
-  { id: 6, name: 'EuroJackpot', numbersCount: 5 },
-  { id: 7, name: 'Szybkie600', numbersCount: 6 },
-  { id: 8, name: 'Kaskada', numbersCount: 24 },
-  { id: 9, name: 'MultiMulti', numbersCount: 20 },
-  { id: 10, name: 'Keno', numbersCount: 20 },
+  { id: 1, name: "Lotto", numbersCount: 6 },
+  { id: 2, name: "Lotto Plus", numbersCount: 6 },
+  { id: 3, name: "Mini Lotto", numbersCount: 5 },
+  { id: 4, name: "Ekstra Pensja", numbersCount: 5 },
+  { id: 5, name: "Ekstra Premia", numbersCount: 5 },
+  { id: 6, name: "EuroJackpot", numbersCount: 5 },
+  { id: 7, name: "Szybkie600", numbersCount: 6 },
+  { id: 8, name: "Kaskada", numbersCount: 24 },
+  { id: 9, name: "MultiMulti", numbersCount: 20 },
+  { id: 10, name: "Keno", numbersCount: 20 },
 ];
-
 
 function LottoDrawsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -54,20 +53,22 @@ function LottoDrawsPage() {
 
   // Prizes section state
   const [expandedPrizes, setExpandedPrizes] = useState<Set<number>>(new Set());
-  const [prizesCache, setPrizesCache] = useState<Map<string, LottoDrawsGetPrizesListResponse>>(new Map());
+  const [prizesCache, setPrizesCache] = useState<
+    Map<string, LottoDrawsGetPrizesListResponse>
+  >(new Map());
   const [loadingPrizes, setLoadingPrizes] = useState<Set<number>>(new Set());
 
   // Import modal state
   const [showImportModal, setShowImportModal] = useState(false);
-  const [importDrawTypeId, setImportDrawTypeId] = useState<string>('');
+  const [importDrawTypeId, setImportDrawTypeId] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Add/Edit draw form state
   const [showAddDrawForm, setShowAddDrawForm] = useState(false);
   const [editingDrawId, setEditingDrawId] = useState<number | null>(null);
   const [newDrawDrawTypeId, setNewDrawDrawTypeId] = useState<number>(1);
-  const [newDrawSystemId, setNewDrawSystemId] = useState<string>('');
-  const [newDrawDate, setNewDrawDate] = useState<string>('');
+  const [newDrawSystemId, setNewDrawSystemId] = useState<string>("");
+  const [newDrawDate, setNewDrawDate] = useState<string>("");
   const [newDrawNumbers, setNewDrawNumbers] = useState<number[]>([]);
   const [newDrawSpecials, setNewDrawSpecials] = useState<number[]>([]);
   const [isAddingDraw, setIsAddingDraw] = useState(false);
@@ -76,14 +77,13 @@ function LottoDrawsPage() {
   const [deletingDrawId, setDeletingDrawId] = useState<number | null>(null);
   const [drawToDelete, setDrawToDelete] = useState<number | null>(null);
 
-
   // Filters state
   const formatLocalDateTime = (date: Date) => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
@@ -100,15 +100,25 @@ function LottoDrawsPage() {
     return formatLocalDateTime(date);
   };
 
-  const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || getDefaultDateFrom());
-  const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || getDefaultDateTo());
-  const [drawTypeId, setDrawTypeId] = useState<string>(searchParams.get('drawTypeId') || '');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>((searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc');
-  const [page, setPage] = useState(parseInt(searchParams.get('page') || '1', 10));
+  const [dateFrom, setDateFrom] = useState(
+    searchParams.get("dateFrom") || getDefaultDateFrom(),
+  );
+  const [dateTo, setDateTo] = useState(
+    searchParams.get("dateTo") || getDefaultDateTo(),
+  );
+  const [drawTypeId, setDrawTypeId] = useState<string>(
+    searchParams.get("drawTypeId") || "",
+  );
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
+    (searchParams.get("sortOrder") as "asc" | "desc") || "desc",
+  );
+  const [page, setPage] = useState(
+    parseInt(searchParams.get("page") || "1", 10),
+  );
   const pageSize = 10;
 
   useEffect(() => {
-    document.title = 'Wyniki losowan | Lotto | tomsoft1 workspace';
+    document.title = "Wyniki losowan | Lotto | tomsoft1 workspace";
     const timer = setTimeout(() => setIsVisible(true), 100);
 
     // Dostęp do strony pilnuje RequireAuth (routing) – tutaj token jest już ważny.
@@ -130,7 +140,7 @@ function LottoDrawsPage() {
   }, [dateFrom, dateTo, drawTypeId, sortOrder]);
 
   const fetchDraws = async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     setIsLoading(true);
@@ -139,15 +149,17 @@ function LottoDrawsPage() {
     try {
       const apiLottoService = new ApiLottoService(
         import.meta.env.VITE_API_URL,
-        import.meta.env.VITE_APP_TOKEN
+        import.meta.env.VITE_APP_TOKEN,
       );
       apiLottoService.setUsrToken(token);
 
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
       const response = await apiLottoService.lottoDrawsGetList({
-        drawDateFrom: (dateFrom ? dayjs.tz(dateFrom, tz).utc().format() : undefined),
-        drawDateTo: (dateTo ? dayjs.tz(dateTo, tz).utc().format() : undefined),
+        drawDateFrom: dateFrom
+          ? dayjs.tz(dateFrom, tz).utc().format()
+          : undefined,
+        drawDateTo: dateTo ? dayjs.tz(dateTo, tz).utc().format() : undefined,
         drawTypeId: drawTypeId ? parseInt(drawTypeId, 10) : undefined,
         page,
         pageSize,
@@ -159,7 +171,11 @@ function LottoDrawsPage() {
       setTotalPages(response.totalPages);
       setExpandedPrizes(new Set());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystapil blad podczas pobierania wynikow');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Wystapil blad podczas pobierania wynikow",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -168,11 +184,11 @@ function LottoDrawsPage() {
   const handleSearch = () => {
     setPage(1);
     const params = new URLSearchParams();
-    if (dateFrom) params.set('dateFrom', dateFrom);
-    if (dateTo) params.set('dateTo', dateTo);
-    if (drawTypeId) params.set('drawTypeId', drawTypeId);
-    params.set('sortOrder', sortOrder);
-    params.set('page', '1');
+    if (dateFrom) params.set("dateFrom", dateFrom);
+    if (dateTo) params.set("dateTo", dateTo);
+    if (drawTypeId) params.set("drawTypeId", drawTypeId);
+    params.set("sortOrder", sortOrder);
+    params.set("page", "1");
     setSearchParams(params);
     fetchDraws();
   };
@@ -180,32 +196,33 @@ function LottoDrawsPage() {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     const params = new URLSearchParams(searchParams);
-    params.set('page', newPage.toString());
+    params.set("page", newPage.toString());
     setSearchParams(params);
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   };
 
   const getDrawTypeName = (typeId: number) => {
-    const type = DRAW_TYPES.find(t => t.id === typeId);
+    const type = DRAW_TYPES.find((t) => t.id === typeId);
     return type?.name || `Typ ${typeId}`;
   };
 
   const getNumberColor = (index: number) => {
     // Wszystkie kulki maja jednolity zlotawy kolor
-    return index % 2 === 0 ? 'bg-amber-500' : 'bg-amber-400';
+    return index % 2 === 0 ? "bg-amber-500" : "bg-amber-400";
   };
 
-  const getCacheKey = (drawTypeId: number, drawSystemId: number) => `${drawTypeId}-${drawSystemId}`;
+  const getCacheKey = (drawTypeId: number, drawSystemId: number) =>
+    `${drawTypeId}-${drawSystemId}`;
 
   const togglePrizes = async (draw: LottoDrawsGetListDraw) => {
     const drawId = draw.id;
@@ -213,7 +230,7 @@ function LottoDrawsPage() {
 
     // If already expanded, just collapse
     if (expandedPrizes.has(drawId)) {
-      setExpandedPrizes(prev => {
+      setExpandedPrizes((prev) => {
         const next = new Set(prev);
         next.delete(drawId);
         return next;
@@ -222,7 +239,7 @@ function LottoDrawsPage() {
     }
 
     // Expand the section
-    setExpandedPrizes(prev => new Set(prev).add(drawId));
+    setExpandedPrizes((prev) => new Set(prev).add(drawId));
 
     // If we already have cached data, no need to fetch
     if (prizesCache.has(cacheKey)) {
@@ -230,15 +247,15 @@ function LottoDrawsPage() {
     }
 
     // Fetch prizes data
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
 
-    setLoadingPrizes(prev => new Set(prev).add(drawId));
+    setLoadingPrizes((prev) => new Set(prev).add(drawId));
 
     try {
       const apiLottoService = new ApiLottoService(
         import.meta.env.VITE_API_URL,
-        import.meta.env.VITE_APP_TOKEN
+        import.meta.env.VITE_APP_TOKEN,
       );
       apiLottoService.setUsrToken(token);
 
@@ -247,11 +264,11 @@ function LottoDrawsPage() {
         drawSystemId: draw.drawSystemId,
       });
 
-      setPrizesCache(prev => new Map(prev).set(cacheKey, response));
+      setPrizesCache((prev) => new Map(prev).set(cacheKey, response));
     } catch (err) {
-      console.error('Error fetching prizes:', err);
+      console.error("Error fetching prizes:", err);
     } finally {
-      setLoadingPrizes(prev => {
+      setLoadingPrizes((prev) => {
         const next = new Set(prev);
         next.delete(drawId);
         return next;
@@ -260,11 +277,11 @@ function LottoDrawsPage() {
   };
 
   const handleDrawNumberToggle = (num: number) => {
-    const drawType = DRAW_TYPES.find(dt => dt.id === newDrawDrawTypeId);
+    const drawType = DRAW_TYPES.find((dt) => dt.id === newDrawDrawTypeId);
     const maxNumbers = drawType?.numbersCount || 6;
 
     if (newDrawNumbers.includes(num)) {
-      setNewDrawNumbers(newDrawNumbers.filter(n => n !== num));
+      setNewDrawNumbers(newDrawNumbers.filter((n) => n !== num));
     } else if (newDrawNumbers.length < maxNumbers) {
       setNewDrawNumbers([...newDrawNumbers, num]);
     }
@@ -276,7 +293,7 @@ function LottoDrawsPage() {
 
     const isEditing = editingDrawId !== null;
 
-    const drawType = DRAW_TYPES.find(dt => dt.id === newDrawDrawTypeId);
+    const drawType = DRAW_TYPES.find((dt) => dt.id === newDrawDrawTypeId);
     const requiredNumbers = drawType?.numbersCount || 6;
 
     if (newDrawNumbers.length !== requiredNumbers) {
@@ -285,16 +302,16 @@ function LottoDrawsPage() {
     }
 
     if (!newDrawSystemId || parseInt(newDrawSystemId) <= 0) {
-      setError('Podaj prawidłowy numer systemowy losowania');
+      setError("Podaj prawidłowy numer systemowy losowania");
       return;
     }
 
     if (!newDrawDate) {
-      setError('Wybierz datę i godzinę losowania');
+      setError("Wybierz datę i godzinę losowania");
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     setIsAddingDraw(true);
@@ -302,7 +319,7 @@ function LottoDrawsPage() {
     try {
       const apiLottoService = new ApiLottoService(
         import.meta.env.VITE_API_URL,
-        import.meta.env.VITE_APP_TOKEN
+        import.meta.env.VITE_APP_TOKEN,
       );
       apiLottoService.setUsrToken(token);
 
@@ -318,7 +335,7 @@ function LottoDrawsPage() {
           numbers: newDrawNumbers,
           specials: newDrawSpecials,
         });
-        setSuccess('Wynik losowania został zaktualizowany');
+        setSuccess("Wynik losowania został zaktualizowany");
       } else {
         await apiLottoService.lottoDrawsAdd({
           drawSystemId: parseInt(newDrawSystemId),
@@ -327,18 +344,22 @@ function LottoDrawsPage() {
           numbers: newDrawNumbers,
           specials: newDrawSpecials,
         });
-        setSuccess('Wynik losowania został dodany');
+        setSuccess("Wynik losowania został dodany");
       }
 
       setShowAddDrawForm(false);
       setNewDrawNumbers([]);
       setNewDrawSpecials([]);
-      setNewDrawSystemId('');
-      setNewDrawDate('');
+      setNewDrawSystemId("");
+      setNewDrawDate("");
       setEditingDrawId(null);
       fetchDraws();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd podczas zapisywania wyniku');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Wystąpił błąd podczas zapisywania wyniku",
+      );
     } finally {
       setIsAddingDraw(false);
     }
@@ -355,7 +376,7 @@ function LottoDrawsPage() {
     setSuccess(null);
     setDrawToDelete(null);
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     setDeletingDrawId(drawToDelete);
@@ -363,16 +384,20 @@ function LottoDrawsPage() {
     try {
       const apiLottoService = new ApiLottoService(
         import.meta.env.VITE_API_URL,
-        import.meta.env.VITE_APP_TOKEN
+        import.meta.env.VITE_APP_TOKEN,
       );
       apiLottoService.setUsrToken(token);
 
       await apiLottoService.lottoDrawsDelete({ drawId: drawToDelete });
 
-      setSuccess('Wynik losowania został usunięty');
+      setSuccess("Wynik losowania został usunięty");
       fetchDraws();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd podczas usuwania wyniku');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Wystąpił błąd podczas usuwania wyniku",
+      );
     } finally {
       setDeletingDrawId(null);
     }
@@ -386,10 +411,10 @@ function LottoDrawsPage() {
     // Convert UTC date to local datetime-local format
     const localDate = new Date(draw.drawDate);
     const year = localDate.getFullYear();
-    const month = String(localDate.getMonth() + 1).padStart(2, '0');
-    const day = String(localDate.getDate()).padStart(2, '0');
-    const hours = String(localDate.getHours()).padStart(2, '0');
-    const minutes = String(localDate.getMinutes()).padStart(2, '0');
+    const month = String(localDate.getMonth() + 1).padStart(2, "0");
+    const day = String(localDate.getDate()).padStart(2, "0");
+    const hours = String(localDate.getHours()).padStart(2, "0");
+    const minutes = String(localDate.getMinutes()).padStart(2, "0");
     setNewDrawDate(`${year}-${month}-${day}T${hours}:${minutes}`);
 
     setNewDrawNumbers([...draw.numbers]);
@@ -399,11 +424,11 @@ function LottoDrawsPage() {
 
   const handleExport = async () => {
     if (!drawTypeId) {
-      setError('Wybierz typ losowania w filtrach aby eksportowac');
+      setError("Wybierz typ losowania w filtrach aby eksportowac");
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     setIsExporting(true);
@@ -412,7 +437,7 @@ function LottoDrawsPage() {
     try {
       const apiLottoService = new ApiLottoService(
         import.meta.env.VITE_API_URL,
-        import.meta.env.VITE_APP_TOKEN
+        import.meta.env.VITE_APP_TOKEN,
       );
       apiLottoService.setUsrToken(token);
 
@@ -422,9 +447,9 @@ function LottoDrawsPage() {
         drawDateTo: dateTo || undefined,
       });
 
-      const blob = new Blob([response.csv], { type: 'text/csv;charset=utf-8' });
+      const blob = new Blob([response.csv], { type: "text/csv;charset=utf-8" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = response.fileName;
       document.body.appendChild(a);
@@ -432,9 +457,13 @@ function LottoDrawsPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setImportSuccess(`Wyeksportowano ${response.totalCount} losowan do pliku ${response.fileName}`);
+      setImportSuccess(
+        `Wyeksportowano ${response.totalCount} losowan do pliku ${response.fileName}`,
+      );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystapil blad podczas eksportu');
+      setError(
+        err instanceof Error ? err.message : "Wystapil blad podczas eksportu",
+      );
     } finally {
       setIsExporting(false);
     }
@@ -443,7 +472,7 @@ function LottoDrawsPage() {
   const handleImportClick = () => {
     setShowImportModal(true);
     setSelectedFile(null);
-    setImportDrawTypeId('');
+    setImportDrawTypeId("");
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -454,13 +483,13 @@ function LottoDrawsPage() {
   };
 
   const getFileExtension = (filename: string): string => {
-    return filename.split('.').pop()?.toLowerCase() || '';
+    return filename.split(".").pop()?.toLowerCase() || "";
   };
 
   const handleImportSubmit = async () => {
     if (!selectedFile) return;
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     setIsImporting(true);
@@ -473,7 +502,7 @@ function LottoDrawsPage() {
 
       let importRequest: LottoDrawsImportRequest;
 
-      if (fileExt === 'json') {
+      if (fileExt === "json") {
         // JSON file - parse and use draws array
         const data = JSON.parse(fileContent);
         importRequest = {
@@ -482,7 +511,7 @@ function LottoDrawsPage() {
       } else {
         // CSV or TXT file - send as raw CSV
         if (!importDrawTypeId) {
-          setError('Dla plikow CSV/TXT wymagany jest wybor typu losowania');
+          setError("Dla plikow CSV/TXT wymagany jest wybor typu losowania");
           setIsImporting(false);
           return;
         }
@@ -494,7 +523,7 @@ function LottoDrawsPage() {
 
       const apiLottoService = new ApiLottoService(
         import.meta.env.VITE_API_URL,
-        import.meta.env.VITE_APP_TOKEN
+        import.meta.env.VITE_APP_TOKEN,
       );
       apiLottoService.setUsrToken(token);
 
@@ -504,23 +533,30 @@ function LottoDrawsPage() {
       setImportSuccess(successMessage);
 
       if (response.errors.length > 0) {
-        const errorList = response.errors.slice(0, 10).join('\n');
-        const moreCount = response.errors.length > 10 ? `\n...i ${response.errors.length - 10} wiecej` : '';
+        const errorList = response.errors.slice(0, 10).join("\n");
+        const moreCount =
+          response.errors.length > 10
+            ? `\n...i ${response.errors.length - 10} wiecej`
+            : "";
         setError(errorList + moreCount);
       }
 
       setShowImportModal(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystapil blad podczas importu');
+      setError(
+        err instanceof Error ? err.message : "Wystapil blad podczas importu",
+      );
     } finally {
       setIsImporting(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
 
-  const isCsvOrTxtFile = selectedFile ? ['csv', 'txt'].includes(getFileExtension(selectedFile.name)) : false;
+  const isCsvOrTxtFile = selectedFile
+    ? ["csv", "txt"].includes(getFileExtension(selectedFile.name))
+    : false;
 
   return (
     <section className="min-h-[calc(100vh-4rem)] px-4 py-16 overflow-hidden">
@@ -529,14 +565,18 @@ function LottoDrawsPage() {
         <div className="text-center mb-8">
           <h1
             className={`text-4xl sm:text-5xl font-bold mb-4 text-amber-400 transition-all duration-700 ease-out ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8"
             }`}
           >
             Wyniki losowań
           </h1>
           <p
             className={`text-gray-400 text-lg transition-all duration-700 ease-out delay-150 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8"
             }`}
           >
             Przeglądaj historię losowań Lotto, Lotto Plus, Mini Lotto... itp.
@@ -548,10 +588,10 @@ function LottoDrawsPage() {
           backPath="/lotto"
           isVisible={isVisible}
           items={[
-            { label: 'Wyniki losowań', path: '/lotto/draws' },
-            { label: 'Moje kupony', path: '/lotto/tickets' },
-            { label: 'Sprawdź wygrane', path: '/lotto/winning-tickets' },
-            { label: 'Statystyki grup', path: '/lotto/draws-numbers-stats' },
+            { label: "Wyniki losowań", path: "/lotto/draws" },
+            { label: "Moje kupony", path: "/lotto/tickets" },
+            { label: "Sprawdź wygrane", path: "/lotto/winning-tickets" },
+            { label: "Statystyki grup", path: "/lotto/draws-numbers-stats" },
           ]}
         />
 
@@ -580,17 +620,20 @@ function LottoDrawsPage() {
               id="drawTypeId"
               value={drawTypeId}
               onChange={(e) => setDrawTypeId(e.target.value)}
-              options={DRAW_TYPES.map((type) => ({ value: type.id.toString(), label: type.name }))}
+              options={DRAW_TYPES.map((type) => ({
+                value: type.id.toString(),
+                label: type.name,
+              }))}
               placeholder="Wszystkie"
             />
             <ListSelect
               label="Sortowanie"
               id="sortOrder"
               value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+              onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
               options={[
-                { value: 'desc', label: 'Malejaco' },
-                { value: 'asc', label: 'Rosnaco' },
+                { value: "desc", label: "Malejaco" },
+                { value: "asc", label: "Rosnaco" },
               ]}
             />
           </div>
@@ -607,40 +650,76 @@ function LottoDrawsPage() {
                         setEditingDrawId(null);
                         setNewDrawNumbers([]);
                         setNewDrawSpecials([]);
-                        setNewDrawSystemId('');
-                        setNewDrawDate('');
+                        setNewDrawSystemId("");
+                        setNewDrawDate("");
                       } else {
                         setShowAddDrawForm(true);
                         setEditingDrawId(null);
                         setNewDrawNumbers([]);
                         setNewDrawSpecials([]);
-                        setNewDrawSystemId('');
-                        setNewDrawDate('');
+                        setNewDrawSystemId("");
+                        setNewDrawDate("");
                       }
                     }}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
-                    {showAddDrawForm ? 'Anuluj' : 'Dodaj wynik'}
+                    {showAddDrawForm ? "Anuluj" : "Dodaj wynik"}
                   </ButtonSecondary>
-                  <ButtonSecondary onClick={handleImportClick} disabled={isImporting}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  <ButtonSecondary
+                    onClick={handleImportClick}
+                    disabled={isImporting}
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                      />
                     </svg>
-                    {isImporting ? 'Importowanie...' : 'Importuj'}
+                    {isImporting ? "Importowanie..." : "Importuj"}
                   </ButtonSecondary>
-                  <ButtonSecondary onClick={handleExport} disabled={isExporting}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  <ButtonSecondary
+                    onClick={handleExport}
+                    disabled={isExporting}
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
                     </svg>
-                    {isExporting ? 'Eksportowanie...' : 'Eksportuj'}
+                    {isExporting ? "Eksportowanie..." : "Eksportuj"}
                   </ButtonSecondary>
                 </>
               )}
             </div>
             <ButtonPrimary onClick={handleSearch} disabled={isLoading}>
-              {isLoading ? 'Szukam...' : 'Szukaj'}
+              {isLoading ? "Szukam..." : "Szukaj"}
             </ButtonPrimary>
           </div>
         </Card>
@@ -649,7 +728,9 @@ function LottoDrawsPage() {
         {showAddDrawForm && isAdmin && (
           <FormCard isVisible={isVisible} borderColor="green">
             <h2 className="text-xl font-bold text-white mb-4">
-              {editingDrawId !== null ? 'Edytuj wynik losowania' : 'Nowy wynik losowania'}
+              {editingDrawId !== null
+                ? "Edytuj wynik losowania"
+                : "Nowy wynik losowania"}
             </h2>
 
             <div className="grid sm:grid-cols-3 gap-4 mb-6">
@@ -662,10 +743,16 @@ function LottoDrawsPage() {
                   setNewDrawNumbers([]);
                   setNewDrawSpecials([]);
                 }}
-                options={DRAW_TYPES.map((type) => ({ value: type.id.toString(), label: type.name }))}
+                options={DRAW_TYPES.map((type) => ({
+                  value: type.id.toString(),
+                  label: type.name,
+                }))}
               />
               <div>
-                <label htmlFor="newDrawSystemId" className="block text-gray-300 text-sm font-medium mb-2">
+                <label
+                  htmlFor="newDrawSystemId"
+                  className="block text-gray-300 text-sm font-medium mb-2"
+                >
                   Numer systemowy
                 </label>
                 <input
@@ -688,48 +775,67 @@ function LottoDrawsPage() {
             </div>
 
             {(() => {
-              const currentDrawType = DRAW_TYPES.find(dt => dt.id === newDrawDrawTypeId);
-              const maxNumber = currentDrawType?.numbersCount === 24 ? 24 :
-                               currentDrawType?.numbersCount === 20 ? 80 :
-                               currentDrawType?.numbersCount === 10 ? 70 :
-                               currentDrawType?.numbersCount === 12 ? 24 :
-                               currentDrawType?.numbersCount === 5 && currentDrawType.id === 6 ? 50 :
-                               currentDrawType?.numbersCount === 5 && currentDrawType.id === 3 ? 42 :
-                               currentDrawType?.numbersCount === 5 ? 35 :
-                               currentDrawType?.numbersCount === 6 && currentDrawType.id === 7 ? 32 :
-                               49;
+              const currentDrawType = DRAW_TYPES.find(
+                (dt) => dt.id === newDrawDrawTypeId,
+              );
+              const maxNumber =
+                currentDrawType?.numbersCount === 24
+                  ? 24
+                  : currentDrawType?.numbersCount === 20
+                    ? 80
+                    : currentDrawType?.numbersCount === 10
+                      ? 70
+                      : currentDrawType?.numbersCount === 12
+                        ? 24
+                        : currentDrawType?.numbersCount === 5 &&
+                            currentDrawType.id === 6
+                          ? 50
+                          : currentDrawType?.numbersCount === 5 &&
+                              currentDrawType.id === 3
+                            ? 42
+                            : currentDrawType?.numbersCount === 5
+                              ? 35
+                              : currentDrawType?.numbersCount === 6 &&
+                                  currentDrawType.id === 7
+                                ? 32
+                                : 49;
               const requiredNumbers = currentDrawType?.numbersCount || 6;
 
               return (
                 <>
                   <div className="mb-4">
                     <label className="block text-gray-300 text-sm font-medium mb-2 text-center">
-                      Wybierz {requiredNumbers} numerów ({newDrawNumbers.length}/{requiredNumbers})
+                      Wybierz {requiredNumbers} numerów ({newDrawNumbers.length}
+                      /{requiredNumbers})
                     </label>
                     <div className="flex justify-center">
                       <div className="grid grid-cols-10 gap-2">
-                        {Array.from({ length: maxNumber }, (_, i) => i + 1).map((num) => (
-                          <button
-                            key={num}
-                            onClick={() => handleDrawNumberToggle(num)}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs transition-all duration-200 ${
-                              newDrawNumbers.includes(num)
-                                ? 'bg-amber-500 text-gray-900 shadow-lg shadow-amber-500/50'
-                                : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50'
-                            }`}
-                          >
-                            {num}
-                          </button>
-                        ))}
+                        {Array.from({ length: maxNumber }, (_, i) => i + 1).map(
+                          (num) => (
+                            <button
+                              key={num}
+                              onClick={() => handleDrawNumberToggle(num)}
+                              className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs transition-all duration-200 ${
+                                newDrawNumbers.includes(num)
+                                  ? "bg-amber-500 text-gray-900 shadow-lg shadow-amber-500/50"
+                                  : "bg-gray-700/50 text-gray-300 hover:bg-gray-600/50"
+                              }`}
+                            >
+                              {num}
+                            </button>
+                          ),
+                        )}
                       </div>
                     </div>
                   </div>
 
                   {newDrawNumbers.length > 0 && (
                     <div className="mb-4 p-3 bg-gray-900/50 rounded-xl">
-                      <span className="text-gray-400 text-sm">Wybrane numery: </span>
+                      <span className="text-gray-400 text-sm">
+                        Wybrane numery:{" "}
+                      </span>
                       <span className="text-amber-400 font-bold">
-                        {[...newDrawNumbers].sort((a, b) => a - b).join(', ')}
+                        {[...newDrawNumbers].sort((a, b) => a - b).join(", ")}
                       </span>
                     </div>
                   )}
@@ -744,17 +850,28 @@ function LottoDrawsPage() {
                   setEditingDrawId(null);
                   setNewDrawNumbers([]);
                   setNewDrawSpecials([]);
-                  setNewDrawSystemId('');
-                  setNewDrawDate('');
+                  setNewDrawSystemId("");
+                  setNewDrawDate("");
                 }}
               >
                 Anuluj
               </ButtonSecondary>
               <ButtonPrimary
                 onClick={handleAddDraw}
-                disabled={isAddingDraw || newDrawNumbers.length !== (DRAW_TYPES.find(dt => dt.id === newDrawDrawTypeId)?.numbersCount || 6) || !newDrawSystemId || !newDrawDate}
+                disabled={
+                  isAddingDraw ||
+                  newDrawNumbers.length !==
+                    (DRAW_TYPES.find((dt) => dt.id === newDrawDrawTypeId)
+                      ?.numbersCount || 6) ||
+                  !newDrawSystemId ||
+                  !newDrawDate
+                }
               >
-                {isAddingDraw ? 'Zapisywanie...' : (editingDrawId !== null ? 'Zapisz zmiany' : 'Dodaj wynik')}
+                {isAddingDraw
+                  ? "Zapisywanie..."
+                  : editingDrawId !== null
+                    ? "Zapisz zmiany"
+                    : "Dodaj wynik"}
               </ButtonPrimary>
             </div>
           </FormCard>
@@ -786,7 +903,7 @@ function LottoDrawsPage() {
         {!isLoading && draws.length > 0 && (
           <div
             className={`text-gray-400 text-sm mb-4 transition-all duration-500 ${
-              isVisible ? 'opacity-100' : 'opacity-0'
+              isVisible ? "opacity-100" : "opacity-0"
             }`}
           >
             Znaleziono {totalCount} wynikow. Strona {page} z {totalPages}.
@@ -821,17 +938,27 @@ function LottoDrawsPage() {
                       <div className="flex flex-wrap gap-2">
                         <span
                           className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                            draw.drawTypeId === 1 ? 'bg-yellow-500/20 text-yellow-400' :
-                            draw.drawTypeId === 2 ? 'bg-orange-500/20 text-orange-400' :
-                            draw.drawTypeId === 3 ? 'bg-green-500/20 text-green-400' :
-                            draw.drawTypeId === 4 ? 'bg-pink-500/20 text-pink-400' :
-                            draw.drawTypeId === 5 ? 'bg-purple-500/20 text-purple-400' :
-                            draw.drawTypeId === 6 ? 'bg-blue-500/20 text-blue-400' :
-                            draw.drawTypeId === 7 ? 'bg-red-500/20 text-red-400' :
-                            draw.drawTypeId === 8 ? 'bg-indigo-500/20 text-indigo-400' :
-                            draw.drawTypeId === 9 ? 'bg-fuchsia-500/20 text-fuchsia-400' :
-                            draw.drawTypeId === 10 ? 'bg-cyan-500/20 text-cyan-400' :
-                            'bg-slate-500/20 text-slate-400'
+                            draw.drawTypeId === 1
+                              ? "bg-yellow-500/20 text-yellow-400"
+                              : draw.drawTypeId === 2
+                                ? "bg-orange-500/20 text-orange-400"
+                                : draw.drawTypeId === 3
+                                  ? "bg-green-500/20 text-green-400"
+                                  : draw.drawTypeId === 4
+                                    ? "bg-pink-500/20 text-pink-400"
+                                    : draw.drawTypeId === 5
+                                      ? "bg-purple-500/20 text-purple-400"
+                                      : draw.drawTypeId === 6
+                                        ? "bg-blue-500/20 text-blue-400"
+                                        : draw.drawTypeId === 7
+                                          ? "bg-red-500/20 text-red-400"
+                                          : draw.drawTypeId === 8
+                                            ? "bg-indigo-500/20 text-indigo-400"
+                                            : draw.drawTypeId === 9
+                                              ? "bg-fuchsia-500/20 text-fuchsia-400"
+                                              : draw.drawTypeId === 10
+                                                ? "bg-cyan-500/20 text-cyan-400"
+                                                : "bg-slate-500/20 text-slate-400"
                           }`}
                         >
                           {getDrawTypeName(draw.drawTypeId)}
@@ -854,7 +981,7 @@ function LottoDrawsPage() {
                                 <div
                                   key={numIndex}
                                   className={`w-8 h-8 rounded-full flex items-center justify-center text-gray-900 font-black text-xs shadow-lg ${getNumberColor(
-                                    numIndex
+                                    numIndex,
                                   )}`}
                                 >
                                   {num}
@@ -871,7 +998,7 @@ function LottoDrawsPage() {
                                 <div
                                   key={numIndex}
                                   className={`w-8 h-8 rounded-full flex items-center justify-center text-gray-900 font-black text-xs shadow-lg ${getNumberColor(
-                                    numIndex
+                                    numIndex,
                                   )} ring-2 ring-red-500 ring-offset-2 ring-offset-gray-800`}
                                 >
                                   {num}
@@ -895,56 +1022,81 @@ function LottoDrawsPage() {
                     </div>
                   </div>
 
-                {/* Prizes toggle button */}
-                <div className="mt-3 pt-3 border-t border-gray-700/50">
-                  <button
-                    onClick={() => togglePrizes(draw)}
-                    className="flex items-center gap-1 text-sm text-cyan-400 hover:text-cyan-300 transition-colors py-1"
-                  >
-                    {expandedPrizes.has(draw.id) ? 'Ukryj nagrody' : 'Pokaż nagrody'}
-                    <svg
-                      className={`w-4 h-4 transition-transform ${expandedPrizes.has(draw.id) ? 'rotate-180' : ''}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  {/* Prizes toggle button */}
+                  <div className="mt-3 pt-3 border-t border-gray-700/50">
+                    <button
+                      onClick={() => togglePrizes(draw)}
+                      className="flex items-center gap-1 text-sm text-cyan-400 hover:text-cyan-300 transition-colors py-1"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
+                      {expandedPrizes.has(draw.id)
+                        ? "Ukryj nagrody"
+                        : "Pokaż nagrody"}
+                      <svg
+                        className={`w-4 h-4 transition-transform ${expandedPrizes.has(draw.id) ? "rotate-180" : ""}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
 
-                  {/* Prizes section */}
-                  {expandedPrizes.has(draw.id) && (
-                    <div className="mt-3">
-                      {loadingPrizes.has(draw.id) ? (
-                        <div className="flex items-center gap-2 text-gray-400 text-sm">
-                          <div className="w-4 h-4 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
-                          Ladowanie nagrod...
-                        </div>
-                      ) : prizesCache.has(getCacheKey(draw.drawTypeId, draw.drawSystemId)) ? (
-                        <div className="bg-gray-900/50 rounded-lg p-3">
-                          <div className="grid grid-cols-3 gap-2 text-xs font-semibold text-gray-400 mb-2 pb-2 border-b border-gray-700/50">
-                            <div>Wygrana n stopnia</div>
-                            <div className="text-right">Ilosc</div>
-                            <div className="text-right">Kwota</div>
+                    {/* Prizes section */}
+                    {expandedPrizes.has(draw.id) && (
+                      <div className="mt-3">
+                        {loadingPrizes.has(draw.id) ? (
+                          <div className="flex items-center gap-2 text-gray-400 text-sm">
+                            <div className="w-4 h-4 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
+                            Ladowanie nagrod...
                           </div>
-                          {prizesCache.get(getCacheKey(draw.drawTypeId, draw.drawSystemId))!.winTiers.map((tier, tierIndex) => (
-                            <div key={tierIndex} className="grid grid-cols-3 gap-2 text-sm py-1">
-                              <div className="text-gray-300">{tier.tier}</div>
-                              <div className="text-right text-gray-400">{tier.winsCount.toLocaleString('pl-PL')}</div>
-                              <div className="text-right text-amber-400 font-medium">
-                                {tier.winsPrize.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} zl
-                              </div>
+                        ) : prizesCache.has(
+                            getCacheKey(draw.drawTypeId, draw.drawSystemId),
+                          ) ? (
+                          <div className="bg-gray-900/50 rounded-lg p-3">
+                            <div className="grid grid-cols-3 gap-2 text-xs font-semibold text-gray-400 mb-2 pb-2 border-b border-gray-700/50">
+                              <div>Wygrana n stopnia</div>
+                              <div className="text-right">Ilosc</div>
+                              <div className="text-right">Kwota</div>
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-gray-500 text-sm">Brak danych o nagrodach</div>
-                      )}
-                    </div>
-                  )}
+                            {prizesCache
+                              .get(
+                                getCacheKey(draw.drawTypeId, draw.drawSystemId),
+                              )!
+                              .winTiers.map((tier, tierIndex) => (
+                                <div
+                                  key={tierIndex}
+                                  className="grid grid-cols-3 gap-2 text-sm py-1"
+                                >
+                                  <div className="text-gray-300">
+                                    {tier.tier}
+                                  </div>
+                                  <div className="text-right text-gray-400">
+                                    {tier.winsCount.toLocaleString("pl-PL")}
+                                  </div>
+                                  <div className="text-right text-amber-400 font-medium">
+                                    {tier.winsPrize.toLocaleString("pl-PL", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}{" "}
+                                    zl
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        ) : (
+                          <div className="text-gray-500 text-sm">
+                            Brak danych o nagrodach
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                </div>
-
               </CardListItem>
             ))}
           </div>
@@ -987,8 +1139,8 @@ function LottoDrawsPage() {
                     onClick={() => handlePageChange(pageNum)}
                     className={`px-3 py-2 rounded-lg transition-all ${
                       page === pageNum
-                        ? 'bg-cyan-500 text-white'
-                        : 'bg-gray-800/50 border border-gray-700/50 text-gray-300 hover:border-cyan-500/30'
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-800/50 border border-gray-700/50 text-gray-300 hover:border-cyan-500/30"
                     }`}
                   >
                     {pageNum}
@@ -1013,7 +1165,6 @@ function LottoDrawsPage() {
             </button>
           </div>
         )}
-
       </div>
 
       {/* Import Modal */}
@@ -1027,7 +1178,9 @@ function LottoDrawsPage() {
 
           {/* Modal */}
           <div className="relative bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 border border-gray-700/50 shadow-2xl">
-            <h2 className="text-xl font-bold text-white mb-6">Import losowan</h2>
+            <h2 className="text-xl font-bold text-white mb-6">
+              Import losowan
+            </h2>
 
             <p className="text-gray-400 text-sm mb-4">
               Dane zostaną zapisane do pliku CSV i przetworzone przez Worker.
@@ -1055,17 +1208,25 @@ function LottoDrawsPage() {
             {/* Draw Type (required for CSV/TXT) */}
             <div className="mb-4">
               <ListSelect
-                label={<>Typ losowania {isCsvOrTxtFile && <span className="text-red-400">*</span>}</>}
+                label={
+                  <>
+                    Typ losowania{" "}
+                    {isCsvOrTxtFile && <span className="text-red-400">*</span>}
+                  </>
+                }
                 id="importDrawTypeId"
                 value={importDrawTypeId}
                 onChange={(e) => setImportDrawTypeId(e.target.value)}
-                options={DRAW_TYPES.map((type) => ({ value: type.id.toString(), label: type.name }))}
+                options={DRAW_TYPES.map((type) => ({
+                  value: type.id.toString(),
+                  label: type.name,
+                }))}
                 placeholder="Wybierz typ..."
               />
               <p className="mt-1 text-xs text-gray-500">
                 {isCsvOrTxtFile
-                  ? 'Wymagane dla plikow CSV/TXT'
-                  : 'Opcjonalne dla plikow JSON (typ jest w danych)'}
+                  ? "Wymagane dla plikow CSV/TXT"
+                  : "Opcjonalne dla plikow JSON (typ jest w danych)"}
               </p>
             </div>
 
@@ -1073,24 +1234,35 @@ function LottoDrawsPage() {
             {isCsvOrTxtFile && (
               <div className="mb-4 p-3 bg-gray-900/50 rounded-xl border border-gray-700/50">
                 <p className="text-xs text-gray-400">
-                  <strong className="text-gray-300">Format CSV:</strong><br />
-                  DrawSystemId;Data;Liczba1;Liczba2;...<br />
-                  <span className="text-gray-500">Np: 1234;15.01.2024;5;12;23;34;45;49</span>
+                  <strong className="text-gray-300">Format CSV:</strong>
+                  <br />
+                  DrawSystemId;Data;Liczba1;Liczba2;...
+                  <br />
+                  <span className="text-gray-500">
+                    Np: 1234;15.01.2024;5;12;23;34;45;49
+                  </span>
                 </p>
               </div>
             )}
 
             {/* Buttons */}
             <div className="flex gap-3 mt-6">
-              <ButtonSecondary className="flex-1 justify-center" onClick={() => setShowImportModal(false)}>
+              <ButtonSecondary
+                className="flex-1 justify-center"
+                onClick={() => setShowImportModal(false)}
+              >
                 Anuluj
               </ButtonSecondary>
               <ButtonPrimary
                 className="flex-1"
                 onClick={handleImportSubmit}
-                disabled={!selectedFile || isImporting || (isCsvOrTxtFile && !importDrawTypeId)}
+                disabled={
+                  !selectedFile ||
+                  isImporting ||
+                  (isCsvOrTxtFile && !importDrawTypeId)
+                }
               >
-                {isImporting ? 'Importowanie...' : 'Importuj'}
+                {isImporting ? "Importowanie..." : "Importuj"}
               </ButtonPrimary>
             </div>
           </div>
@@ -1108,7 +1280,6 @@ function LottoDrawsPage() {
         onConfirm={confirmDeleteDraw}
         onCancel={() => setDrawToDelete(null)}
       />
-
     </section>
   );
 }

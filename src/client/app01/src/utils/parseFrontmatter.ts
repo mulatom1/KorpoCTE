@@ -24,7 +24,7 @@ export function parseFrontmatter(raw: string): {
     const kv = line.match(/^(\w+):\s*["']?(.*?)["']?\s*$/);
     if (!kv) continue;
     const [, key, value] = kv;
-    if (key === 'subtitle') frontmatter.subtitle = value;
+    if (key === "subtitle") frontmatter.subtitle = value;
   }
 
   return { frontmatter, content };

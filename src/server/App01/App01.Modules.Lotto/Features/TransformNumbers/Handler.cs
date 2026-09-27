@@ -14,7 +14,7 @@ public class TransformNumbersHandler : IRequestHandler<Contracts.Request, Contra
         var (Low2, High2) = ToMasks(request.Specials);
 
         var existingNumbers = FromMasks(request.NumbersLow, request.NumbersHigh);
-        var existingSpecials = FromMasks(request.SpecialsLow, request.SpecialsHigh); 
+        var existingSpecials = FromMasks(request.SpecialsLow, request.SpecialsHigh);
 
 
         return await Task.FromResult(new Contracts.Response(

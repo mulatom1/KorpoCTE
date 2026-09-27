@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
+
 using MediatR;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +14,7 @@ public class ApiVersionHandler : IRequestHandler<Contracts.Request, Contracts.Re
     private readonly ILogger<ApiVersionHandler> _logger;
     private readonly IValidator<Contracts.Request> _validator;
     private readonly IConfiguration _configuration;
-    
+
 
     public ApiVersionHandler(
         ILogger<ApiVersionHandler> logger,
@@ -33,7 +35,7 @@ public class ApiVersionHandler : IRequestHandler<Contracts.Request, Contracts.Re
 
         var apiVersion = _configuration.GetValue<string>("ApiVersion");
         _logger.LogDebug("Retrieved API version: {ApiVersion}", apiVersion);
-        
+
         return await Task.FromResult(new Contracts.Response(apiVersion ?? "Version not found"));
     }
 }

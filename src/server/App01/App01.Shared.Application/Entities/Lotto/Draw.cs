@@ -8,9 +8,9 @@ public class Draw
 {
     public required long Id { get; set; }
 
-    
+
     public required long DrawSystemId { get; set; }
-    
+
     public required DateTime DrawDate { get; set; }
 
     public required int DrawTypeId { get; set; }

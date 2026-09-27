@@ -1,0 +1,93 @@
+name: Build and Test
+
+on:
+  pull_request:
+    branches:
+      - "**"
+  push:
+    branches:
+      - "**"  
+
+permissions:
+  checks: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  # --- BACKEND CI (.NET) ---
+  backend-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Check vulnerable NuGet packages
+        run: dotnet list package --vulnerable --include-transitive
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Run tests with code coverage
+        run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=cobertura" --results-directory TestResults
+
+      - name: Install ReportGenerator
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.0.4
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Generate HTML coverage report
+        run: |
+          reportgenerator \
+            -reports:**/TestResults/*/coverage.cobertura.xml \
+            -targetdir:CoverageReport \
+            -reporttypes:Html
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: CoverageReport
+
+  # --- FRONTEND CI (Node.js) ---
+  frontend-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: src/client/app01/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: src/client/app01
+
+      - name: Audit frontend dependencies
+        run: npm audit --audit-level=high
+        working-directory: src/client/app01
+
+      - name: Check formatting
+        run: npx prettier --check "src/**/*.{ts,tsx,css}"
+        working-directory: src/client/app01
+
+      - name: Lint frontend
+        run: npm run lint
+        working-directory: src/client/app01
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: src/client/app01

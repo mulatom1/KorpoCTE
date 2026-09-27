@@ -1,4 +1,5 @@
 using App01.Shared.Application.Entities.Lotto;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -29,14 +30,14 @@ public class DrawTypeConfiguration : IEntityTypeConfiguration<DrawType>
         builder.Property(e => e.TicketPrize)
             .IsRequired()
             .HasColumnType("decimal(18,2)");
-        
+
         builder.Property(e => e.NumbersCount)
             .IsRequired()
             .HasColumnType("int");
         builder.Property(e => e.NumbersMaxValue)
             .IsRequired()
             .HasColumnType("int");
-        
+
         builder.Property(e => e.SpecialsCount)
             .IsRequired()
             .HasColumnType("int");

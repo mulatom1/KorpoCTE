@@ -1,5 +1,7 @@
 using App01.Shared.Application.Filters;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;

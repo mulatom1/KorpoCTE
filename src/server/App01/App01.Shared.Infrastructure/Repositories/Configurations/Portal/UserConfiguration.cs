@@ -1,4 +1,5 @@
 using App01.Shared.Application.Entities.Portal;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,7 +25,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(e => e.PasswordHash)
             .IsRequired()
-            .HasColumnType("varchar(255)")  
+            .HasColumnType("varchar(255)")
             .HasMaxLength(255);
 
         builder.Property(e => e.IsAdmin)

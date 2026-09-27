@@ -3,7 +3,7 @@ namespace App01.Shared.Application.Entities.Lotto;
 public class DrawType
 {
     public required int Id { get; set; }
-    
+
     public required string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
 
@@ -14,7 +14,7 @@ public class DrawType
 
     public required int NumbersCount { get; set; }
     public required int NumbersMaxValue { get; set; }
-    
+
     public required int SpecialsCount { get; set; }
     public required int SpecialsMaxValue { get; set; }
 

@@ -1,4 +1,5 @@
 using App01.Shared.Infrastructure.Repositories;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
     {
         // Configure test environment first
         builder.UseEnvironment("Test");
-        
+
         builder.ConfigureAppConfiguration((context, config) =>
         {
             config.Sources.Clear();

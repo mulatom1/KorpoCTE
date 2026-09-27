@@ -1,4 +1,5 @@
 using App01.Shared.Application.Exceptions;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,12 +17,12 @@ public class PortalWorker01(
     private readonly ILogger<PortalWorker01> _logger = logger;
     private readonly IConfiguration _configuration = configuration;
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
-    
+
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogDebug("ApiWorker01Ping: Started.");
-        
+
         DateTime currentTime;
 
 
@@ -60,9 +61,9 @@ public class PortalWorker01(
             var nextRunTime = currentTime.AddMinutes(_configuration.GetValue<double>("Workers:ApiWorker01Ping:IntervalMinutes", 5));
             var freeze = nextRunTime - DateTime.Now;
             if (freeze < TimeSpan.Zero) freeze = TimeSpan.Zero;
-            
+
             _logger.LogDebug("ApiWorker01Ping: Freezed. Next run scheduled at {NextRunTime}. Waiting for {Delay} minutes.", nextRunTime, freeze.TotalMinutes);
-            
+
             await Task.Delay((int)freeze.TotalMilliseconds, stoppingToken);
         }
     }

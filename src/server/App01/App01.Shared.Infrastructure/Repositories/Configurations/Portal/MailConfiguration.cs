@@ -1,6 +1,7 @@
+using App01.Shared.Application.Entities.Portal;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using App01.Shared.Application.Entities.Portal;
 
 
 namespace App01.Shared.Application.Repositories.Configurations.Portal;

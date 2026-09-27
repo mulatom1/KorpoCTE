@@ -1,12 +1,14 @@
-﻿using App01.Bootstrapper.Api.Services;
+﻿using System.Text;
+
+using App01.Bootstrapper.Api.Services;
 using App01.Shared.Application.Interfaces;
 using App01.Shared.Infrastructure.Repositories;
 using App01.Shared.Infrastructure.Services;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Text;
 
 
 namespace App01.Shared.Infrastructure;

@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
-using App01.Modules.Portal.Features.GetApiVersion;
+
 using App01.Bootstrapper.Api.Tests.Infrastructure;
+using App01.Modules.Portal.Features.GetApiVersion;
 
 namespace App01.Bootstrapper.Api.Tests.Features.Portal.GetApiVersion;
 
@@ -14,7 +15,7 @@ public class EndpointTests : IDisposable
         {
             ["ApiVersion"] = "1.0.0"
         });
-        
+
         var client = factory.CreateClient();
 
         try
@@ -43,7 +44,7 @@ public class EndpointTests : IDisposable
         {
             // Explicitly not setting ApiVersion
         });
-        
+
         var client = factory.CreateClient();
 
         try
@@ -63,7 +64,7 @@ public class EndpointTests : IDisposable
             factory.Dispose();
         }
     }
-    
+
     [Theory]
     [InlineData("2.5.3")]
     [InlineData("1.0.0-beta")]
@@ -75,7 +76,7 @@ public class EndpointTests : IDisposable
         {
             ["ApiVersion"] = expectedVersion
         });
-        
+
         var client = factory.CreateClient();
 
         try

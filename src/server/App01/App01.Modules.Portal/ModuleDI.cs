@@ -1,8 +1,11 @@
-﻿using App01.Modules.Portal.Workers;
+﻿using System.Reflection;
+
+using App01.Modules.Portal.Workers;
+
 using FluentValidation;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace App01.Modules.Portal;
 

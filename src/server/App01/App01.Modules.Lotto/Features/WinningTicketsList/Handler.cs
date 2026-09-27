@@ -1,8 +1,11 @@
 using App01.Shared.Application.Entities.Lotto;
 using App01.Shared.Application.Interfaces;
 using App01.Shared.Infrastructure.Repositories;
+
 using FluentValidation;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

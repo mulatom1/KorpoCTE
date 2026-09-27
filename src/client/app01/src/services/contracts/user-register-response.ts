@@ -1,5 +1,5 @@
 export interface UserRegisterResponse {
-    id: number;
-    email: string;
-    createdAt: string;
+  id: number;
+  email: string;
+  createdAt: string;
 }

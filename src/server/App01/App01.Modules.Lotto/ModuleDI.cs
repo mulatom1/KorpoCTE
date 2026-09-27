@@ -1,9 +1,12 @@
-﻿using App01.Modules.Lotto.Services.LottoOpenApi;
+﻿using System.Reflection;
+
+using App01.Modules.Lotto.Services.LottoOpenApi;
 using App01.Modules.Lotto.Workers;
+
 using FluentValidation;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace App01.Modules.Lotto;
 

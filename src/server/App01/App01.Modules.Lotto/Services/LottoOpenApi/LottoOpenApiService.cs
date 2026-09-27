@@ -1,8 +1,10 @@
-using App01.Modules.Lotto.Services.LottoOpenApi.Dto;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
+
+using App01.Modules.Lotto.Services.LottoOpenApi.Dto;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 
 namespace App01.Modules.Lotto.Services.LottoOpenApi;
@@ -27,18 +29,18 @@ public partial class LottoOpenApiService : ILottoOpenApiService
     {
         var url = _configuration.GetValue("LottoOpenApi:Url", "");
         if (string.IsNullOrEmpty(url)) throw new InvalidOperationException("GetUrl: LottoOpenApi URL is not configured!");
-        
+
         return url;
     }
     private HttpClient CreateHttpClient()
     {
         var apiKey = _configuration.GetValue("LottoOpenApi:ApiKey", "");
-        if(string.IsNullOrEmpty(apiKey)) throw new InvalidOperationException("CreateHttpClient: LottoOpenApi secret is not configured!");
+        if (string.IsNullOrEmpty(apiKey)) throw new InvalidOperationException("CreateHttpClient: LottoOpenApi secret is not configured!");
 
         var httpClient = _httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Add("User-Agent", "tomsoft1.Api.LottoOpenApiService/1.0");
         httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-        httpClient.DefaultRequestHeaders.Add("secret", Encoding.UTF8.GetString(Convert.FromBase64String(apiKey))); 
+        httpClient.DefaultRequestHeaders.Add("secret", Encoding.UTF8.GetString(Convert.FromBase64String(apiKey)));
 
         return httpClient;
     }
@@ -114,7 +116,7 @@ public partial class LottoOpenApiService : ILottoOpenApiService
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "GetDrawsByDate: HttpRequestException {Error}", $"{ex.Message} {ex.InnerException?.Message}".Trim());
-            return new LottoResponse() 
+            return new LottoResponse()
             {
                 Status = false,
                 Code = "HttpRequestException",

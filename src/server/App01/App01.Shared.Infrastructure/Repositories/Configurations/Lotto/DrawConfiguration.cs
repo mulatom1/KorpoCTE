@@ -1,4 +1,5 @@
 using App01.Shared.Application.Entities.Lotto;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

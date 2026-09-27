@@ -1,10 +1,10 @@
-import React from 'react';
-import DatePicker, { registerLocale } from 'react-datepicker';
-import { pl } from 'date-fns/locale/pl';
-import 'react-datepicker/dist/react-datepicker.css';
+import React from "react";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { pl } from "date-fns/locale/pl";
+import "react-datepicker/dist/react-datepicker.css";
 
 // Rejestracja polskiej lokalizacji
-registerLocale('pl', pl);
+registerLocale("pl", pl);
 
 interface DateTimePickerProps {
   label: string;
@@ -29,10 +29,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
   // Convert Date to ISO string (yyyy-MM-ddTHH:mm)
   const formatToISO = (date: Date): string => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
@@ -52,7 +52,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-gray-300 text-sm font-medium mb-2">
+      <label
+        htmlFor={id}
+        className="block text-gray-300 text-sm font-medium mb-2"
+      >
         {label}
       </label>
       <DatePicker

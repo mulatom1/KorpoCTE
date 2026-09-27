@@ -1,6 +1,7 @@
+using App01.Shared.Application.Entities.Lotto;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using App01.Shared.Application.Entities.Lotto;
 
 
 namespace App01.Shared.Application.Repositories.Configurations.Lotto;

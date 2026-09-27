@@ -1,5 +1,6 @@
-﻿using App01.Shared.Application.Entities.Portal;
-using App01.Shared.Application.Entities.Lotto;
+﻿using App01.Shared.Application.Entities.Lotto;
+using App01.Shared.Application.Entities.Portal;
+
 using Microsoft.EntityFrameworkCore;
 
 
@@ -18,9 +19,9 @@ public class AppDbContext : DbContext
 
     // Lotto
     public DbSet<DrawType> DrawTypes { get; set; } = null!;
-    
+
     public DbSet<DrawTypeWinTier> DrawTypeWinTiers { get; set; } = null!;
-    
+
     public DbSet<Draw> Draws { get; set; } = null!;
 
     public DbSet<Ticket> Tickets { get; set; } = null!;

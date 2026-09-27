@@ -1,4 +1,5 @@
 using App01.Shared.Infrastructure.Repositories;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -21,11 +22,11 @@ public class ConfigurableTestWebApplicationFactory : WebApplicationFactory<Progr
     {
         // Configure test environment first
         builder.UseEnvironment("Test");
-        
+
         builder.ConfigureAppConfiguration((context, config) =>
         {
             config.Sources.Clear();
-            
+
             // Default configuration for tests - must include connection string
             var defaultConfig = new Dictionary<string, string?>
             {

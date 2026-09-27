@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export function useScrollSpy(sectionIds: string[]): string | undefined {
   const [activeId, setActiveId] = useState<string>();
@@ -12,7 +12,7 @@ export function useScrollSpy(sectionIds: string[]): string | undefined {
           }
         });
       },
-      { rootMargin: '-20% 0px -80% 0px' }
+      { rootMargin: "-20% 0px -80% 0px" },
     );
 
     sectionIds.forEach((id) => {

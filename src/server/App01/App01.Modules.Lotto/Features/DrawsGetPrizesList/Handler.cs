@@ -1,7 +1,10 @@
 using App01.Modules.Lotto.Services.LottoOpenApi;
 using App01.Shared.Infrastructure.Repositories;
+
 using FluentValidation;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -39,7 +42,7 @@ public class GetDrawPrizesListHandler : IRequestHandler<Contracts.Request, Contr
 
         var drawType = await _dbContext.DrawTypes
             .AsNoTracking()
-            .FirstOrDefaultAsync(dt => dt.Id == request.DrawTypeId, cancellationToken) 
+            .FirstOrDefaultAsync(dt => dt.Id == request.DrawTypeId, cancellationToken)
             ?? throw new KeyNotFoundException($"DrawType with ID {request.DrawTypeId} not found.");
 
         var draw = await _dbContext.Draws

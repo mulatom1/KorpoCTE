@@ -1,3 +1,3 @@
 export interface UserPassResetRequest {
-    email: string;
+  email: string;
 }

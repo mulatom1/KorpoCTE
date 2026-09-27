@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface ListSelectOption {
   value: string;
@@ -26,7 +26,10 @@ const ListSelect: React.FC<ListSelectProps> = ({
 }) => {
   return (
     <div>
-      <label htmlFor={id} className="block text-gray-300 text-sm font-medium mb-2">
+      <label
+        htmlFor={id}
+        className="block text-gray-300 text-sm font-medium mb-2"
+      >
         {label}
       </label>
       <select

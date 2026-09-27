@@ -1,4 +1,4 @@
-import { getToken, isAuthenticated } from './auth';
+import { getToken, isAuthenticated } from "./auth";
 
 export function getIsAdminFromToken(): boolean {
   // Wygasła sesja = brak uprawnień, inaczej UI próbowałby wołać API adminowe
@@ -8,8 +8,8 @@ export function getIsAdminFromToken(): boolean {
   const token = getToken();
   if (!token) return false;
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.isAdmin === true || payload.isAdmin === 'true';
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.isAdmin === true || payload.isAdmin === "true";
   } catch {
     return false;
   }

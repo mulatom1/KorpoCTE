@@ -1,7 +1,9 @@
 using System.Text;
 using System.Text.Json;
+
 using App01.Shared.Application.Interfaces;
 using App01.Shared.Application.Models.AI;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 

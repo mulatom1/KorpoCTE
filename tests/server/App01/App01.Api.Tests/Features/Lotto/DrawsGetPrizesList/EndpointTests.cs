@@ -4,17 +4,20 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
-using App01.Shared.Infrastructure.Repositories;
-using App01.Shared.Application.Entities.Lotto;
+
 using App01.Modules.Lotto.Features.DrawsGetPrizesList;
 using App01.Modules.Lotto.Services.LottoOpenApi;
 using App01.Modules.Lotto.Services.LottoOpenApi.Dto;
+using App01.Shared.Application.Entities.Lotto;
+using App01.Shared.Infrastructure.Repositories;
+
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+
 using Moq;
 
 

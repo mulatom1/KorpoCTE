@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Outlet, NavLink, useLocation, useNavigate } from 'react-router';
-import { getIsAdminFromToken } from '../utils/jwt';
-import { AUTH_CHANGED_EVENT, clearAuth, isAuthenticated } from '../utils/auth';
-import backgroundImage from '../assets/background.png';
+import { useState, useMemo, useEffect } from "react";
+import { Outlet, NavLink, useLocation, useNavigate } from "react-router";
+import { getIsAdminFromToken } from "../utils/jwt";
+import { AUTH_CHANGED_EVENT, clearAuth, isAuthenticated } from "../utils/auth";
+import backgroundImage from "../assets/background.png";
 
 // Przykładowe snippety kodu dla animacji tła
 const codeSnippets = [
@@ -74,22 +74,22 @@ END`,
 
 // Kolory dla różnych bloków (jaśniejsze, błyszczące)
 const blockColors = [
-  'text-emerald-400/30',
-  'text-cyan-400/30',
-  'text-blue-400/30',
-  'text-purple-400/30',
-  'text-pink-400/30',
-  'text-amber-400/30',
+  "text-emerald-400/30",
+  "text-cyan-400/30",
+  "text-blue-400/30",
+  "text-purple-400/30",
+  "text-pink-400/30",
+  "text-amber-400/30",
 ];
 
 // Kolory poświaty dla bloków (jaśniejsze, błyszczące)
 const glowColors = [
-  'rgba(52, 211, 153, 0.3)',  // emerald
-  'rgba(34, 211, 238, 0.3)',  // cyan
-  'rgba(96, 165, 250, 0.3)',  // blue
-  'rgba(192, 132, 252, 0.3)', // purple
-  'rgba(244, 114, 182, 0.3)', // pink
-  'rgba(251, 191, 36, 0.3)',  // amber
+  "rgba(52, 211, 153, 0.3)", // emerald
+  "rgba(34, 211, 238, 0.3)", // cyan
+  "rgba(96, 165, 250, 0.3)", // blue
+  "rgba(192, 132, 252, 0.3)", // purple
+  "rgba(244, 114, 182, 0.3)", // pink
+  "rgba(251, 191, 36, 0.3)", // amber
 ];
 
 // Typ dla spadających bloków kodu
@@ -119,14 +119,46 @@ interface FallingLottoBall {
 
 // Kolory dla kulek lotto (bardziej przezroczyste)
 const lottoBallColors = [
-  { bg: 'bg-red-500/30', text: 'text-red-300/60', glow: 'rgba(239, 68, 68, 0.2)' },
-  { bg: 'bg-blue-500/30', text: 'text-blue-300/60', glow: 'rgba(59, 130, 246, 0.2)' },
-  { bg: 'bg-green-500/30', text: 'text-green-300/60', glow: 'rgba(34, 197, 94, 0.2)' },
-  { bg: 'bg-yellow-400/30', text: 'text-yellow-300/60', glow: 'rgba(250, 204, 21, 0.2)' },
-  { bg: 'bg-purple-500/30', text: 'text-purple-300/60', glow: 'rgba(168, 85, 247, 0.2)' },
-  { bg: 'bg-pink-500/30', text: 'text-pink-300/60', glow: 'rgba(236, 72, 153, 0.2)' },
-  { bg: 'bg-orange-500/30', text: 'text-orange-300/60', glow: 'rgba(249, 115, 22, 0.2)' },
-  { bg: 'bg-cyan-400/30', text: 'text-cyan-300/60', glow: 'rgba(34, 211, 238, 0.2)' },
+  {
+    bg: "bg-red-500/30",
+    text: "text-red-300/60",
+    glow: "rgba(239, 68, 68, 0.2)",
+  },
+  {
+    bg: "bg-blue-500/30",
+    text: "text-blue-300/60",
+    glow: "rgba(59, 130, 246, 0.2)",
+  },
+  {
+    bg: "bg-green-500/30",
+    text: "text-green-300/60",
+    glow: "rgba(34, 197, 94, 0.2)",
+  },
+  {
+    bg: "bg-yellow-400/30",
+    text: "text-yellow-300/60",
+    glow: "rgba(250, 204, 21, 0.2)",
+  },
+  {
+    bg: "bg-purple-500/30",
+    text: "text-purple-300/60",
+    glow: "rgba(168, 85, 247, 0.2)",
+  },
+  {
+    bg: "bg-pink-500/30",
+    text: "text-pink-300/60",
+    glow: "rgba(236, 72, 153, 0.2)",
+  },
+  {
+    bg: "bg-orange-500/30",
+    text: "text-orange-300/60",
+    glow: "rgba(249, 115, 22, 0.2)",
+  },
+  {
+    bg: "bg-cyan-400/30",
+    text: "text-cyan-300/60",
+    glow: "rgba(34, 211, 238, 0.2)",
+  },
 ];
 
 // Komponent pojedynczego spadającego bloku kodu
@@ -227,11 +259,11 @@ function AnimatedBackground({ isLotto }: { isLotto: boolean }) {
 
 // Elementy menu
 const menuItems = [
-  { label: 'Home', to: '/' },
-  { label: 'Apki', to: '/apps' },
-  { label: 'Gry', to: '/games' },  
-  { label: 'O mnie', to: '/about' },
-  { label: 'Kontakt', to: '/contact' },
+  { label: "Home", to: "/" },
+  { label: "Apki", to: "/apps" },
+  { label: "Gry", to: "/games" },
+  { label: "O mnie", to: "/about" },
+  { label: "Kontakt", to: "/contact" },
 ];
 
 // Komponent nawigacji
@@ -248,12 +280,12 @@ function Navigation() {
     // Sprawdź czy użytkownik jest zalogowany
     const checkAuth = () => {
       if (isAuthenticated()) {
-        setUserEmail(localStorage.getItem('userEmail'));
+        setUserEmail(localStorage.getItem("userEmail"));
         setIsAdmin(getIsAdminFromToken());
       } else {
         // Brak sesji lub token wygasł – czyścimy resztki i chowamy menu użytkownika.
         // O ewentualne przekierowanie z chronionej podstrony dba RequireAuth.
-        if (localStorage.getItem('token')) clearAuth();
+        if (localStorage.getItem("token")) clearAuth();
         setUserEmail(null);
         setIsAdmin(false);
       }
@@ -262,15 +294,15 @@ function Navigation() {
     checkAuth();
 
     // Nasłuchuj na zmiany stanu logowania (także z innej karty)
-    window.addEventListener('storage', checkAuth);
+    window.addEventListener("storage", checkAuth);
     window.addEventListener(AUTH_CHANGED_EVENT, checkAuth);
-    window.addEventListener('focus', checkAuth);
+    window.addEventListener("focus", checkAuth);
 
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('storage', checkAuth);
+      window.removeEventListener("storage", checkAuth);
       window.removeEventListener(AUTH_CHANGED_EVENT, checkAuth);
-      window.removeEventListener('focus', checkAuth);
+      window.removeEventListener("focus", checkAuth);
     };
   }, []);
 
@@ -280,12 +312,12 @@ function Navigation() {
     setIsAdmin(false);
     // Wylogowanie z chronionej podstrony nie może zostawić użytkownika na tej
     // podstronie – kolejna akcja poleciałaby do API bez tokenu.
-    navigate('/');
+    navigate("/");
   };
 
   // Dynamiczne menu - dodaj "Users" dla adminów
   const currentMenuItems = isAdmin
-    ? [...menuItems, { label: 'Users', to: '/users' }]
+    ? [...menuItems, { label: "Users", to: "/users" }]
     : menuItems;
 
   return (
@@ -296,7 +328,9 @@ function Navigation() {
           <NavLink
             to="/"
             className={`flex-shrink-0 flex items-center space-x-3 transition-all duration-500 ease-out ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 -translate-y-4"
             }`}
           >
             <img
@@ -318,12 +352,17 @@ function Navigation() {
                   to={item.to}
                   className={({ isActive }) =>
                     `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300
-                    ${isActive
-                      ? 'bg-cyan-500/20 text-cyan-400'
-                      : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                    } ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`
+                    ${
+                      isActive
+                        ? "bg-cyan-500/20 text-cyan-400"
+                        : "text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                    } ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}`
                   }
-                  style={{ transitionDelay: isVisible ? `${150 + index * 50}ms` : '0ms' }}
+                  style={{
+                    transitionDelay: isVisible
+                      ? `${150 + index * 50}ms`
+                      : "0ms",
+                  }}
                 >
                   {item.label}
                 </NavLink>
@@ -336,16 +375,28 @@ function Navigation() {
             {/* User info / Auth links - tylko desktop */}
             <div
               className={`hidden md:flex items-center space-x-3 transition-all duration-500 ease-out ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 -translate-y-4"
               }`}
-              style={{ transitionDelay: isVisible ? '400ms' : '0ms' }}
+              style={{ transitionDelay: isVisible ? "400ms" : "0ms" }}
             >
               {userEmail ? (
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2">
                     <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      <svg
+                        className="w-4 h-4 text-cyan-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
                       </svg>
                     </div>
                     <span className="text-sm text-gray-300">{userEmail}</span>
@@ -386,19 +437,36 @@ function Navigation() {
             {/* Mobile menu button */}
             <div
               className={`md:hidden transition-all duration-500 ease-out ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 -translate-y-4"
               }`}
-              style={{ transitionDelay: isVisible ? '150ms' : '0ms' }}
+              style={{ transitionDelay: isVisible ? "150ms" : "0ms" }}
             >
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-colors"
               >
-                <svg className={`w-6 h-6 transition-transform duration-300 ${mobileMenuOpen ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className={`w-6 h-6 transition-transform duration-300 ${mobileMenuOpen ? "rotate-90" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   {mobileMenuOpen ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   )}
                 </svg>
               </button>
@@ -409,7 +477,9 @@ function Navigation() {
         {/* Mobile menu */}
         <div
           className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${
-            mobileMenuOpen ? 'max-h-[500px] opacity-100 pb-4' : 'max-h-0 opacity-0'
+            mobileMenuOpen
+              ? "max-h-[500px] opacity-100 pb-4"
+              : "max-h-0 opacity-0"
           }`}
         >
           <div className="flex flex-col space-y-1">
@@ -420,12 +490,15 @@ function Navigation() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
                   `px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300
-                  ${isActive
-                    ? 'bg-cyan-500/20 text-cyan-400'
-                    : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                  } ${mobileMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`
+                  ${
+                    isActive
+                      ? "bg-cyan-500/20 text-cyan-400"
+                      : "text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                  } ${mobileMenuOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`
                 }
-                style={{ transitionDelay: mobileMenuOpen ? `${index * 50}ms` : '0ms' }}
+                style={{
+                  transitionDelay: mobileMenuOpen ? `${index * 50}ms` : "0ms",
+                }}
               >
                 {item.label}
               </NavLink>
@@ -437,8 +510,18 @@ function Navigation() {
                 <>
                   <div className="px-4 py-3 flex items-center space-x-2 text-gray-300">
                     <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      <svg
+                        className="w-4 h-4 text-cyan-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
                       </svg>
                     </div>
                     <span className="text-sm">{userEmail}</span>
@@ -491,19 +574,19 @@ function Navigation() {
 // Główny komponent layoutu
 function Layout() {
   const location = useLocation();
-  const isLottoPage = location.pathname.startsWith('/lotto');
+  const isLottoPage = location.pathname.startsWith("/lotto");
   // Sekcja kursów bez animowanego tła – karty z backdrop-blur nad ruchomą
   // warstwą wymuszają przeliczanie rozmycia w każdej klatce.
-  const hideBackground = location.pathname.startsWith('/courses');
+  const hideBackground = location.pathname.startsWith("/courses");
 
   return (
     <div
       className="min-h-screen bg-gray-900"
       style={{
         backgroundImage: `linear-gradient(rgba(17, 24, 39, 0.9), rgba(17, 24, 39, 0.9)), url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
       }}
     >
       {!hideBackground && <AnimatedBackground isLotto={isLottoPage} />}

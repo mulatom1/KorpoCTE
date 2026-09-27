@@ -1,11 +1,14 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using App01.Shared.Application.Exceptions;
-using Microsoft.Extensions.Logging;
-using App01.Shared.Infrastructure.Repositories;
-using App01.Shared.Application.Interfaces;
 using App01.Shared.Application.Entities.Lotto;
+using App01.Shared.Application.Exceptions;
+using App01.Shared.Application.Interfaces;
+using App01.Shared.Infrastructure.Repositories;
+
+using FluentValidation;
+
+using MediatR;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 
 namespace App01.Modules.Lotto.Features.TicketsAdd;
@@ -61,7 +64,7 @@ public class AddTicketHandler : IRequestHandler<Contracts.Request, Contracts.Res
             throw new NotFoundException($"Typ losowania o ID {request.DrawTypeId} nie istnieje");
         }
 
-        
+
         var sortedNewNumbers = request.Numbers.OrderBy(n => n).ToList();
         var sortedNewSpecials = request.Specials.OrderBy(n => n).ToList();
 

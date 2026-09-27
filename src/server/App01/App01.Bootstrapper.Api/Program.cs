@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using App01.Bootstrapper.Api;
 using App01.Modules.Flashcards;
 using App01.Modules.Lotto;
@@ -6,10 +8,12 @@ using App01.Shared.Abstractions;
 using App01.Shared.Application;
 using App01.Shared.Application.Middlewares;
 using App01.Shared.Infrastructure;
+
 using FluentValidation;
+
 using Microsoft.AspNetCore.StaticFiles;
+
 using Serilog;
-using System.Reflection;
 
 
 var builder = WebApplication.CreateBuilder(args);

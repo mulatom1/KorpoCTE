@@ -1,10 +1,13 @@
-﻿using App01.Shared.Application.Exceptions;
+﻿using System.Diagnostics;
+using System.Net;
+
+using App01.Shared.Application.Exceptions;
+
 using FluentValidation;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-using System.Net;
 
 
 namespace App01.Shared.Application.Middlewares;

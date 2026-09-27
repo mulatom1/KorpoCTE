@@ -19,7 +19,7 @@ public class Contracts
 
     public record WinTierDto(
        string Tier,
-       int WinsCount, 
+       int WinsCount,
        decimal WinsPrize
     );
 }

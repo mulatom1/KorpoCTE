@@ -1,5 +1,7 @@
 using App01.Shared.Infrastructure.Repositories;
+
 using FluentValidation;
+
 using Microsoft.EntityFrameworkCore;
 
 
@@ -34,7 +36,7 @@ public class Validator : AbstractValidator<Contracts.Request>
                     return true; // DrawType existence will be checked in Handler
 
                 // Check numbers count is within allowed range
-                if (request.Numbers.Count < drawType.UserNumbersCountMin || 
+                if (request.Numbers.Count < drawType.UserNumbersCountMin ||
                     request.Numbers.Count > drawType.UserNumbersCountMax)
                     return false;
 
@@ -44,7 +46,7 @@ public class Validator : AbstractValidator<Contracts.Request>
             {
                 var drawType = _dbContext.DrawTypes
                     .FirstOrDefault(dt => dt.Id == request.DrawTypeId);
-                
+
                 if (drawType != null)
                 {
                     if (drawType.UserNumbersCountMin == drawType.UserNumbersCountMax)
@@ -71,7 +73,7 @@ public class Validator : AbstractValidator<Contracts.Request>
             {
                 var drawType = _dbContext.DrawTypes
                     .FirstOrDefault(dt => dt.Id == request.DrawTypeId);
-                
+
                 return drawType != null
                     ? $"Each number must be between 1 and {drawType.NumbersMaxValue}"
                     : "Each number must be between 1 and 49";
@@ -105,7 +107,7 @@ public class Validator : AbstractValidator<Contracts.Request>
             {
                 var drawType = _dbContext.DrawTypes
                     .FirstOrDefault(dt => dt.Id == request.DrawTypeId);
-                
+
                 return drawType != null
                     ? $"Special numbers must contain exactly {drawType.SpecialsCount} elements for this draw type"
                     : "Special numbers count mismatch";
@@ -131,7 +133,7 @@ public class Validator : AbstractValidator<Contracts.Request>
             {
                 var drawType = _dbContext.DrawTypes
                     .FirstOrDefault(dt => dt.Id == request.DrawTypeId);
-                
+
                 return drawType != null
                     ? $"Each special number must be between 1 and {drawType.SpecialsMaxValue}"
                     : "Special numbers out of range";

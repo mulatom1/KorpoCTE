@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 
 interface HLSVideoPlayerProps {
   src: string;
@@ -6,7 +6,11 @@ interface HLSVideoPlayerProps {
   poster?: string;
 }
 
-export const HLSVideoPlayer: React.FC<HLSVideoPlayerProps> = ({ src, title, poster }) => {
+export const HLSVideoPlayer: React.FC<HLSVideoPlayerProps> = ({
+  src,
+  title,
+  poster,
+}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,18 +22,20 @@ export const HLSVideoPlayer: React.FC<HLSVideoPlayerProps> = ({ src, title, post
     // Sprawdź czy plik istnieje
     const checkVideoExists = async () => {
       try {
-        const response = await fetch(src, { method: 'HEAD' });
+        const response = await fetch(src, { method: "HEAD" });
         if (!response.ok) {
-          throw new Error('Video file not found');
+          throw new Error("Video file not found");
         }
 
         // Dla demonstracji używamy natywnego video (HLS wymaga https lub hls.js)
         video.src = src;
         setIsLoading(false);
       } catch (err) {
-        setError('Nie można załadować wideo. Plik może nie istnieć lub jest niedostępny.');
+        setError(
+          "Nie można załadować wideo. Plik może nie istnieć lub jest niedostępny.",
+        );
         setIsLoading(false);
-        console.error('Video load error:', err);
+        console.error("Video load error:", err);
       }
     };
 
@@ -48,9 +54,9 @@ export const HLSVideoPlayer: React.FC<HLSVideoPlayerProps> = ({ src, title, post
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
-        (e.ctrlKey && e.key === 's') ||
-        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-        e.key === 'F12'
+        (e.ctrlKey && e.key === "s") ||
+        (e.ctrlKey && e.shiftKey && e.key === "I") ||
+        e.key === "F12"
       ) {
         e.preventDefault();
         return false;
@@ -62,14 +68,14 @@ export const HLSVideoPlayer: React.FC<HLSVideoPlayerProps> = ({ src, title, post
       return false;
     };
 
-    video.addEventListener('contextmenu', handleContextMenu);
-    video.addEventListener('keydown', handleKeyDown);
-    video.addEventListener('dragstart', handleDragStart);
+    video.addEventListener("contextmenu", handleContextMenu);
+    video.addEventListener("keydown", handleKeyDown);
+    video.addEventListener("dragstart", handleDragStart);
 
     return () => {
-      video.removeEventListener('contextmenu', handleContextMenu);
-      video.removeEventListener('keydown', handleKeyDown);
-      video.removeEventListener('dragstart', handleDragStart);
+      video.removeEventListener("contextmenu", handleContextMenu);
+      video.removeEventListener("keydown", handleKeyDown);
+      video.removeEventListener("dragstart", handleDragStart);
     };
   }, []);
 
@@ -96,7 +102,7 @@ export const HLSVideoPlayer: React.FC<HLSVideoPlayerProps> = ({ src, title, post
         disablePictureInPicture
         poster={poster}
         className="hls-video-player w-full max-h-[600px] select-none"
-        style={{ display: isLoading ? 'none' : 'block' }}
+        style={{ display: isLoading ? "none" : "block" }}
       >
         Twoja przeglądarka nie wspiera odtwarzania wideo.
       </video>

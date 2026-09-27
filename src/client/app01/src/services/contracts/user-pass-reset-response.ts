@@ -1,4 +1,4 @@
 export interface UserPassResetResponse {
-    success: boolean;
-    message: string;
+  success: boolean;
+  message: string;
 }

@@ -4,10 +4,12 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
+
+using App01.Modules.Lotto.Features.DrawsUpdate;
 using App01.Shared.Application.Entities.Lotto;
 using App01.Shared.Application.Entities.Portal;
 using App01.Shared.Infrastructure.Repositories;
-using App01.Modules.Lotto.Features.DrawsUpdate;
+
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

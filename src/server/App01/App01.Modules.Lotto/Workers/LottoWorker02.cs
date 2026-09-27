@@ -1,12 +1,14 @@
+using System.Text.Json;
+
+using App01.Modules.Lotto.Services.LottoOpenApi;
+using App01.Modules.Lotto.Services.LottoOpenApi.Dto;
+using App01.Shared.Infrastructure.Repositories;
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using App01.Modules.Lotto.Services.LottoOpenApi;
-using App01.Modules.Lotto.Services.LottoOpenApi.Dto;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using App01.Shared.Infrastructure.Repositories;
 
 
 namespace App01.Modules.Lotto.Workers;
@@ -19,11 +21,11 @@ public class LottoWorker02(
 {
     private readonly ILogger<LottoWorker02> _logger = logger;
     private readonly IConfiguration _configuration = configuration;
-    private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory; 
+    private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogDebug("{ClassName}: Started.", GetType().Name);        
+        _logger.LogDebug("{ClassName}: Started.", GetType().Name);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -34,7 +36,7 @@ public class LottoWorker02(
                 await Task.Delay(TimeSpan.FromMinutes(interval), stoppingToken);
                 continue;
             }
-            
+
             var date = GetDateToProcess();
             if (date == null)
             {
@@ -94,7 +96,7 @@ public class LottoWorker02(
             _logger.LogInformation("{ClassName}: Date to process {Date} - end", GetType().Name, dateToProcess.ToString("yyyy-MM-dd"));
             return dateToProcess;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "{ClassName}:  Date to process Exception: {Message}.", GetType().Name, ex.Message);
             return null;

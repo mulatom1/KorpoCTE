@@ -69,7 +69,9 @@
   }
 
   /* Ukryj nawigację i stopkę przy druku */
-  header, footer, nav {
+  header,
+  footer,
+  nav {
     display: none !important;
   }
 

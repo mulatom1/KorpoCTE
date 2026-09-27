@@ -4,10 +4,12 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
+
+using App01.Modules.Lotto.Features.TicketsAdd;
 using App01.Shared.Application.Entities.Lotto;
 using App01.Shared.Application.Entities.Portal;
 using App01.Shared.Infrastructure.Repositories;
-using App01.Modules.Lotto.Features.TicketsAdd;
+
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -178,7 +180,7 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
         var client = CreateFactoryWithData(db =>
         {
             db.Users.Add(new User { Id = 1, Email = "test@example.com", PasswordHash = "hash", CreatedAt = DateTime.UtcNow });
-            db.DrawTypes.Add(new DrawType {Id = 1, Name = "Lotto", Description = "Lotto game", TicketPrize = 3.0m, UserNumbersCountMin = 6, UserNumbersCountMax = 6, NumbersCount = 6, NumbersMaxValue = 50, SpecialsCount = 0, SpecialsMaxValue = 0 });
+            db.DrawTypes.Add(new DrawType { Id = 1, Name = "Lotto", Description = "Lotto game", TicketPrize = 3.0m, UserNumbersCountMin = 6, UserNumbersCountMax = 6, NumbersCount = 6, NumbersMaxValue = 50, SpecialsCount = 0, SpecialsMaxValue = 0 });
             db.SaveChanges();
         }).CreateClient();
         client.DefaultRequestHeaders.Add("X-TOKEN", ValidXToken);
@@ -379,7 +381,7 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
         var client = CreateFactoryWithData(db =>
         {
             db.Users.Add(new User { Id = 1, Email = "test@example.com", PasswordHash = "hash", CreatedAt = DateTime.UtcNow });
-            db.DrawTypes.Add(new DrawType {Id = 1, Name = "Lotto", Description = "Lotto game", TicketPrize = 3.0m, UserNumbersCountMin = 6, UserNumbersCountMax = 6, NumbersCount = 6, NumbersMaxValue = 50, SpecialsCount = 0, SpecialsMaxValue = 0 });
+            db.DrawTypes.Add(new DrawType { Id = 1, Name = "Lotto", Description = "Lotto game", TicketPrize = 3.0m, UserNumbersCountMin = 6, UserNumbersCountMax = 6, NumbersCount = 6, NumbersMaxValue = 50, SpecialsCount = 0, SpecialsMaxValue = 0 });
 
             // Add 500 tickets
             for (int i = 1; i <= 500; i++)
@@ -569,4 +571,3 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }
-

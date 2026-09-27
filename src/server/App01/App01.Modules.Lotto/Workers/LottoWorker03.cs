@@ -1,12 +1,14 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
+
+using App01.Shared.Application.Entities.Lotto;
+using App01.Shared.Infrastructure.Repositories;
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using System.Globalization;
-using System.Text.RegularExpressions;
-using App01.Shared.Infrastructure.Repositories;
-using App01.Shared.Application.Entities.Lotto;
 
 
 namespace App01.Modules.Lotto.Workers;

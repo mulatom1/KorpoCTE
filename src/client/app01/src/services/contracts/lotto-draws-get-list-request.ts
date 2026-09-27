@@ -4,5 +4,5 @@ export interface LottoDrawsGetListRequest {
   drawTypeId?: number;
   page?: number;
   pageSize?: number;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }

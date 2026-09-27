@@ -1,5 +1,6 @@
-using App01.Shared.Application.Entities.Portal;
 using System.ComponentModel.DataAnnotations.Schema;
+
+using App01.Shared.Application.Entities.Portal;
 
 
 namespace App01.Shared.Application.Entities.Lotto;
