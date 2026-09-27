@@ -47,7 +47,7 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
 
         if (isAdmin)
         {
-            claims.Add(new Claim("IsAdmin", "true"));
+            claims.Add(new Claim("isAdmin", "true"));
         }
 
         var token = new JwtSecurityToken(

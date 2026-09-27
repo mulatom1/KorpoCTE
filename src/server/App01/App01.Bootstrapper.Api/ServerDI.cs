@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 
 namespace App01.Bootstrapper.Api;
@@ -30,29 +30,15 @@ public static class ServerDI
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.ApiKey
             });
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            c.AddSecurityRequirement(document => new OpenApiSecurityRequirement()
             {
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    new string[] {}
+                    new OpenApiSecuritySchemeReference("Bearer", document),
+                    new List<string>()
                 },
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "X-TOKEN"
-                        }
-                    },
-                    new string[] {}
+                    new OpenApiSecuritySchemeReference("X-TOKEN", document),
+                    new List<string>()
                 }
             });
             c.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
@@ -66,6 +52,12 @@ public static class ServerDI
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
+            // Wraz z .NET 10 domyślnym handlerem tokenów jest JsonWebTokenHandler,
+            // który (w przeciwieństwie do starszego JwtSecurityTokenHandler) domyślnie
+            // nie mapuje standardowych claimów (np. "sub") na typy z ClaimTypes.
+            // Bez tego GetUserIdFromJwt/GetEmailFromJwt nie znajdują wymaganych claimów.
+            options.MapInboundClaims = true;
+
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
