@@ -1,13 +1,13 @@
 ---
 project: APPS (tomsoft1.pl — App01)
-assessed_at: 2026-09-27T18:43:50Z
+assessed_at: 2026-09-27T23:10:00Z
 agent_readiness: ready-with-compensation
 context_type: brownfield
 stack_components:
   language: C# (.NET 10) + TypeScript 5.9
   framework: ASP.NET Core 10 Minimal APIs (modularny monolit, MediatR 12.5 + FluentValidation 12.1 + EF Core 10 / SQL Server) + React 19 SPA (React Router 7 deklaratywnie, Tailwind 4)
   build_tool: dotnet SDK 10 / MSBuild + Vite 7
-  test_runner: xUnit 2.9.3 + WebApplicationFactory (serwer); frontend — brak
+  test_runner: xUnit 2.9.3 + WebApplicationFactory (serwer); Vitest 5 + jsdom + Testing Library (klient)
   package_manager: NuGet (lock files, --locked-mode) + npm (package-lock.json)
   ci_provider: GitHub Actions
   deployment_target: folder publish (FileSystem publish profile), SPA serwowane przez ASP.NET Core
@@ -17,23 +17,23 @@ gates_failed: 0
 
 ## Stack Components
 
-**Język (serwer) — C# na .NET 10.** Wszystkie 8 projektów w `APPS.sln` ma `<TargetFramework>net10.0</TargetFramework>` i `<Nullable>enable</Nullable>`. `global.json` przypina SDK `10.0.100` z `rollForward: latestMajor`. Migracja z .NET 8 nastąpiła w commicie `c8c50e9` („migrate to dotnet 10"), a kolejne commity (`27193ea`, `dab100f`, `626af8c`) usunęły przestarzałe API i pakiety.
+**Język (serwer) — C# na .NET 10.** Wszystkie 8 projektów w `APPS.sln` ma `<TargetFramework>net10.0</TargetFramework>` i `<Nullable>enable</Nullable>`. `global.json` przypina SDK `10.0.100` (`rollForward: latestMajor`). `Directory.Build.props` włącza `RestorePackagesWithLockFile`, `NuGetAuditMode=all` i traktuje podatności NU1903/NU1904 jako błędy.
 
-**Język (klient) — TypeScript ~5.9.3.** `src/client/app01/tsconfig.app.json` ma `strict: true`, `noUnusedLocals`, `noUnusedParameters`, `erasableSyntaxOnly`, `verbatimModuleSyntax`.
+**Język (klient) — TypeScript ~5.9.3.** `src/client/app01/tsconfig.app.json` ma `strict: true` (plus `noUnusedLocals`, `noUnusedParameters`, `verbatimModuleSyntax`).
 
-**Framework (serwer) — ASP.NET Core 10 Minimal APIs, modularny monolit.** Host `App01.Bootstrapper.Api` składa moduły `Portal`, `Lotto`, `Flashcards`. Funkcje są cięte pionowo (`Features/<Nazwa>/{Contracts,Validator,Handler,Endpoint}.cs`) i obsługiwane przez MediatR 12.5.0 + FluentValidation 12.1.1. Dane: EF Core 10.0.12 (SQL Server, `UseCompatibilityLevel(110)`), testy na EF InMemory. OpenAPI przez Swashbuckle 10.2.3 (`AddServerSwagger()`, `UseSwagger()` warunkowo przez `Swagger:Enabled`). Logowanie przez Serilog.AspNetCore 10.0.0.
+**Framework (serwer) — ASP.NET Core 10 Minimal APIs, modularny monolit.** Host `App01.Bootstrapper.Api` składa moduły `Portal`, `Lotto`, `Flashcards`. Funkcje są cięte pionowo (`Features/<Nazwa>/{Contracts,Validator,Handler,Endpoint}.cs`), obsługiwane przez MediatR 12.5.0 + FluentValidation 12.1.1. Dane: EF Core 10.0.12 (SQL Server, `UseCompatibilityLevel(110)`), w testach EF InMemory. OpenAPI przez Swashbuckle 10.2.3, logowanie przez Serilog.AspNetCore 10.0.0. Integracja LLM: `IOpenRouterService` (`App01.Shared.Application/Interfaces/`) z implementacją w `App01.Shared.Infrastructure/Services/OpenRouterService.cs`, zarejestrowana jako scoped; `HttpClient` z domyślnej fabryki (`builder.Services.AddHttpClient()` w `Program.cs`).
 
-**Framework (klient) — React 19 + React Router 7 (tryb deklaratywny) + Tailwind 4.** Renderowanie Markdown: `react-markdown` + `remark-gfm` + `rehype-highlight` + `rehype-raw` + `remark-frontmatter`. Poza tym `mermaid`, `hls.js`, `dayjs`, `react-datepicker`.
+**Framework (klient) — React 19 + React Router 7 (tryb deklaratywny) + Tailwind 4.** Markdown: `react-markdown` + `remark-gfm` + `rehype-highlight` + `rehype-raw` + `remark-frontmatter`. Poza tym `mermaid`, `hls.js`, `dayjs`, `react-datepicker`.
 
-**Narzędzia budowania — dotnet SDK/MSBuild + Vite 7.** `Directory.Build.props` włącza `RestorePackagesWithLockFile`. Po stronie klienta `npm run build` = `tsc -b && vite build --mode dev`, plus warianty `build:prod1` i `build:prod2`.
+**Narzędzia budowania — dotnet SDK/MSBuild + Vite 7.** Po stronie klienta `npm run build` = `tsc -b && vite build --mode dev`, plus warianty `build:prod1` / `build:prod2`.
 
-**Testy — xUnit 2.9.3** z `Microsoft.AspNetCore.Mvc.Testing` 10.0.12, Moq, `coverlet.collector`. Testy endpointów leżą w `tests/server/App01/App01.Api.Tests/Features/<Moduł>/<Funkcja>/`. Frontend nie ma testów.
+**Testy — xUnit 2.9.3** z `Microsoft.AspNetCore.Mvc.Testing` 10.0.12, Moq, `coverlet.collector`; 25 plików `EndpointTests.cs` w `tests/server/App01/App01.Api.Tests/Features/<Moduł>/<Funkcja>/`, fabryki `TestWebApplicationFactory` i `ConfigurableTestWebApplicationFactory` w `Infrastructure/`. Frontend: Vitest 5 + jsdom + Testing Library (4 pliki testów obok kodu, setup `src/test/setup.ts`).
 
-**CI/CD — GitHub Actions** (`.github/workflows/pull-request.yml`, na każdy push/PR). Backend: `dotnet restore --locked-mode`, `dotnet list package --vulnerable --include-transitive`, `dotnet format --verify-no-changes`, build, testy z pokryciem i raportem HTML. Frontend: `npm ci`, `npm audit --audit-level=high`, `prettier --check`, `npm run lint`, `npm run build`.
+**CI/CD — GitHub Actions** (`.github/workflows/pull-request.yml`, każdy push/PR). Backend: `dotnet restore --locked-mode`, skan `dotnet list package --vulnerable --include-transitive` (fail na High/Critical), `dotnet format --verify-no-changes`, build, testy z pokryciem. Frontend: `npm ci`, `npm audit --audit-level=high`, `prettier --check`, `npm run lint`, `npm test`, `npm run build`.
 
-**Wdrożenie** — profile `FolderProfile*.pubxml` (FileSystem). Brak Dockerfile i konfiguracji PaaS.
+**Wdrożenie** — profile `FolderProfile.pubxml` / `FolderProfile1.pubxml` (FileSystem, `bin\Release\net10.0\publish\`). SPA i pliki statyczne serwowane przez host (`app.UseStaticFiles(...)`, `app.MapFallbackToFile("index.html")`). Brak Dockerfile i konfiguracji PaaS.
 
-**Pliki instrukcji** — `CLAUDE.md` (bogaty: mapa repo, przepis na slice/moduł, migracje, bezpieczeństwo, frontend, wersje, checklista) oraz `AGENTS.md` (odsyła do `CLAUDE.md`). `.editorconfig` z regułami stylu .NET.
+**Pliki instrukcji** — `CLAUDE.md` (mapa repo, przepisy na slice i moduł — z przykładem „Courses", migracje, bezpieczeństwo, frontend, wersje, checklista CI, formatowanie) oraz `AGENTS.md` (odsyła do `CLAUDE.md`). `.editorconfig` z regułami stylu .NET.
 
 ## Quality Gate Assessment
 
@@ -49,113 +49,122 @@ gates_failed: 0
 
 Legenda: ✓ = pass, ✗ = fail, ~ = partial (pass-with-note: konwencje dostarcza `CLAUDE.md`, nie framework), — = nie dotyczy.
 
-Wynik: 16 z 16 kryteriów spełnionych, w tym 2 częściowo (dzięki `CLAUDE.md`). Żadne kryterium nie jest oblane. Jest jednak jedna luka spoza kryteriów, istotna dla agenta: **`CLAUDE.md` rozjechał się ze stanem kodu po migracji na .NET 10** (szczegóły niżej).
+Wynik: 16 z 16 kryteriów spełnionych, w tym 2 częściowo (dzięki `CLAUDE.md`). Żadne kryterium nie jest oblane. Ocena uwzględnia zakres PRD „Kursy i bootcampy" — dwie nowe luki (4 i 5) dotyczą wzorców, których nowy moduł potrzebuje, a których `CLAUDE.md` jeszcze nie opisuje.
 
 ### Gate Details
 
 #### Typed
 
-- C#: ✓ — `<Nullable>enable</Nullable>` we wszystkich 8 `.csproj` (np. `src/server/App01/App01.Shared.Abstractions/App01.Shared.Abstractions.csproj`). Kontrakty to `record`y w `Contracts.cs`.
-- TypeScript: ✓ — `src/client/app01/tsconfig.app.json`: `"strict": true` i dodatkowe flagi lintujące. Kontrakty API to `interface`y w `src/services/contracts/`.
-- Uwaga: między C# a TS nie ma generatora kontraktów. Granica API jest typowana po obu stronach, ale utrzymywana ręcznie. `CLAUDE.md` już to opisuje („zmiana rekordu C# wymaga aktualizacji interfejsu TS w tej samej zmianie").
+- C#: ✓ — `<Nullable>enable</Nullable>` we wszystkich 8 `.csproj` (np. `App01.Shared.Abstractions.csproj`, `App01.Bootstrapper.Api.Tests.csproj`). Kontrakty to `record`y w `Contracts.cs`.
+- TypeScript: ✓ — `tsconfig.app.json`: `"strict": true`. Kontrakty API to `interface`y w `src/services/contracts/`.
+- Uwaga: brak generatora kontraktów C# → TS. `CLAUDE.md` wymaga aktualizacji interfejsu TS w tej samej zmianie co rekord C#.
+- Uwaga (zakres PRD): odpowiedź LLM to `Task<string>` (`IOpenRouterService.ChatAsync`) — nietypowana granica. Werdykt weryfikacji trzeba sparsować do typu po stronie handlera (Luka 4).
 
 #### Convention-based
 
-- ASP.NET Core Minimal APIs: ~ — Minimal APIs z definicji nie narzucają układu katalogów, rejestracji tras ani obsługi błędów (w przeciwieństwie do MVC z kontrolerami). Konwencje projektu są jednak twarde i spisane w `CLAUDE.md`: sekcje „przepis na wycinek funkcji" i „przepis na nowy moduł", 4 pliki na slice, nazewnictwo tras `api/<moduł>/<kebab>`, `ModuleDI.UseModule<X>Endpoints()`. Wzorzec referencyjny `App01.Modules.Portal/Features/UserList/` istnieje i jest spójny z opisem (poza `.WithOpenApi()`, patrz Luki).
-- React + Vite + React Router (deklaratywnie): ~ — Vite + React bez frameworka nie narzuca struktury, a tryb deklaratywny Routera nie ma routingu plikowego. Kompensację zapewnia `CLAUDE.md`, sekcja „Frontend": trasy w `src/main.tsx`, strony w `src/pages/<moduł>/<Nazwa>Page.tsx`, serwisy `Api<Moduł>Service` + `apiFetch`, kontrakty w `src/services/contracts/`.
-- dotnet SDK / Vite: ✓ — oba mają ustandaryzowany układ projektu (`.csproj`/`.sln`, `vite.config.ts`).
+- ASP.NET Core Minimal APIs: ~ — Minimal APIs same nie narzucają układu ani rejestracji tras. Konwencje projektu są twarde i spisane w `CLAUDE.md` („przepis na wycinek funkcji", „przepis na nowy moduł (np. Courses)"); wzorzec referencyjny `App01.Modules.Portal/Features/UserList/` jest z nimi zgodny.
+- React + Vite + React Router (deklaratywnie): ~ — brak routingu plikowego; kompensuje sekcja „Frontend" w `CLAUDE.md` (trasy w `src/main.tsx`, strony `src/pages/<moduł>/`, `Api<Moduł>Service` + `apiFetch`, kontrakty).
+- dotnet SDK / Vite: ✓ — ustandaryzowany układ (`.csproj`/`.sln`, `vite.config.ts`).
 
-#### Popular in training data (liczone w obrębie rodziny języka)
+#### Popular in training data (w obrębie rodziny języka)
 
-- ASP.NET Core: ✓ — główny framework webowy w C#. Minimal APIs istnieją od .NET 6 i są dobrze reprezentowane. MediatR + FluentValidation + EF Core to kanoniczny zestaw „vertical slice" w .NET.
-- React 19 / React Router 7 / Tailwind 4 / Vite 7: ✓ — mainstream w JS/TS. Uwaga: React Router 7 ma dwa tryby (deklaratywny i framework), a Tailwind 4 zmienił konfigurację na CSS-first. Agent z przyzwyczajenia może sięgać po `react-router-dom`, `createBrowserRouter` albo `tailwind.config.js`. `CLAUDE.md` już temu zapobiega.
-- xUnit: ✓ — domyślny wybór w ekosystemie .NET.
-- Ryzyko specyficzne dla wersji: .NET 10 i EF Core 10 są w danych treningowych słabiej reprezentowane niż .NET 8. Agent może proponować API oznaczone w .NET 10 jako przestarzałe (np. `.WithOpenApi()` — ASPDEPR002). Tym bardziej potrzebne jest poprawne przypięcie wersji w `CLAUDE.md`.
+- ASP.NET Core + MediatR + FluentValidation + EF Core: ✓ — kanoniczny zestaw „vertical slice" w C#.
+- React 19 / React Router 7 / Tailwind 4 / Vite 7: ✓ — mainstream w JS/TS. Ryzyko: agent z przyzwyczajenia sięga po `react-router-dom`, `createBrowserRouter`, `tailwind.config.js` — `CLAUDE.md` już tego zabrania.
+- xUnit: ✓ — domyślny wybór w .NET.
+- Ryzyko wersji: .NET 10 / EF Core 10 słabiej reprezentowane niż .NET 8 (np. przestarzałe `.WithOpenApi()`); kompensuje sekcja „Wersje przypięte" w `CLAUDE.md`.
 
 #### Well-documented
 
 - ASP.NET Core / EF Core: ✓ — learn.microsoft.com, wersjonowane (`?view=aspnetcore-10.0`).
-- MediatR: ✓ — wiki na GitHubie, stabilne API 12.x. FluentValidation: ✓ — docs.fluentvalidation.net.
-- React / React Router (sekcja „Declarative Mode") / Tailwind v4 / Vite: ✓ — oficjalne, wersjonowane dokumentacje.
-- xUnit: ✓ — xunit.net, osobne sekcje dla v2 i v3.
+- MediatR (wiki GitHub, API 12.x), FluentValidation (docs.fluentvalidation.net): ✓.
+- React / React Router („Declarative Mode") / Tailwind v4 / Vite: ✓.
+- xUnit: ✓ — xunit.net, osobne sekcje v2 i v3.
 
 ## Gaps & Compensation
 
-### Luka 1 (najważniejsza): `CLAUDE.md` opisuje .NET 8, a kod jest na .NET 10
+### Luka 1 — ZAMKNIĘTA: `CLAUDE.md` opisywał .NET 8
 
-**Co jest nie tak (dowody):**
-- `CLAUDE.md` (sekcja „Wersje przypięte"): „.NET 8 / ASP.NET Core 8 / EF Core 8 · … · Serilog.AspNetCore 9". Tymczasem `App01.Shared.Abstractions.csproj` ma `Microsoft.EntityFrameworkCore` 10.0.12, `Serilog.AspNetCore` 10.0.0, a `global.json` przypina SDK 10.0.100.
-- `CLAUDE.md` (sekcja „mapa repozytorium"): „modularny monolit ASP.NET Core 8".
-- `CLAUDE.md` (sekcja „przepis na nowy moduł", krok 1): „net8.0". Nowy moduł `Courses` utworzony według tego przepisu dostanie `net8.0` i nie zbuduje się z referencją do projektów `net10.0`.
-- `CLAUDE.md` (sekcja „przepis na wycinek funkcji", krok 4): łańcuch ma kończyć się na `.WithOpenApi()`. Kod po commicie `27193ea` nie ma już ani jednego wywołania `WithOpenApi` (0 plików w `src/server`), bo w .NET 10 jest ono przestarzałe. Agent trzymający się `CLAUDE.md` przywróci przestarzałe API.
-- `CLAUDE.md` (Dokumentacja): „learn.microsoft.com/aspnet/core (8.0)".
-- Poza `CLAUDE.md`: oba pliki `Properties/PublishProfiles/FolderProfile*.pubxml` wciąż mają `PublishUrl` = `bin\Release\net8.0\publish\`.
+`CLAUDE.md` jest zsynchronizowany z .NET 10 (mapa repo, `net10.0` w przepisie na moduł, brak `.WithOpenApi()`, sekcja „Wersje przypięte"). W `src/server` jest 0 wywołań `WithOpenApi`.
 
-**Dlaczego to ważne dla agenta:** pliki instrukcji mają wyższy priorytet niż to, co agent wyczyta z kodu. Nieaktualna reguła jest gorsza niż jej brak. Agent zbuduje moduł `Courses` na złym TFM, dopisze przestarzałe `.WithOpenApi()` i poszuka odpowiedzi w dokumentacji .NET 8.
+### Luka 2 — SKOMPENSOWANA: Minimal APIs i Vite + React nie niosą konwencji same z siebie
 
-**Kompensacja:** zaktualizować wskazane fragmenty `CLAUDE.md` (gotowe bloki niżej) i poprawić `PublishUrl` w profilach publikacji.
+Konwencje żyją w `CLAUDE.md`, nie we frameworku. Ryzyko resztkowe: każda zmiana wzorca (slice referencyjny, łańcuch endpointu, nowy katalog frontendu) wymaga aktualizacji `CLAUDE.md` w tej samej zmianie.
 
-### Luka 2: Minimal APIs i Vite + React nie niosą konwencji same z siebie
+### Luka 3 — ZAMKNIĘTA: brak testów frontendu
 
-Oba kryteria są spełnione częściowo, bo konwencje żyją w `CLAUDE.md`, a nie we frameworku. Obecne pokrycie jest dobre. Warto je uzupełnić o dwie reguły, które agent łamie najczęściej, a CI je wyłapie: formatowanie (`dotnet format --verify-no-changes`, `prettier --check`) i kolejność/grupowanie `using` (`.editorconfig`: `dotnet_separate_import_directive_groups = true`).
+Vitest 5 + jsdom + Testing Library działają, krok „Test frontend" jest w CI, reguły pisania testów są w `CLAUDE.md`.
 
-### Luka 3 (poza kryteriami): brak testów frontendu
+### Luka 4 — NOWA (zakres PRD): brak wzorca weryfikacji odpowiedzi przez LLM
 
-Stack tego nie wymaga, a `CLAUDE.md` już to kompensuje (logika domenowa po stronie serwera). Uwaga dla `/10x-health-check`: weryfikacja UI modułu Kursy (FR-001, FR-002, hangar) będzie wyłącznie manualna.
+**Co brakuje.** FR-006 i US-01 wprowadzają pierwszą w portalu regułę domenową opartą o model: werdykt musi przyjść w < 5 s, awaria techniczna ma być komunikowana jako awaria (nie ocena negatywna), a próba techniczna nie może być liczona jako błędna. Obecny kod tego nie wspiera:
+- `OpenRouterService.ChatAsync` rzuca gołe `Exception` przy błędzie API i zwraca `string`.
+- `builder.Services.AddHttpClient()` — domyślny timeout `HttpClient` to 100 s.
+- `ExceptionHandlingMiddleware` mapuje nieobsłużone wyjątki (w tym `ApiException`, który nie ma własnej gałęzi) na 500, a w `Detail` zwraca treść wyjątku.
+- Żaden test nie podmienia `IOpenRouterService` — testy endpointu weryfikacji wołałyby prawdziwe API albo padały na braku konfiguracji.
+- `CLAUDE.md` zabrania zmian w `ExceptionHandlingMiddleware` i istniejących modułach (Flashcards używa tego samego serwisu).
+
+**Dlaczego to ważne dla agenta.** Bez spisanej reguły agent najpewniej zawoła `ChatAsync` bez limitu czasu, porówna string „na oko" i przepuści wyjątek do middleware (500 z treścią błędu) — co łamie trzy kryteria akceptacji US-01 naraz. Druga pokusa to „poprawienie" `OpenRouterService` lub middleware, co narusza zakaz regresji Flashcards.
+
+**Kompensacja.** Reguła w `CLAUDE.md` (niżej): limit czasu przez `CancellationTokenSource.CancelAfter` w handlerze, trójstanowy wynik w `Response` zamiast wyjątku, ustrukturyzowany (JSON) werdykt modelu z odpornym parsowaniem, izolacja odpowiedzi uczestnika w prompcie, blokada ponownej weryfikacji zdobytej flagi przed wywołaniem modelu, stub `IOpenRouterService` w testach.
+
+### Luka 5 — NOWA (zakres PRD): publikacja treści poza aplikacją a publiczne pliki statyczne
+
+**Co brakuje.** FR-010 zakłada wgrywanie treści i grafik kursu poza interfejsem aplikacji. Host ma `app.UseStaticFiles(...)` bez autoryzacji — wszystko, co trafi do `wwwroot`, jest dostępne dla każdego. Guardrail PRD: „treść kursów nie jest dostępna dla niezalogowanych; publiczne pozostają wyłącznie kafelki". `CLAUDE.md` nie mówi, gdzie leżą pliki kursów ani jak są serwowane.
+
+**Dlaczego to ważne dla agenta.** Najprostsza droga dla agenta to wrzucenie `.md` do `wwwroot/courses/` i pobranie go `fetch`em z klienta — działa od razu i po cichu wystawia treść publicznie.
+
+**Kompensacja.** Reguła w `CLAUDE.md` (niżej): treść Markdown poza `wwwroot`, ścieżka z konfiguracji, odczyt wyłącznie przez endpoint z `RequireAuthorization()` i filtrem daty publikacji; publicznie tylko grafiki kafelków.
+
+### Obserwacja poza kryteriami (do `/10x-health-check`)
+
+`ExceptionHandlingMiddleware` zwraca w 500 `Detail` z `exception.Message` i dwoma poziomami `InnerException` — to ujawnia szczegóły wewnętrzne klientowi. Zmiana middleware jest poza zakresem PRD (zakaz modyfikacji), stąd tylko odnotowanie.
 
 ### Recommended Instruction File Additions
 
-**1. Zamiennik sekcji „Wersje przypięte" w `CLAUDE.md`:**
+Zalecenia z wcześniejszej oceny (sekcje „Wersje przypięte", poprawki punktowe, „Formatowanie", pełna lista kroków CI) są już w `CLAUDE.md` ✓.
+
+Nowe — do wklejenia w `CLAUDE.md` po sekcji „Bezpieczeństwo endpointów":
 
 ```markdown
-## Wersje przypięte — nie podbijaj majorów bez polecenia
+## Moduł Courses — weryfikacja odpowiedzi przez LLM
 
-.NET 10 (SDK przypięty w `global.json`: 10.0.100) / ASP.NET Core 10 / EF Core 10 · MediatR 12.x (v13+ ma licencję komercyjną) · FluentValidation 12 · xUnit 2.x (nie v3) · Serilog.AspNetCore 10 · Swashbuckle.AspNetCore 10 · React 19 · React Router 7 · Tailwind CSS 4 · Vite 7 · TypeScript 5.9.
-Dokumentacja: learn.microsoft.com/aspnet/core (wersja 10.0 — `?view=aspnetcore-10.0`), learn.microsoft.com/ef/core (EF Core 10), docs.fluentvalidation.net, reactrouter.com (sekcja „Declarative Mode"), tailwindcss.com/docs (v4), vite.dev.
-- Projekt jest po migracji z .NET 8. Nie używaj API oznaczonych w .NET 10 jako przestarzałe (m.in. `.WithOpenApi()` na endpointach — ASPDEPR002). Ostrzeżenia `obsolete` przy buildzie traktuj jak błąd do naprawy, nie do wyciszenia.
-- Pakiety NuGet są przypięte lock-filami (`RestorePackagesWithLockFile` w `Directory.Build.props`, CI robi `dotnet restore --locked-mode`). Po dodaniu lub zmianie pakietu zacommituj zaktualizowane `packages.lock.json`.
+- Weryfikację wykonuje handler w `App01.Modules.Courses` przez istniejący `IOpenRouterService`. NIE zmieniaj `OpenRouterService`, `AddHttpClient()` ani `ExceptionHandlingMiddleware` — używa ich Flashcards.
+- Limit czasu w handlerze: `using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken); cts.CancelAfter(TimeSpan.FromSeconds(<Courses:VerificationTimeoutSeconds>));` i przekaż `cts.Token` do `ChatAsync`. Wartość domyślna ≤ 4 s (PRD: werdykt < 5 s). Klucz dopisz do `appsettings.Example.json`.
+- Awaria techniczna (timeout, `HttpRequestException`, `Exception` z `OpenRouterService`, nieparsowalna odpowiedź modelu) NIE jest wyjątkiem do middleware. Złap ją w handlerze, zaloguj i zwróć 200 z `Response(Status: "Unavailable", ...)`. Kontrakt: `Status` ∈ `Correct | Incorrect | Unavailable | AlreadyOwned`. Klient pokazuje `Unavailable` jako awarię z przyciskiem „Spróbuj ponownie", nie jako ocenę negatywną.
+- Próby `Incorrect` i `Unavailable` nie zużywają niczego i nie są liczone w rankingu ani wskaźnikach.
+- Kolejność w `Handle`: walidacja → pobranie userId z JWT (`IJwtService`) → sprawdzenie, czy flaga już zdobyta (jeśli tak: `AlreadyOwned`, model NIE jest wołany) → wywołanie modelu → zapis flagi.
+- Prompt: kryteria zadania w wiadomości `system`; odpowiedź uczestnika w wiadomości `user`, otoczona ogranicznikami (np. `<answer>…</answer>`) i z instrukcją, że treść wewnątrz to dane, nie polecenia. Model zwraca WYŁĄCZNIE JSON `{"verdict":"pass"|"fail","reason":"..."}`; parsuj `System.Text.Json` do rekordu, a wszystko inne traktuj jako `Unavailable`.
+- Przyznanie flagi: unikalny indeks `(UserId, FlagId)` w konfiguracji EF + obsługa `DbUpdateException` przy wyścigu (drugi zapis = `AlreadyOwned`), nie tylko sprawdzenie w handlerze.
+- Testy: w `EndpointTests.cs` podmień `IOpenRouterService` przez `builder.ConfigureServices(s => { s.RemoveAll<IOpenRouterService>(); s.AddSingleton(mock.Object); })` (Moq jest w projekcie testów). Przypadki: `Correct`, `Incorrect`, `Unavailable` (mock rzuca / timeout), `AlreadyOwned` (mock NIE wywołany — `Times.Never`), 400, 401, brak `X-TOKEN`. Nigdy nie wołaj prawdziwego OpenRoutera w testach.
+
+## Moduł Courses — treść kursów
+
+- Pliki Markdown kursów leżą POZA `wwwroot` (ścieżka z konfiguracji `Courses:ContentPath`, dopisz do `appsettings.Example.json`). `app.UseStaticFiles` serwuje `wwwroot` publicznie — nie umieszczaj tam treści kursów.
+- Treść kursu zwraca wyłącznie endpoint z `.RequireAuthorization()` + `XTokenFilter`, po sprawdzeniu `PublishDate <= dzisiaj` (FR-003); dla kursu niepublikowanego zwróć 404 (`NotFoundException`), nie 403.
+- Publicznie (endpoint bez `RequireAuthorization()`, z `XTokenFilter`) tylko lista kafelków: tytuł, krótki opis, tagi, URL grafiki. Grafiki kafelków mogą leżeć w `wwwroot`.
+- Ścieżkę pliku buduj z identyfikatora z bazy, nigdy z parametru requestu; odrzuć `..` i separatory (path traversal).
+- Brak pliku lub błąd parsowania frontmattera → zaloguj ostrzeżenie i pomiń kurs na liście; nie zwracaj 500 (FR-010: literówka w katalogu nie może wywalić modułu).
+- Klient renderuje treść istniejącym zestawem `react-markdown` + `remark-gfm` + `rehype-highlight` (+ `remark-frontmatter`); nie dodawaj innego parsera.
+
+## Moduł Courses — rejestracja w testach
+
+- Dodaj `ProjectReference` do `App01.Modules.Courses` w `App01.Bootstrapper.Api.Tests.csproj` (projekt testów obecnie referencjonuje Portal i Lotto, ale nie Flashcards — nie powielaj tej luki).
 ```
-
-**2. Poprawki punktowe w innych sekcjach `CLAUDE.md`:**
-
-```markdown
-- Mapa repozytorium: „modularny monolit ASP.NET Core 10 (Minimal APIs)".
-- Przepis na nowy moduł, krok 1: „(kopia `App01.Modules.Portal.csproj`: net10.0, Nullable, ImplicitUsings, `ProjectReference` do `App01.Shared.Infrastructure`)".
-- Przepis na wycinek funkcji, krok 4 — łańcuch: `.WithName("<Moduł><NazwaFunkcji>")`, `.WithTags("<Moduł>")`, `.Produces<Contracts.Response>(StatusCodes.Status200OK)` + `.Produces(StatusCodes.Status4xx…)` dla kodów błędów, `.AddEndpointFilter<XTokenFilter>()`, `.RequireAuthorization()` (pominąć tylko dla endpointów publicznych). NIE dodawaj `.WithOpenApi()` — przestarzałe w .NET 10; metadane OpenAPI zbiera Swashbuckle z `WithName`/`WithTags`/`Produces`.
-```
-
-**3. Nowy blok — formatowanie pilnowane przez CI:**
-
-```markdown
-## Formatowanie (CI odrzuca niesformatowany kod)
-
-- Serwer: przed zakończeniem zadania uruchom `dotnet format APPS.sln`. CI wykonuje `dotnet format --verify-no-changes`. Styl wynika z `.editorconfig`: 4 spacje w `.cs`, `using System*` pierwsze, grupy `using` rozdzielone pustą linią (`dotnet_separate_import_directive_groups = true`), namespace file-scoped zgodny z katalogiem.
-- Klient (z `src/client/app01`): `npm run format` (prettier). CI wykonuje `npx prettier --check "src/**/*.{ts,tsx,css}"` oraz `npm audit --audit-level=high`.
-- Nie wyłączaj reguł `.editorconfig` ani ESLint, żeby przepchnąć zmianę.
-```
-
-**4. Uzupełnienie checklisty „Weryfikacja przed zakończeniem zadania":**
-
-```markdown
-- Pełna lista kroków CI (`.github/workflows/pull-request.yml`) do odtworzenia lokalnie: `dotnet restore --locked-mode`, `dotnet format --verify-no-changes`, `dotnet build APPS.sln`, `dotnet test APPS.sln`; w `src/client/app01`: `npx prettier --check "src/**/*.{ts,tsx,css}"`, `npm run lint`, `npm run build`.
-```
-
-**Poza plikami instrukcji (do zrobienia ręcznie):** w `src/server/App01/App01.Bootstrapper.Api/Properties/PublishProfiles/FolderProfile.pubxml` i `FolderProfile1.pubxml` zmienić `bin\Release\net8.0\publish\` na `bin\Release\net10.0\publish\`.
 
 ## Summary
 
-**Ogólna gotowość: ready-with-compensation.** Wszystkie 16 kryteriów jest spełnionych, 2 z nich częściowo dzięki `CLAUDE.md`.
+**Ogólna gotowość: ready-with-compensation.** Wszystkie 16 kryteriów jest spełnionych, 2 częściowo — konwencje Minimal APIs i Vite + React dostarcza aktualny `CLAUDE.md`.
 
 **Mocne strony:**
 - Typowanie end-to-end: C# z nullable i TypeScript strict.
 - Mainstreamowe, dobrze udokumentowane technologie w obu ekosystemach.
-- Bardzo szczegółowy `CLAUDE.md` z przepisami krok po kroku, wzorcem referencyjnym i checklistą.
-- Testy endpointów na `WebApplicationFactory`.
-- Od niedawna pełne CI w GitHub Actions: locked restore, skan podatności, format, lint, build, testy z pokryciem.
+- Szczegółowy `CLAUDE.md` z przepisami na slice i moduł (z przykładem „Courses"), regułami bezpieczeństwa dla publicznych kafelków i unikalności flag.
+- Testy po obu stronach i pełne CI (locked restore, skan podatności, format, lint, build, testy).
 
-**Kluczowe luki:**
-1. `CLAUDE.md` nie nadąża za migracją na .NET 10: zły TFM w przepisie na moduł, przestarzałe `.WithOpenApi()` w przepisie na slice, dokumentacja 8.0, złe wersje EF/Serilog. To trzeba naprawić **przed** rozpoczęciem pracy agenta nad modułem Kursy, bo przepis na nowy moduł zostanie użyty dosłownie.
-2. Konwencje Minimal APIs i Vite + React żyją wyłącznie w `CLAUDE.md` — trzeba je utrzymywać przy każdej zmianie wzorca.
-3. Brak testów frontendu (skompensowany regułą „logika domenowa po stronie serwera").
+**Kluczowe luki w zakresie PRD:**
+1. Brak wzorca weryfikacji przez LLM (timeout, awaria ≠ ocena negatywna, prompt injection, stub w testach) — Luka 4.
+2. Ryzyko publicznego wystawienia treści kursów przez `UseStaticFiles` — Luka 5.
 
-**Następny krok:** `/10x-health-check` — audyt zależności (NuGet po skoku na .NET 10, npm), skan bezpieczeństwa (m.in. pliki `.env*` w `src/client/app01`) i weryfikacja, czy CI przechodzi na zielono.
+Obie kompensuje blok „Moduł Courses" do wklejenia w `CLAUDE.md`.
+
+**Następny krok:** `/10x-health-check`.

@@ -1,6 +1,6 @@
 ---
 project: APPS (tomsoft1.pl — App01)
-checked_at: 2026-09-27T21:45:00Z
+checked_at: 2026-09-27T21:50:00Z
 health_status: healthy
 context_type: brownfield
 language_family: multi
@@ -19,7 +19,7 @@ audit_findings:
   low: 0
 test_runner_detected: true
 ci_provider: GitHub Actions
-recommended_fixes: 4
+recommended_fixes: 3
 ---
 
 ## Dependency Health
@@ -44,15 +44,12 @@ Direct vs transitive: sprawdzono oba (--include-transitive); brak podatnych paki
 ```
 Tool: npm audit --json (src/client/app01)
 Summary: 0 CRITICAL, 0 HIGH, 0 MODERATE, 0 LOW
-Direct vs transitive: 512 zależności (284 prod, 152 dev, 77 optional); brak podatności
+Direct vs transitive: 584 zależności (284 prod, 224 dev, 77 optional); brak podatności
 ```
 
-**Sekrety w repozytorium:**
+Liczba zależności dev wzrosła ze 152 do 224 po dodaniu Vitest 5, jsdom i Testing Library. Nowe pakiety nie wniosły podatności.
 
-- `appsettings.json` nie jest już śledzony przez git (`git ls-files` zwraca tylko `appsettings.Example.json`). Ignoruje go `src/server/.gitignore` (`appsettings.json`, `appsettings.*.json`, wyjątek `!appsettings.Example.json`), dodany w commicie `493197a`. Według autora plik nie zawierał kluczy, więc rotacja nie jest potrzebna. Zamyka to poprawkę nr 3 z poprzedniego raportu.
-- `appsettings.Example.json` dokumentuje wszystkie klucze konfiguracji używane w kodzie (`Jwt:*`, `OpenRouter:*`, `LottoOpenApi:*`, `Tokens:X-TOKEN`, `Swagger:*`, `Workers:*`, `Serilog:*`, `ConnectionStrings:DefaultConnection`). W `.csproj` ma ustawione `CopyToPublishDirectory="Never"`.
-- Pliki `.env`, `.env.dev`, `.env.prod1` i `.env.prod2` w `src/client/app01` są ignorowane (`.env`, `.env.*`). Śledzony jest tylko `.env.example` (`VITE_BASE_URL`, `VITE_API_URL`, `VITE_APP_TOKEN`). Wartości `.env*` nie odczytywano.
-- Pliki `*.pubxml.user`, w których wciąż jest `net8.0`, są ignorowane i lokalne. Nie wpływają na repozytorium.
+**Sekrety w repozytorium:** bez zmian od poprzedniego raportu. `appsettings.json` i `appsettings.*.json` są ignorowane (`src/server/.gitignore`), śledzony jest tylko `appsettings.Example.json`. W kliencie śledzony jest tylko `.env.example`. Wartości lokalnych plików konfiguracyjnych nie odczytywano.
 
 ### Outdated Dependencies
 
@@ -74,14 +71,16 @@ npm (`npm outdated`; wszędzie `wanted` = `current`, czyli zakresy w `package.js
 - **mermaid**: 11.17.2 → 12.0.0
 - **eslint**: 9.39.5 → 10.11.0; **@eslint/js**: 9.39.5 → 10.0.1; **globals**: 16.5.0 → 17.12.0; **eslint-plugin-react-refresh**: 0.4.26 → 0.5.7
 
-Te luki służą tylko jako informacja. Wersje są przypięte zgodnie z sekcją „Wersje przypięte" w `CLAUDE.md`, a agent nie może podbijać majorów przy okazji innych zmian.
+Te luki służą tylko jako informacja. Wersje są przypięte zgodnie z sekcją „Wersje przypięte" w `CLAUDE.md`.
 
 ## Test Suite
+
+### Serwer
 
 ```
 Test runner: xUnit 2.9.3 (+ Microsoft.AspNetCore.Mvc.Testing / WebApplicationFactory, EF InMemory)
 Tests found: 343
-Test execution: passing (343/343, 0 pominiętych, ~21 s)
+Test execution: passing (343/343, 0 pominiętych, ~20 s)
 ```
 
 ```
@@ -89,9 +88,20 @@ Configuration: tests/server/App01/App01.Api.Tests/App01.Bootstrapper.Api.Tests.c
 Framework: xUnit 2.9.3, Moq, coverlet.collector
 ```
 
-Testy nie zależą od `appsettings.json`. `TestWebApplicationFactory` i `ConfigurableTestWebApplicationFactory` wywołują `config.Sources.Clear()` i podają konfigurację w pamięci. Usunięcie pliku z repozytorium nie psuje więc testów w CI, gdzie tego pliku nie ma.
+### Klient (nowe od poprzedniego raportu)
 
-Frontend (`src/client/app01`) nie ma test runnera. Jego rolę pełnią `tsc -b` (strict), `eslint --max-warnings 0` i `prettier --check`. Zgodnie z `CLAUDE.md` logika domenowa zostaje po stronie serwera, gdzie pokrywają ją testy endpointów.
+```
+Test runner: Vitest 5 + jsdom + @testing-library/react + @testing-library/jest-dom
+Tests found: 15 (4 pliki)
+Test execution: passing (15/15, ~0,8 s)
+```
+
+```
+Configuration: src/client/app01/vite.config.ts (blok `test`), setup: src/client/app01/src/test/setup.ts
+Pliki testów: src/utils/auth.test.ts, src/utils/jwt.test.ts, src/utils/parseFrontmatter.test.ts, src/components/ConfirmModal.test.tsx
+```
+
+Agent może teraz automatycznie weryfikować zmiany po obu stronach granicy API.
 
 ## CI/CD
 
@@ -103,12 +113,12 @@ Configuration: .github/workflows/pull-request.yml (push i pull_request na wszyst
 | Stage      | Status | Notes                                                                                              |
 |------------|--------|----------------------------------------------------------------------------------------------------|
 | Lint       | ✓      | `dotnet format --verify-no-changes`; `npx prettier --check`, `npm run lint` (ESLint, 0 ostrzeżeń)  |
-| Test       | ✓      | `dotnet test` z pokryciem (coverlet → ReportGenerator → artefakt HTML)                             |
+| Test       | ✓      | `dotnet test` z pokryciem (coverlet → ReportGenerator → artefakt HTML); `npm test` (Vitest)        |
 | Build      | ✓      | `dotnet build --no-restore`; `npm run build`                                                       |
 | Type check | ✓      | kompilator C# (nullable) + `tsc -b` w `npm run build`                                              |
 | Security   | ✓      | `dotnet list package --vulnerable` (fail na High/Critical); `npm audit --audit-level=high`         |
 
-Lokalne odtworzenie kroków CI (27.09.2026, po commicie `493197a`): `dotnet format --verify-no-changes` → exit 0; `dotnet test` → 343/343; `prettier --check` → exit 0; `npm run lint` → exit 0; `npm run build` → OK. Jedyny komunikat to ostrzeżenie Vite o chunku JS > 500 kB. Stanu przebiegów w GitHub Actions nie sprawdzano.
+Lokalne odtworzenie kroków CI (27.09.2026, po commicie `1a6d86d`): `dotnet format --verify-no-changes` → exit 0; `dotnet test` → 343/343; `prettier --check` → exit 0; `npm run lint` → exit 0; `npm test` → 15/15; `npm run build` → OK (jedynie ostrzeżenie Vite o chunku JS > 500 kB). Stanu przebiegów w GitHub Actions nie sprawdzano.
 
 ## Configuration
 
@@ -122,8 +132,7 @@ Brak. Formatter (`.prettierrc.json`, `dotnet format` + `.editorconfig`), linter 
 
 ### Low severity
 
-- **Brak instrukcji „skopiuj `appsettings.Example.json`"**. Po świeżym klonie `appsettings.json` nie istnieje, a aplikacja rzuca `JWT Key not configured` przy starcie (`ServerDI.cs:70`). Nigdzie w dokumentacji nie opisano tego kroku.
-- **Literówka w konfiguracji testów**: fabryki testowe i 26 plików `EndpointTests.cs` ustawiają `Swagger:Enabled`, a `Program.cs` czyta `Swagger:Enable`. Dziś nie ma to skutków, bo domyślna wartość to `false`.
+- **`appsettings.Example.json` ma nieaktualny klucz `Swagger:Enable`**. Literówkę rozwiązano, zmieniając `Program.cs:64` na `Swagger:Enabled` (tak jak w testach i w lokalnych `appsettings*.json`). Szablon `appsettings.Example.json:19` wciąż ma jednak `"Enable": false`. Kto skopiuje szablon zgodnie z instrukcją w `CLAUDE.md` i ustawi `Enable: true`, nie zobaczy Swaggera i nie dostanie żadnego błędu.
 - **Chunk JS > 500 kB** (ostrzeżenie Vite przy każdym buildzie).
 
 Obecne pliki: `.editorconfig`, `.gitignore` (root, `src/server`, klient), `.env.example`, `appsettings.Example.json`, `.nvmrc`, `global.json`, `Directory.Build.props`, `CLAUDE.md`, `AGENTS.md`. Brak `tailwind.config.*` i `postcss.config.*` jest poprawny dla Tailwind 4 (CSS-first).
@@ -135,76 +144,50 @@ Stack assessment: context/foundation/stack-assessment.md
 Agent readiness (from stack-assess): ready-with-compensation
 ```
 
-| Quality Gate Gap                                                     | Health-Check Finding                                                                                                                                                              | Status     |
-|----------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
-| Luka 1: `CLAUDE.md` opisuje .NET 8, kod jest na .NET 10              | `CLAUDE.md` ma sekcję „Wersje przypięte" dla .NET 10, `net10.0` w przepisie na moduł, zakaz `.WithOpenApi()` i dokumentację 10.0. Śledzone `*.pubxml` mają `net10.0`.           | Mitigated  |
-| Luka 2: konwencje Minimal APIs / Vite+React żyją tylko w `CLAUDE.md` | Sekcja „Formatowanie (CI odrzuca niesformatowany kod)" i pełna lista kroków CI są w `CLAUDE.md`. `dotnet format` i `prettier --check` przechodzą.                                | Mitigated  |
-| Luka 3: brak testów frontendu                                        | Nadal brak runnera po stronie klienta. Kompensują to reguła „logika domenowa po stronie serwera" oraz `tsc` strict, ESLint i prettier w CI. UI modułu Kursy wymaga weryfikacji manualnej. | Accepted   |
-| Typed / Convention / Training data / Documented (16/16 pass)         | Typowanie potwierdzone (`strict: true`, nullable). Przypięte wersje ograniczają ryzyko, że agent sięgnie po API nowszych majorów.                                              | Reinforced |
+| Quality Gate Gap                                                     | Health-Check Finding                                                                                                                                                    | Status     |
+|----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| Luka 1 (zamknięta): nieaktualny opis .NET 8 w `CLAUDE.md`           | `CLAUDE.md` ma sekcję „Wersje przypięte" dla .NET 10, `net10.0` w przepisie na moduł, zakaz `.WithOpenApi()` i dokumentację 10.0. Lokalne (ignorowane) `*.pubxml` mają `net10.0`. | Mitigated  |
+| Luka 2: konwencje Minimal APIs / Vite+React żyją tylko w `CLAUDE.md` | Sekcja „Formatowanie (CI odrzuca niesformatowany kod)" i pełna lista kroków CI (z `npm test`) są w `CLAUDE.md`. `dotnet format` i `prettier --check` przechodzą.         | Mitigated  |
+| Luka 3: brak testów frontendu                                        | Rozwiązane: Vitest 5 + Testing Library, 15 testów, krok „Test frontend" w CI, reguły pisania testów w `CLAUDE.md`.                                                      | Mitigated  |
+| Typed / Convention / Training data / Documented (16/16 pass)         | Typowanie potwierdzone (`strict: true`, nullable). Przypięte wersje ograniczają ryzyko, że agent sięgnie po API nowszych majorów.                                      | Reinforced |
 
-Wszystkie wpisy kompensacyjne rekomendowane przez stack-assess są obecne w `CLAUDE.md`. Reguła „Nie wpisuj sekretów … do `appsettings.json`" pozostaje aktualna i jest teraz dodatkowo wymuszona przez `.gitignore`.
+Wszystkie wpisy kompensacyjne rekomendowane przez stack-assess są obecne w `CLAUDE.md`, łącznie z instrukcją kopiowania `appsettings.Example.json` (poprawka nr 1 z poprzedniego raportu).
 
 ## Recommended Fixes
 
 ### Fix before agent work (Category A)
 
-### 1. Udokumentuj krok `appsettings.Example.json` → `appsettings.json`
+### 1. Ujednolić klucz `Swagger:Enabled` w `appsettings.Example.json`
 
-**Impact**: agent (albo nowa osoba) po świeżym klonie nie uruchomi API. Start kończy się wyjątkiem `JWT Key not configured`, a z kodu nie wynika, skąd wziąć konfigurację. Agent może wtedy „naprawić" problem wpisaniem klucza do śledzonego pliku.
+**Impact**: szablon konfiguracji jest wzorcem, który agent i nowe osoby kopiują dosłownie. Klucz niezgodny z kodem daje „cichą" awarię, czyli ustawienie, które nic nie robi. Agent może wtedy szukać przyczyny w kodzie zamiast w szablonie.
 **Severity**: low
 **Effort**: quick (< 5 min)
 **Fix**:
 
-W `CLAUDE.md`, w sekcji „Bezpieczeństwo endpointów" przy regule o sekretach, dopisz:
-
-```markdown
-- `appsettings.json` i `appsettings.*.json` są ignorowane przez git (`src/server/.gitignore`); jedynym śledzonym plikiem jest `appsettings.Example.json`. Lokalnie: `cp src/server/App01/App01.Bootstrapper.Api/appsettings.Example.json src/server/App01/App01.Bootstrapper.Api/appsettings.json` i uzupełnij wartości. Nowy klucz konfiguracji dopisz najpierw do `appsettings.Example.json` (z pustą/przykładową wartością).
-```
-
-### 2. Popraw literówkę `Swagger:Enabled` w fabrykach testowych
-
-**Impact**: klucz testowy nie odpowiada kluczowi czytanemu przez `Program.cs` (`Swagger:Enable`). Agent kopiujący wzorzec z testów powieli błędną nazwę.
-**Severity**: low
-**Effort**: quick (< 5 min)
-
 ```bash
-grep -rl '"Swagger:Enabled"' tests/server | xargs sed -i 's/"Swagger:Enabled"/"Swagger:Enable"/'
-dotnet test APPS.sln
+sed -i 's/"Enable": false/"Enabled": false/' src/server/App01/App01.Bootstrapper.Api/appsettings.Example.json
 ```
 
-Przy okazji rozważ wyciągnięcie powtarzanego słownika konfiguracji testowej do jednej metody pomocniczej w `Infrastructure/`, żeby agent nie kopiował go do każdego nowego `EndpointTests.cs`.
-
-### 3. Brak testów frontendu przy planowanej pracy nad UI modułu Kursy — ✅ ZROBIONE (27.09.2026)
-
-Dodano Vitest 5 + jsdom + Testing Library (`npm test`, blok `test` w `vite.config.ts`, setup w `src/test/setup.ts`), 15 testów w 4 plikach (`auth`, `jwt`, `parseFrontmatter`, `ConfirmModal`), krok „Test frontend" w `.github/workflows/pull-request.yml` oraz reguły w `CLAUDE.md`. Poniżej pierwotny opis.
-
-**Impact**: agent nie zweryfikuje automatycznie zachowania nowych stron (kafelki kursów, widok kursu, hangar). Wykryje tylko błędy typów, lintu i formatowania.
-**Severity**: low (świadomie skompensowane regułą w `CLAUDE.md`)
-**Effort**: moderate (15–30 min), jeśli się zdecydujesz
-**Fix**: opcjonalnie, gdy w module Kursy pojawi się logika po stronie klienta:
-
-```bash
-cd src/client/app01
-npm install -D vitest@^3 @testing-library/react @testing-library/jest-dom jsdom
-# package.json → "scripts": { "test": "vitest run" }
-# vite.config.ts → test: { environment: "jsdom" }
-```
-
-W przeciwnym razie dopisz do planu zmiany krok manualnej weryfikacji UI.
-
-### 4. Podział bundla JS
+### 2. Podział bundla JS
 
 **Impact**: niski dla agenta. Stałe ostrzeżenie w logu `npm run build` zagłusza nowe ostrzeżenia, które agent powinien zauważyć.
 **Severity**: low
 **Effort**: moderate (15–30 min)
 **Fix**: w `src/main.tsx` zamień importy ciężkich stron na `const XPage = lazy(() => import("./pages/..."));` i owiń `<Routes>` w `<Suspense>`. Alternatywnie wydziel `mermaid`/`hls.js` przez `build.rollupOptions.output.manualChunks` w `vite.config.ts`.
 
+### 3. Wspólny helper konfiguracji testowej (opcjonalnie)
+
+**Impact**: słownik konfiguracji w pamięci powtarza się w 26 plikach `EndpointTests.cs`. Agent tworzący testy dla modułu Kursy skopiuje go po raz kolejny. Przy zmianie klucza (jak `Swagger:Enabled`) trzeba poprawiać wszystkie kopie.
+**Severity**: low
+**Effort**: moderate (15–30 min)
+**Fix**: wyciągnij słownik do statycznej metody w `tests/server/App01/App01.Api.Tests/Infrastructure/` (np. `TestConfiguration.Default()`), użyj jej w fabrykach i w nowych testach, a w `CLAUDE.md` wskaż ją jako wzorzec. Na koniec uruchom `dotnet test APPS.sln`.
+
 ### Addressed in upcoming lessons (Category B)
 
 ### Konfiguracja wdrożenia (folder publish, bez kontenera/PaaS)
 
 **Lesson**: [Sprint Zero z Agentem: infrastruktura, walking skeleton i pierwszy deploy (M1L5)](https://platforma.przeprogramowani.pl/external/10xdevs-3/m1-l5)
-**What you'll do there**: zautomatyzujesz wdrożenie i rozszerzysz pipeline GitHub Actions o krok deploy. Skoro `appsettings.json` nie jest już w repozytorium, konfigurację produkcyjną trzeba będzie dostarczyć ze zmiennych środowiskowych lub sekretów pipeline'u.
+**What you'll do there**: zautomatyzujesz wdrożenie i rozszerzysz pipeline GitHub Actions o krok deploy. Konfigurację produkcyjną trzeba będzie dostarczyć ze zmiennych środowiskowych lub sekretów pipeline'u, bo `appsettings.json` nie jest w repozytorium.
 
 ### Utrzymanie `CLAUDE.md` / `AGENTS.md`
 
@@ -217,6 +200,6 @@ W przeciwnym razie dopisz do planu zmiany krok manualnej weryfikacji UI.
 Health status: healthy
 ```
 
-Projekt jest w dobrej kondycji. NuGet i npm nie mają znanych podatności, a wersje są przypięte lock-file'ami. 343 testy serwera przechodzą i nie zależą od `appsettings.json`. Kroki CI (format, lint, build, typy, skan bezpieczeństwa, testy) przechodzą lokalnie. Poprzednia otwarta kwestia, czyli śledzony `appsettings.json`, jest zamknięta: plik usunięto z repozytorium, nie zawierał kluczy, a `.gitignore` nie pozwoli go dodać ponownie. Zostały drobiazgi: udokumentować kopiowanie `appsettings.Example.json`, poprawić literówkę w konfiguracji testów, opcjonalnie testy frontendu i podział bundla.
+Projekt jest w dobrej kondycji. NuGet i npm nie mają znanych podatności, a wersje są przypięte lock-file'ami. 343 testy serwera i 15 nowych testów klienta przechodzą, a CI uruchamia teraz oba zestawy. Wszystkie kroki CI przechodzą lokalnie. Od poprzedniego raportu zamknięto trzy poprawki: instrukcję `appsettings.Example.json` w `CLAUDE.md`, literówkę `Swagger:Enable(d)` w kodzie i brak testów frontendu. Zostały drobiazgi: jeden nieaktualny klucz w szablonie konfiguracji, ostrzeżenie o rozmiarze bundla i opcjonalne uporządkowanie konfiguracji testów.
 
-Next step: dopisz regułę z poprawki nr 1 do `CLAUDE.md`, a potem przejdź do agent onboardingu.
+Next step: popraw klucz w `appsettings.Example.json` (poprawka nr 1), a potem przejdź do agent onboardingu.
