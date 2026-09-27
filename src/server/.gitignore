@@ -46,6 +46,8 @@ nunit-*.xml
 
 
 appsettings.*.json
+!appsettings.Example.json
+
 LogError.txt
 FolderProfile.pubxml.user
 

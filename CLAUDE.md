@@ -111,7 +111,7 @@ Każda funkcja to katalog `App01.Modules.<Moduł>/Features/<NazwaFunkcji>/` z DO
 5. Projekt testów `App01.Bootstrapper.Api.Tests.csproj` — dodaj `ProjectReference` do nowego modułu.
 6. Nie zmieniaj istniejących modułów, tras ani `ExceptionHandlingMiddleware` — PRD wymaga, by Portal/Lotto/Flashcards działały bez zmian.
 
-## Dane i migracje (EF Core 8, SQL Server)
+## Dane i migracje (EF Core 10, SQL Server 2012)
 
 - Encje: `App01.Shared.Application/Entities/<Moduł>/<Encja>.cs` (NIE w projekcie modułu).
 - Konfiguracja: `App01.Shared.Infrastructure/Repositories/Configurations/<Moduł>/<Encja>Configuration.cs` (`IEntityTypeConfiguration<T>`).
@@ -148,7 +148,7 @@ Każda funkcja to katalog `App01.Modules.<Moduł>/Features/<NazwaFunkcji>/` z DO
 
 .NET 10 (SDK przypięty w `global.json`: 10.0.100) / ASP.NET Core 10 / EF Core 10 · MediatR 12.x (v13+ ma licencję komercyjną) · FluentValidation 12 · xUnit 2.x (nie v3) · Serilog.AspNetCore 10 · Swashbuckle.AspNetCore 10 · React 19 · React Router 7 · Tailwind CSS 4 · Vite 7 · TypeScript 5.9.
 Dokumentacja: learn.microsoft.com/aspnet/core (wersja 10.0 — `?view=aspnetcore-10.0`), learn.microsoft.com/ef/core (EF Core 10), docs.fluentvalidation.net, reactrouter.com (sekcja „Declarative Mode"), tailwindcss.com/docs (v4), vite.dev.
-- Projekt jest po migracji z .NET 8. Nie używaj API oznaczonych w .NET 10 jako przestarzałe (m.in. `.WithOpenApi()` na endpointach — ASPDEPR002). Ostrzeżenia `obsolete` przy buildzie traktuj jak błąd do naprawy, nie do wyciszenia.
+- Projekt jest po migracji z .NET 8 do .NET 10. Nie używaj API oznaczonych w .NET 10 jako przestarzałe (m.in. `.WithOpenApi()` na endpointach — ASPDEPR002). Ostrzeżenia `obsolete` przy buildzie traktuj jak błąd do naprawy, nie do wyciszenia.
 - Pakiety NuGet są przypięte lock-filami (`RestorePackagesWithLockFile` w `Directory.Build.props`, CI robi `dotnet restore --locked-mode`). Po dodaniu lub zmianie pakietu zacommituj zaktualizowane `packages.lock.json`.
 
 ## Weryfikacja przed zakończeniem zadania

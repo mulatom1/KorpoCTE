@@ -6,16 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-    <ItemGroup>
+  <ItemGroup>
+    <Content Update="appsettings.Example.json" CopyToPublishDirectory="Never" />
     <Folder Include="Logs\" />
     <Folder Include="TMP\" />
   </ItemGroup>
 
-    <ItemGroup>      
-      <ProjectReference Include="..\App01.Modules.Flashcards\App01.Modules.Flashcards.csproj" />
-      <ProjectReference Include="..\App01.Modules.Lotto\App01.Modules.Lotto.csproj" />
-      <ProjectReference Include="..\App01.Modules.Portal\App01.Modules.Portal.csproj" />
-      <ProjectReference Include="..\App01.Shared.Infrastructure\App01.Shared.Infrastructure.csproj" />
-    </ItemGroup>
+  <ItemGroup>      
+    <ProjectReference Include="..\App01.Modules.Flashcards\App01.Modules.Flashcards.csproj" />
+    <ProjectReference Include="..\App01.Modules.Lotto\App01.Modules.Lotto.csproj" />
+    <ProjectReference Include="..\App01.Modules.Portal\App01.Modules.Portal.csproj" />
+    <ProjectReference Include="..\App01.Shared.Infrastructure\App01.Shared.Infrastructure.csproj" />
+  </ItemGroup>
 
 </Project>

@@ -10,7 +10,7 @@
     "build:prod1": "tsc -b && vite build --mode prod1",
     "build:prod2": "tsc -b && vite build --mode prod2",
     "format": "prettier --write src",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
