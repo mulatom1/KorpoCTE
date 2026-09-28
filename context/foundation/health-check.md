@@ -1,6 +1,6 @@
 ---
-project: APPS (tomsoft1.pl — App01)
-checked_at: 2026-09-27T21:50:00Z
+project: app01 (APPS — tomsoft1.pl, klient src/client/app01)
+checked_at: 2026-09-28T00:05:00Z
 health_status: healthy
 context_type: brownfield
 language_family: multi
@@ -22,120 +22,98 @@ ci_provider: GitHub Actions
 recommended_fixes: 3
 ---
 
+> Zakres przebiegu: katalog roboczy `src/client/app01` (JS/TS). Audyt NuGet (`dotnet list package --vulnerable/--outdated`) został wykonany dla całej solucji i jest dołączony. Testów serwera (`dotnet test APPS.sln`) w tym przebiegu NIE uruchamiano.
+
 ## Dependency Health
 
 ### Lockfile
 
 ```
-Status: present — NuGet packages.lock.json (8/8 projektów) + src/client/app01/package-lock.json
-Package manager: dotnet (NuGet) + npm
+Status: present — src/client/app01/package-lock.json; NuGet packages.lock.json w 8/8 projektów
+Package manager: npm + dotnet (NuGet)
 ```
 
-`Directory.Build.props` włącza `RestorePackagesWithLockFile` i `NuGetAuditMode=all`, a `NU1903`/`NU1904` (podatności high/critical) traktuje jako błędy builda. CI wykonuje `dotnet restore --locked-mode` oraz `npm ci`.
+CI wykonuje `npm ci` i `dotnet restore --locked-mode`. `.nvmrc` przypina Node 22 (zgodnie z `actions/setup-node` w CI).
 
 ### Security Audit
 
 ```
-Tool: dotnet list APPS.sln package --vulnerable --include-transitive
-Summary: 0 CRITICAL, 0 HIGH, 0 MODERATE, 0 LOW
-Direct vs transitive: sprawdzono oba (--include-transitive); brak podatnych pakietów w żadnym z 8 projektów
-```
-
-```
 Tool: npm audit --json (src/client/app01)
 Summary: 0 CRITICAL, 0 HIGH, 0 MODERATE, 0 LOW
-Direct vs transitive: 584 zależności (284 prod, 224 dev, 77 optional); brak podatności
+Direct vs transitive: brak podatności ani w bezpośrednich, ani w przechodnich
 ```
 
-Liczba zależności dev wzrosła ze 152 do 224 po dodaniu Vitest 5, jsdom i Testing Library. Nowe pakiety nie wniosły podatności.
+```
+Tool: dotnet list APPS.sln package --vulnerable --include-transitive
+Summary: 0 CRITICAL, 0 HIGH, 0 MODERATE, 0 LOW
+Direct vs transitive: sprawdzono oba; żaden z 8 projektów nie ma podatnych pakietów
+```
 
-**Sekrety w repozytorium:** bez zmian od poprzedniego raportu. `appsettings.json` i `appsettings.*.json` są ignorowane (`src/server/.gitignore`), śledzony jest tylko `appsettings.Example.json`. W kliencie śledzony jest tylko `.env.example`. Wartości lokalnych plików konfiguracyjnych nie odczytywano.
+**Sekrety:** w kliencie git śledzi wyłącznie `.env.example`; `.env`, `.env.dev`, `.env.prod1`, `.env.prod2` są ignorowane (`.gitignore`: `.env`, `.env.*`, `!.env.example`). Zawartości lokalnych plików `.env*` nie odczytywano.
 
 ### Outdated Dependencies
 
 ```
-Packages with major version gaps: 12 (NuGet: 1, npm: 11)
+Packages with major version gaps: 11 (npm: 10, NuGet: 1)
 ```
 
-NuGet (`dotnet list package --outdated`):
+npm (`npm outdated`):
 
-- **MediatR**: 12.5.0 → 14.2.0 (2 majory). **Nie podbijać**: od v13 obowiązuje licencja komercyjna (reguła w `CLAUDE.md`).
-
-npm (`npm outdated`; wszędzie `wanted` = `current`, czyli zakresy w `package.json` celowo zatrzymują się na bieżących majorach):
-
-- **typescript**: 5.9.3 → 7.0.2 (2 majory)
-- **@types/node**: 24.19.0 → 26.6.3 (2 majory)
+- **typescript**: 5.9.3 → 7.0.2 (2 majory) — przypięte w `CLAUDE.md` („TypeScript 5.9")
 - **eslint-plugin-react-hooks**: 5.2.0 → 7.1.1 (2 majory)
-- **vite**: 7.3.6 → 8.3.1; **@vitejs/plugin-react**: 5.2.0 → 6.1.1
-- **react-router**: 7.18.4 → 8.4.0
+- **@types/node**: 24.19.0 → 26.6.3 (2 majory)
+- **react-router**: 7.18.4 → 8.4.0 — przypięte w `CLAUDE.md` („React Router 7")
+- **vite**: 7.3.6 → 8.3.1 — przypięte („Vite 7")
+- **@vitejs/plugin-react**: 5.2.0 → 6.1.1 (sprzężony z Vite 8)
+- **eslint** / **@eslint/js**: 9.39.5 → 10.x
+- **globals**: 16.5.0 → 17.12.0
 - **mermaid**: 11.17.2 → 12.0.0
-- **eslint**: 9.39.5 → 10.11.0; **@eslint/js**: 9.39.5 → 10.0.1; **globals**: 16.5.0 → 17.12.0; **eslint-plugin-react-refresh**: 0.4.26 → 0.5.7
 
-Te luki służą tylko jako informacja. Wersje są przypięte zgodnie z sekcją „Wersje przypięte" w `CLAUDE.md`.
+NuGet: **MediatR** 12.5.0 → 14.2.0 — celowo przypięte (`CLAUDE.md`: „v13+ ma licencję komercyjną").
+
+Wszystkie pakiety są na najnowszej wersji w obrębie swojego majora („wanted" = „current"). Luki majorowe to w większości świadome przypięcia z `CLAUDE.md`, nie zaniedbanie.
 
 ## Test Suite
 
-### Serwer
-
 ```
-Test runner: xUnit 2.9.3 (+ Microsoft.AspNetCore.Mvc.Testing / WebApplicationFactory, EF InMemory)
-Tests found: 343
-Test execution: passing (343/343, 0 pominiętych, ~20 s)
+Test runner: Vitest 5.0.2 (+ jsdom, Testing Library)
+Tests found: 15 testów w 4 plikach
+Test execution: passing (npx vitest run — 4/4 plików, 15/15 testów, 0,9 s)
 ```
 
 ```
-Configuration: tests/server/App01/App01.Api.Tests/App01.Bootstrapper.Api.Tests.csproj
-Framework: xUnit 2.9.3, Moq, coverlet.collector
+Configuration: src/client/app01/vite.config.ts (blok `test`), setup: src/test/setup.ts
+Framework: Vitest 5.0.2
 ```
 
-### Klient (nowe od poprzedniego raportu)
+Pliki testów: `src/utils/auth.test.ts`, `src/utils/jwt.test.ts`, `src/utils/parseFrontmatter.test.ts`, `src/components/ConfirmModal.test.tsx`.
 
-```
-Test runner: Vitest 5 + jsdom + @testing-library/react + @testing-library/jest-dom
-Tests found: 15 (4 pliki)
-Test execution: passing (15/15, ~0,8 s)
-```
+Pozostałe lokalne kontrole (wszystkie zielone): `npm run lint` (ESLint, `--max-warnings 0`), `npx prettier --check "src/**/*.{ts,tsx,css}"`, `npx tsc -b` (exit 0).
 
-```
-Configuration: src/client/app01/vite.config.ts (blok `test`), setup: src/client/app01/src/test/setup.ts
-Pliki testów: src/utils/auth.test.ts, src/utils/jwt.test.ts, src/utils/parseFrontmatter.test.ts, src/components/ConfirmModal.test.tsx
-```
-
-Agent może teraz automatycznie weryfikować zmiany po obu stronach granicy API.
+Serwer: xUnit 2.9.3 + `WebApplicationFactory`, 25 plików `EndpointTests.cs` — wykryty, ale nie uruchamiany w tym przebiegu.
 
 ## CI/CD
 
 ```
 Provider: GitHub Actions
-Configuration: .github/workflows/pull-request.yml (push i pull_request na wszystkie gałęzie)
+Configuration: .github/workflows/pull-request.yml (każdy push i PR)
 ```
 
-| Stage      | Status | Notes                                                                                              |
-|------------|--------|----------------------------------------------------------------------------------------------------|
-| Lint       | ✓      | `dotnet format --verify-no-changes`; `npx prettier --check`, `npm run lint` (ESLint, 0 ostrzeżeń)  |
-| Test       | ✓      | `dotnet test` z pokryciem (coverlet → ReportGenerator → artefakt HTML); `npm test` (Vitest)        |
-| Build      | ✓      | `dotnet build --no-restore`; `npm run build`                                                       |
-| Type check | ✓      | kompilator C# (nullable) + `tsc -b` w `npm run build`                                              |
-| Security   | ✓      | `dotnet list package --vulnerable` (fail na High/Critical); `npm audit --audit-level=high`         |
-
-Lokalne odtworzenie kroków CI (27.09.2026, po commicie `1a6d86d`): `dotnet format --verify-no-changes` → exit 0; `dotnet test` → 343/343; `prettier --check` → exit 0; `npm run lint` → exit 0; `npm test` → 15/15; `npm run build` → OK (jedynie ostrzeżenie Vite o chunku JS > 500 kB). Stanu przebiegów w GitHub Actions nie sprawdzano.
+| Stage      | Status | Notes |
+|------------|--------|-------|
+| Lint       | ✓      | `npm run lint` (ESLint 9, `--max-warnings 0`), `npx prettier --check`; serwer: `dotnet format --verify-no-changes` |
+| Test       | ✓      | `npm test` (Vitest); serwer: `dotnet test` z pokryciem + raport HTML |
+| Build      | ✓      | `npm run build`; serwer: `dotnet build --no-restore` |
+| Type check | ✓      | `tsc -b` w ramach `npm run build`; C# typowany przez kompilator |
+| Security   | ✓      | `npm audit --audit-level=high`; `dotnet list package --vulnerable --include-transitive` (fail na High/Critical) |
 
 ## Configuration
 
-### High severity
+All expected configuration files present. No gaps detected.
 
-Brak.
-
-### Medium severity
-
-Brak. Formatter (`.prettierrc.json`, `dotnet format` + `.editorconfig`), linter (`eslint.config.js`) oraz `tsconfig.app.json` ze `"strict": true` są na miejscu.
-
-### Low severity
-
-- **`appsettings.Example.json` ma nieaktualny klucz `Swagger:Enable`**. Literówkę rozwiązano, zmieniając `Program.cs:64` na `Swagger:Enabled` (tak jak w testach i w lokalnych `appsettings*.json`). Szablon `appsettings.Example.json:19` wciąż ma jednak `"Enable": false`. Kto skopiuje szablon zgodnie z instrukcją w `CLAUDE.md` i ustawi `Enable: true`, nie zobaczy Swaggera i nie dostanie żadnego błędu.
-- **Chunk JS > 500 kB** (ostrzeżenie Vite przy każdym buildzie).
-
-Obecne pliki: `.editorconfig`, `.gitignore` (root, `src/server`, klient), `.env.example`, `appsettings.Example.json`, `.nvmrc`, `global.json`, `Directory.Build.props`, `CLAUDE.md`, `AGENTS.md`. Brak `tailwind.config.*` i `postcss.config.*` jest poprawny dla Tailwind 4 (CSS-first).
+- `.editorconfig` (root), `.prettierrc.json`, `eslint.config.js`, `.gitignore`, `.env.example`, `.nvmrc` — obecne.
+- `tsconfig.app.json`: `"strict": true`.
+- `CLAUDE.md` + `AGENTS.md` — obecne (root).
 
 ## Stack Assessment Cross-Reference
 
@@ -144,62 +122,73 @@ Stack assessment: context/foundation/stack-assessment.md
 Agent readiness (from stack-assess): ready-with-compensation
 ```
 
-| Quality Gate Gap                                                     | Health-Check Finding                                                                                                                                                    | Status     |
-|----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
-| Luka 1 (zamknięta): nieaktualny opis .NET 8 w `CLAUDE.md`           | `CLAUDE.md` ma sekcję „Wersje przypięte" dla .NET 10, `net10.0` w przepisie na moduł, zakaz `.WithOpenApi()` i dokumentację 10.0. Lokalne (ignorowane) `*.pubxml` mają `net10.0`. | Mitigated  |
-| Luka 2: konwencje Minimal APIs / Vite+React żyją tylko w `CLAUDE.md` | Sekcja „Formatowanie (CI odrzuca niesformatowany kod)" i pełna lista kroków CI (z `npm test`) są w `CLAUDE.md`. `dotnet format` i `prettier --check` przechodzą.         | Mitigated  |
-| Luka 3: brak testów frontendu                                        | Rozwiązane: Vitest 5 + Testing Library, 15 testów, krok „Test frontend" w CI, reguły pisania testów w `CLAUDE.md`.                                                      | Mitigated  |
-| Typed / Convention / Training data / Documented (16/16 pass)         | Typowanie potwierdzone (`strict: true`, nullable). Przypięte wersje ograniczają ryzyko, że agent sięgnie po API nowszych majorów.                                      | Reinforced |
-
-Wszystkie wpisy kompensacyjne rekomendowane przez stack-assess są obecne w `CLAUDE.md`, łącznie z instrukcją kopiowania `appsettings.Example.json` (poprawka nr 1 z poprzedniego raportu).
+| Quality Gate Gap | Health-Check Finding | Status |
+|---|---|---|
+| convention_based: partial (Vite + React bez routingu plikowego) | Sekcja „Frontend" w `CLAUDE.md`; lint + prettier + `tsc -b` przechodzą lokalnie i w CI | Mitigated |
+| convention_based: partial (Minimal APIs) | Przepisy na slice/moduł w `CLAUDE.md`; `dotnet format --verify-no-changes` w CI | Mitigated |
+| Luka 4 — wzorzec weryfikacji przez LLM (zakres PRD) | Blok „Moduł Courses — weryfikacja odpowiedzi przez LLM" jest już w `CLAUDE.md`. Po stronie klienta `apiFetch` nie ma limitu czasu ani rozróżnienia awarii — patrz Fix 1 | Mitigated (serwer) / Open (klient) |
+| Luka 5 — treść kursów vs `UseStaticFiles` (zakres PRD) | Blok „Moduł Courses — treść kursów" jest w `CLAUDE.md` | Mitigated |
+| Obserwacja: 500 zwraca `exception.Message` w `Detail` | Middleware nie do zmiany (PRD); klient nie powinien wyświetlać `detail` z 500 — patrz Fix 2 | Open |
+| Wersje przypięte (.NET 10, TS 5.9, Vite 7, RR 7, MediatR 12) | 11 luk majorowych w `outdated` — w większości objęte przypięciem | Reinforced (celowo) |
 
 ## Recommended Fixes
 
 ### Fix before agent work (Category A)
 
-### 1. Ujednolić klucz `Swagger:Enabled` w `appsettings.Example.json`
+### 1. Klient bez limitu czasu i bez stanu „awaria" dla weryfikacji odpowiedzi
 
-**Impact**: szablon konfiguracji jest wzorcem, który agent i nowe osoby kopiują dosłownie. Klucz niezgodny z kodem daje „cichą" awarię, czyli ustawienie, które nic nie robi. Agent może wtedy szukać przyczyny w kodzie zamiast w szablonie.
-**Severity**: low
-**Effort**: quick (< 5 min)
+**Impact**: PRD (US-01) wymaga werdyktu w < 5 s i komunikatu o awarii odróżnionego od oceny negatywnej. `apiFetch` (`src/services/api-fetch.ts`) woła `fetch` bez `signal` — przy zawieszonym połączeniu formularz „Do sprawdzenia" czeka bez końca, a agent budujący `ApiCoursesService` nie ma wzorca, który to obsługuje.
+**Severity**: medium
+**Effort**: moderate (15–30 min)
 **Fix**:
 
-```bash
-sed -i 's/"Enable": false/"Enabled": false/' src/server/App01/App01.Bootstrapper.Api/appsettings.Example.json
+W `ApiCoursesService` (nie w `apiFetch`, żeby nie zmieniać zachowania innych modułów) przekaż limit czasu i mapuj błąd na stan awarii:
+
+```ts
+const response = await apiFetch(url, {
+  method: "POST",
+  headers,
+  body: JSON.stringify(request),
+  signal: AbortSignal.timeout(6000), // serwer ucina model po ≤ 4 s
+});
 ```
 
-### 2. Podział bundla JS
+W komponencie: `TimeoutError`/`TypeError` (sieć) oraz `Status === "Unavailable"` → komunikat „Weryfikacja chwilowo niedostępna" + przycisk „Spróbuj ponownie"; `Incorrect` → komunikat o błędnej odpowiedzi. Dodaj test `<Komponent>.test.tsx` z `vi.fn()` zwracającym każdy z czterech statusów.
 
-**Impact**: niski dla agenta. Stałe ostrzeżenie w logu `npm run build` zagłusza nowe ostrzeżenia, które agent powinien zauważyć.
+### 2. Nie wyświetlaj `detail` z odpowiedzi 500
+
+**Impact**: `ExceptionHandlingMiddleware` zwraca w 500 treść wyjątku (z dwoma poziomami `InnerException`). Middleware jest poza zakresem zmian (PRD), więc jedyną warstwą, która może nie pokazywać tego użytkownikowi, jest klient. Agent kopiujący istniejące wzorce łatwo wstawi `problem.detail` do UI.
 **Severity**: low
-**Effort**: moderate (15–30 min)
-**Fix**: w `src/main.tsx` zamień importy ciężkich stron na `const XPage = lazy(() => import("./pages/..."));` i owiń `<Routes>` w `<Suspense>`. Alternatywnie wydziel `mermaid`/`hls.js` przez `build.rollupOptions.output.manualChunks` w `vite.config.ts`.
+**Effort**: quick (< 5 min)
+**Fix**: dopisz do sekcji „Frontend" w `CLAUDE.md`:
 
-### 3. Wspólny helper konfiguracji testowej (opcjonalnie)
+```markdown
+- Dla odpowiedzi 5xx pokazuj ogólny komunikat („Wystąpił błąd serwera, spróbuj ponownie"); nie wyświetlaj pola `detail` z ProblemDetails. `detail` wolno pokazać tylko dla 400 (walidacja).
+```
 
-**Impact**: słownik konfiguracji w pamięci powtarza się w 26 plikach `EndpointTests.cs`. Agent tworzący testy dla modułu Kursy skopiuje go po raz kolejny. Przy zmianie klucza (jak `Swagger:Enabled`) trzeba poprawiać wszystkie kopie.
+### 3. Udokumentuj przypięte majory, żeby agent ich nie „aktualizował"
+
+**Impact**: 11 pakietów ma nowsze majory. `CLAUDE.md` przypina TS/Vite/React Router/MediatR, ale nie ESLint 9, `eslint-plugin-react-hooks` 5, `mermaid` 11 ani `@types/node` 24 — agent poproszony o „odświeżenie zależności" może podbić je razem z łamiącymi zmianami (flat-config ESLint 10, nowe reguły react-hooks 7).
 **Severity**: low
-**Effort**: moderate (15–30 min)
-**Fix**: wyciągnij słownik do statycznej metody w `tests/server/App01/App01.Api.Tests/Infrastructure/` (np. `TestConfiguration.Default()`), użyj jej w fabrykach i w nowych testach, a w `CLAUDE.md` wskaż ją jako wzorzec. Na koniec uruchom `dotnet test APPS.sln`.
+**Effort**: quick (< 5 min)
+**Fix**: dopisz do sekcji „Wersje przypięte" w `CLAUDE.md`: `ESLint 9 (+ eslint-plugin-react-hooks 5) · mermaid 11 · @types/node 24 (zgodnie z Node 22 z .nvmrc)`. Aktualizacje w obrębie majora: `npm update` + commit `package-lock.json`.
 
 ### Addressed in upcoming lessons (Category B)
 
-### Konfiguracja wdrożenia (folder publish, bez kontenera/PaaS)
+### Konfiguracja wdrożenia (tylko lokalny FolderProfile, brak Dockerfile/PaaS)
 
 **Lesson**: [Sprint Zero z Agentem: infrastruktura, walking skeleton i pierwszy deploy (M1L5)](https://platforma.przeprogramowani.pl/external/10xdevs-3/m1-l5)
-**What you'll do there**: zautomatyzujesz wdrożenie i rozszerzysz pipeline GitHub Actions o krok deploy. Konfigurację produkcyjną trzeba będzie dostarczyć ze zmiennych środowiskowych lub sekretów pipeline'u, bo `appsettings.json` nie jest w repozytorium.
+**What you'll do there**: zautomatyzujesz wdrożenie i pierwszy deploy z pipeline'u — dziś CI buduje i testuje, ale nie publikuje.
 
-### Utrzymanie `CLAUDE.md` / `AGENTS.md`
+### Dopracowanie plików instrukcji dla agenta
 
 **Lesson**: [Agent Onboarding: Agents.md, AI Rules i feedback loops (M1L4)](https://platforma.przeprogramowani.pl/external/10xdevs-3/m1-l4)
-**What you'll do there**: pliki już istnieją i są aktualne. Na lekcji dopracujesz je i ustawisz pętle feedbacku, żeby nadążały za kodem.
+**What you'll do there**: uporządkujesz `CLAUDE.md` / `AGENTS.md` (już bogate) i dodasz pętle feedbacku — tam trafią też reguły z Fix 2 i Fix 3, jeśli nie dopiszesz ich wcześniej.
 
 ## Summary
 
-```
 Health status: healthy
-```
 
-Projekt jest w dobrej kondycji. NuGet i npm nie mają znanych podatności, a wersje są przypięte lock-file'ami. 343 testy serwera i 15 nowych testów klienta przechodzą, a CI uruchamia teraz oba zestawy. Wszystkie kroki CI przechodzą lokalnie. Od poprzedniego raportu zamknięto trzy poprawki: instrukcję `appsettings.Example.json` w `CLAUDE.md`, literówkę `Swagger:Enable(d)` w kodzie i brak testów frontendu. Zostały drobiazgi: jeden nieaktualny klucz w szablonie konfiguracji, ostrzeżenie o rozmiarze bundla i opcjonalne uporządkowanie konfiguracji testów.
+Klient jest w dobrej kondycji: 0 podatności (npm i NuGet), lockfile'y po obu stronach, Vitest z 15 zielonymi testami, czysty lint, prettier i `tsc -b`, a CI pokrywa lint, testy, build, type-check i skan bezpieczeństwa. Kompensacje z oceny stacku (wzorzec weryfikacji LLM i ochrona treści kursów) są już w `CLAUDE.md`; otwarte zostają dwie drobne luki po stronie klienta związane z PRD — limit czasu/stan awarii przy weryfikacji i niewyświetlanie `detail` z 500. Luki majorowe w zależnościach są w większości świadomym przypięciem.
 
-Next step: popraw klucz w `appsettings.Example.json` (poprawka nr 1), a potem przejdź do agent onboardingu.
+Next step: przed pracą nad modułem Courses uruchom lokalnie `dotnet test APPS.sln` (nie wykonano w tym przebiegu), dopisz reguły z Fix 2 i 3 do `CLAUDE.md`, a Fix 1 zrealizuj razem z pierwszym wycinkiem „Do sprawdzenia"; potem agent onboarding.

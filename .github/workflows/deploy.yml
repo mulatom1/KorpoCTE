@@ -1,0 +1,180 @@
+name: Deploy to Webio
+
+# Ręczne wdrożenie na Webio.pl przez Web Deploy (msdeploy).
+# Plan i bramki ręczne: context/deployment/deploy-plan.md
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Środowisko docelowe (test = tomsoft1.com.pl, production = tomsoft1.pl)"
+        required: true
+        type: choice
+        options:
+          - test
+          - production
+      ref:
+        description: "Gałąź, tag lub SHA do wdrożenia"
+        required: true
+        default: main
+        type: string
+      self_contained:
+        description: "Publikacja self-contained win-x64 (gdy serwer zwraca 500.31)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+    environment:
+      name: ${{ inputs.target }}
+      url: ${{ vars.VITE_API_URL }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: src/client/app01/package-lock.json
+
+      # --- Backend: restore + testy ---
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Run tests
+        env:
+          ASPNETCORE_ENVIRONMENT: Test
+          DOTNET_ENVIRONMENT: Test
+        run: dotnet test APPS.sln --no-restore --verbosity normal
+
+      # --- Frontend: build bundla dla środowiska docelowego ---
+      - name: Write client env file
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_APP_TOKEN: ${{ secrets.VITE_APP_TOKEN }}
+        run: |
+          if [ -z "$VITE_API_URL" ] || [ -z "$VITE_APP_TOKEN" ]; then
+            echo "::error::Brak VITE_API_URL (variable) lub VITE_APP_TOKEN (secret) w środowisku '${{ inputs.target }}'"
+            exit 1
+          fi
+          {
+            echo "VITE_BASE_URL=/"
+            echo "VITE_API_URL=$VITE_API_URL"
+            echo "VITE_APP_TOKEN=$VITE_APP_TOKEN"
+          } > src/client/app01/.env.ci
+
+      - name: Build client
+        working-directory: src/client/app01
+        run: |
+          npm ci
+          npx tsc -b
+          npx vite build --mode ci
+
+      # --- Paczka publikacji ---
+      - name: Publish server (framework-dependent)
+        if: ${{ !inputs.self_contained }}
+        run: dotnet publish src/server/App01/App01.Bootstrapper.Api -c Release --no-restore -o publish
+
+      - name: Publish server (self-contained win-x64)
+        if: ${{ inputs.self_contained }}
+        run: dotnet publish src/server/App01/App01.Bootstrapper.Api -c Release -r win-x64 --self-contained true -o publish
+
+      - name: Assemble package
+        run: |
+          mkdir -p publish/wwwroot
+          cp -r src/client/app01/dist/. publish/wwwroot/
+          echo -n "${{ github.sha }}" > publish/wwwroot/version.txt
+          # Konfiguracja zostaje na serwerze — nigdy nie wysyłamy appsettings*.json
+          rm -f publish/appsettings*.json
+          ls -la publish publish/wwwroot
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-${{ inputs.target }}-${{ github.sha }}
+          path: publish
+          retention-days: 30
+
+      # --- Wdrożenie przez Web Deploy ---
+      - name: Ensure msdeploy is available
+        shell: pwsh
+        run: |
+          $msdeploy = "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          if (-not (Test-Path $msdeploy)) {
+            choco install webdeploy -y --no-progress
+          }
+          if (-not (Test-Path $msdeploy)) { throw "msdeploy.exe not found" }
+
+      - name: Deploy with msdeploy
+        shell: pwsh
+        env:
+          WEBIO_MSDEPLOY_URL: ${{ secrets.WEBIO_MSDEPLOY_URL }}
+          WEBIO_SITE: ${{ secrets.WEBIO_SITE }}
+          WEBIO_USER: ${{ secrets.WEBIO_USER }}
+          WEBIO_PASS: ${{ secrets.WEBIO_PASS }}
+        run: |
+          foreach ($name in 'WEBIO_MSDEPLOY_URL', 'WEBIO_SITE', 'WEBIO_USER', 'WEBIO_PASS') {
+            if (-not [Environment]::GetEnvironmentVariable($name)) { throw "Missing secret $name" }
+          }
+          $msdeploy = "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          $source = Join-Path $PWD "publish"
+          $dest = "contentPath=$env:WEBIO_SITE," +
+                  "computerName=https://$env:WEBIO_MSDEPLOY_URL/msdeploy.axd?site=$env:WEBIO_SITE," +
+                  "userName=$env:WEBIO_USER,password=$env:WEBIO_PASS,authType=Basic"
+          # AppOffline: app_offline.htm na czas kopiowania (zablokowane DLL)
+          # DoNotDeleteRule: nigdy nie kasujemy plików istniejących tylko na serwerze
+          #   (media w wwwroot, Logs/, TMP/LOTTO/*, appsettings.json, treść kursów)
+          & $msdeploy `
+            -verb:sync `
+            "-source:contentPath=$source" `
+            "-dest:$dest" `
+            -enableRule:AppOffline `
+            -enableRule:DoNotDeleteRule `
+            '-skip:objectName=filePath,absolutePath=appsettings.*\.json$' `
+            -allowUntrusted `
+            -retryAttempts:3
+          if ($LASTEXITCODE -ne 0) { throw "msdeploy failed with exit code $LASTEXITCODE" }
+
+      # --- Smoke test ---
+      - name: Smoke test
+        env:
+          BASE_URL: ${{ vars.VITE_API_URL }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -u
+          for i in $(seq 1 10); do
+            deployed=$(curl -fsS "$BASE_URL/version.txt" || true)
+            [ "$deployed" = "$EXPECTED_SHA" ] && break
+            echo "Czekam na aplikację ($i/10), version.txt='$deployed'"
+            sleep 10
+          done
+          [ "$deployed" = "$EXPECTED_SHA" ] || { echo "::error::version.txt != $EXPECTED_SHA"; exit 1; }
+
+          code=$(curl -s -o api.txt -w "%{http_code}" "$BASE_URL/api/portal/get-api-version")
+          echo "get-api-version -> $code: $(cat api.txt)"
+          [ "$code" = "200" ] || { echo "::error::get-api-version zwróciło $code (500.3x = problem z runtime, patrz deploy-plan.md)"; exit 1; }
+
+          code=$(curl -s -o index.html -w "%{http_code}" "$BASE_URL/")
+          [ "$code" = "200" ] && grep -q 'id="root"' index.html || { echo "::error::SPA nie zwraca index.html ($code)"; exit 1; }
+          echo "Smoke test OK: $BASE_URL @ $EXPECTED_SHA"
