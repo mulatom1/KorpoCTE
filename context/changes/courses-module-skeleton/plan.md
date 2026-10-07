@@ -230,12 +230,12 @@ Brak zmian w bazie i migracji. Wdrożenie: nowy projekt jest publikowany razem z
 
 #### Automated
 
-- [x] 2.1 Przywracanie w trybie zablokowanym przechodzi: `dotnet restore --locked-mode`
-- [x] 2.2 Build solucji przechodzi: `dotnet build APPS.sln`
-- [x] 2.3 Wszystkie testy przechodzą, w tym 4 nowe testy `ModuleHello`: `dotnet test APPS.sln`
-- [x] 2.4 Formatowanie zgodne z `.editorconfig`: `dotnet format APPS.sln --verify-no-changes`
-- [x] 2.5 Kroki CI klienta przechodzą bez zmian (z `src/client/app01`): `npx prettier --check "src/**/*.{ts,tsx,css}"`, `npm run lint`, `npm test`, `npm run build`
+- [x] 2.1 Przywracanie w trybie zablokowanym przechodzi: `dotnet restore --locked-mode` — 7ff35ad
+- [x] 2.2 Build solucji przechodzi: `dotnet build APPS.sln` — 7ff35ad
+- [x] 2.3 Wszystkie testy przechodzą, w tym 4 nowe testy `ModuleHello`: `dotnet test APPS.sln` — 7ff35ad
+- [x] 2.4 Formatowanie zgodne z `.editorconfig`: `dotnet format APPS.sln --verify-no-changes` — 7ff35ad
+- [x] 2.5 Kroki CI klienta przechodzą bez zmian (z `src/client/app01`): `npx prettier --check "src/**/*.{ts,tsx,css}"`, `npm run lint`, `npm test`, `npm run build` — 7ff35ad
 
 #### Manual
 
-- [x] 2.6 W wynikach `dotnet test` widać 4 testy z `Features.Courses.ModuleHello.EndpointTests` i żaden nie jest pominięty
+- [x] 2.6 W wynikach `dotnet test` widać 4 testy z `Features.Courses.ModuleHello.EndpointTests` i żaden nie jest pominięty — 7ff35ad

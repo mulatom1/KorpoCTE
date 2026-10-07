@@ -1,7 +1,7 @@
 ---
 change_id: courses-module-skeleton
 title: Courses module skeleton
-status: implementing
+status: implemented
 created: 2026-10-07
 updated: 2026-10-07
 archived_at: null
