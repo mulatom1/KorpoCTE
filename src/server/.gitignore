@@ -54,3 +54,6 @@ FolderProfile.pubxml.user
 **/Properties/PublishProfiles/*.pubxml
 **/Properties/PublishProfiles/*.pubxml.user
 *.csproj.user
+
+# Media kursów wgrywane na serwer poza repozytorium
+**/wwwroot/media/
