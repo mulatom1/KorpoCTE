@@ -712,6 +712,11 @@
         "resolved": "9.0.11",
         "contentHash": "s8yUYuYYu+PAwvBdhLG1KyrGrk9gkYeuPxfAsXsTqqWyepwSyEw8hAaflW4nO98NG52YpYI1am2+9o+79h2RtQ=="
       },
+      "YamlDotNet": {
+        "type": "Transitive",
+        "resolved": "18.1.0",
+        "contentHash": "5K+9KFg2TdTl7VXv88Qzi/0lqK6JFoNP3lRuImPYGRV7K/QYklDyTrj4+A+KAki1JsQi6qKY+hDyY7d6WRqjrw=="
+      },
       "app01.shared.abstractions": {
         "type": "Project",
         "dependencies": {
@@ -728,7 +733,8 @@
           "Newtonsoft.Json": "[13.0.4, )",
           "Serilog.AspNetCore": "[10.0.0, )",
           "Serilog.Expressions": "[5.0.0, )",
-          "Swashbuckle.AspNetCore": "[10.2.3, )"
+          "Swashbuckle.AspNetCore": "[10.2.3, )",
+          "YamlDotNet": "[18.1.0, )"
         }
       },
       "app01.shared.application": {

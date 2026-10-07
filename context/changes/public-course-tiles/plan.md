@@ -364,30 +364,30 @@ Przy skali „small” (kilkadziesiąt kursów) odczyt kilkudziesięciu małych 
 
 #### Automated
 
-- [x] 1.1 Migracja `CoursesInitial` wygenerowana i zawiera wyłącznie tabelę `Courses.Courses` z unikalnym indeksem na `Slug`
-- [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete`
-- [x] 1.3 `dotnet test APPS.sln` przechodzi (brak regresji)
-- [x] 1.4 `dotnet format APPS.sln --verify-no-changes` przechodzi
+- [x] 1.1 Migracja `CoursesInitial` wygenerowana i zawiera wyłącznie tabelę `Courses.Courses` z unikalnym indeksem na `Slug` — 6f09e2a
+- [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete` — 6f09e2a
+- [x] 1.3 `dotnet test APPS.sln` przechodzi (brak regresji) — 6f09e2a
+- [x] 1.4 `dotnet format APPS.sln --verify-no-changes` przechodzi — 6f09e2a
 
 #### Manual
 
-- [x] 1.5 `dotnet ef database update` na lokalnej bazie tworzy tabelę `Courses.Courses`, a host startuje i istniejące moduły działają
+- [x] 1.5 `dotnet ef database update` na lokalnej bazie tworzy tabelę `Courses.Courses`, a host startuje i istniejące moduły działają — 6f09e2a
 
 ### Phase 2: Publiczny endpoint kafelków
 
 #### Automated
 
-- [ ] 2.1 `dotnet restore --locked-mode` przechodzi z zacommitowanymi `packages.lock.json`
-- [ ] 2.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete`
-- [ ] 2.3 `dotnet test APPS.sln` przechodzi, w tym nowe `Features/Courses/CourseTiles/EndpointTests.cs`
-- [ ] 2.4 `dotnet format APPS.sln --verify-no-changes` przechodzi
-- [ ] 2.5 `appsettings.Example.json` zawiera sekcję `Courses` z `ContentPath` i `MediaUrlBase`
+- [x] 2.1 `dotnet restore --locked-mode` przechodzi z zacommitowanymi `packages.lock.json`
+- [x] 2.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete`
+- [x] 2.3 `dotnet test APPS.sln` przechodzi, w tym nowe `Features/Courses/CourseTiles/EndpointTests.cs`
+- [x] 2.4 `dotnet format APPS.sln --verify-no-changes` przechodzi
+- [x] 2.5 `appsettings.Example.json` zawiera sekcję `Courses` z `ContentPath` i `MediaUrlBase`
 
 #### Manual
 
-- [ ] 2.6 Na lokalnej bazie po `INSERT INTO Courses.Courses (Slug, PublishDate) VALUES ('korpo-cte-300', '2026-08-28T04:00:00')` i wgraniu pliku z frontmatterem `GET api/courses/course-tiles` z `X-TOKEN` (Swagger/curl, bez JWT) zwraca kafelek
-- [ ] 2.7 Grafika z `wwwroot/media/courses/korpo-cte-300/` otwiera się pod zwróconym `ImageUrl`
-- [ ] 2.8 Kurs z literówką w nazwie katalogu znika z listy z ostrzeżeniem w logu, a reszta listy działa
+- [x] 2.6 Na lokalnej bazie po `INSERT INTO Courses.Courses (Slug, PublishDate) VALUES ('korpo-cte-300', '2026-08-28T04:00:00')` i wgraniu pliku z frontmatterem `GET api/courses/course-tiles` z `X-TOKEN` (Swagger/curl, bez JWT) zwraca kafelek
+- [x] 2.7 Grafika z `wwwroot/media/courses/korpo-cte-300/` otwiera się pod zwróconym `ImageUrl`
+- [x] 2.8 Kurs z literówką w nazwie katalogu znika z listy z ostrzeżeniem w logu, a reszta listy działa
 
 ### Phase 3: Strona Kursy w kliencie
 
