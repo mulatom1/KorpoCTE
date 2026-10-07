@@ -23,6 +23,7 @@ import GamesPage from "./pages/games/GamesPage";
 
 // Courses module pages
 import CoursesPage from "./pages/courses/CoursesPage";
+import CourseDetailsPage from "./pages/courses/CourseDetailsPage";
 
 // Flashcards module pages
 import FlashcardsPage from "./pages/flashcards/FlashcardsPage";
@@ -53,6 +54,7 @@ createRoot(document.getElementById("root")!).render(
 
         {/* Podstrony wymagające zalogowania – brak/wygasły token => /login?returnUrl=... */}
         <Route element={<RequireAuth />}>
+          <Route path="courses/:slug" element={<CourseDetailsPage />} />
           <Route path="users" element={<UserPage />} />
           <Route path="lotto/draws" element={<LottoDrawsPage />} />
           <Route

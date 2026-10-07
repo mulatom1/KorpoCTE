@@ -301,31 +301,31 @@ Brak migracji bazy. Wdrożenie wymaga, żeby na serwerze `Courses:ContentPath` w
 
 #### Automated
 
-- [x] 1.1 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete`
-- [x] 1.2 `dotnet test APPS.sln` przechodzi, w tym nowe `Features/Courses/CourseContent/EndpointTests.cs` i test bezpiecznika w `CourseTiles`
-- [x] 1.3 `dotnet format APPS.sln --verify-no-changes` przechodzi
+- [x] 1.1 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete` — eb4883f
+- [x] 1.2 `dotnet test APPS.sln` przechodzi, w tym nowe `Features/Courses/CourseContent/EndpointTests.cs` i test bezpiecznika w `CourseTiles` — eb4883f
+- [x] 1.3 `dotnet format APPS.sln --verify-no-changes` przechodzi — eb4883f
 
 #### Manual
 
-- [x] 1.4 Przy obecnej konfiguracji (`ContentPath` w `wwwroot/media/courses`) `/api/courses/course-tiles` zwraca pustą listę, a w logu jest błąd bezpiecznika
-- [x] 1.5 Po przeniesieniu `.md` poza `wwwroot` (np. `C:/PROJEKTY/courses-content/<slug>/<slug>.md`) i zmianie `ContentPath` lista kafelków wraca, a `GET /media/courses/<slug>/<slug>.md` zwraca 404
-- [x] 1.6 `GET api/courses/course-content?slug=korpo-cte-300` przez Swaggera z JWT zwraca treść, a bez JWT zwraca 401
+- [x] 1.4 Przy obecnej konfiguracji (`ContentPath` w `wwwroot/media/courses`) `/api/courses/course-tiles` zwraca pustą listę, a w logu jest błąd bezpiecznika — eb4883f
+- [x] 1.5 Po przeniesieniu `.md` poza `wwwroot` (np. `C:/PROJEKTY/courses-content/<slug>/<slug>.md`) i zmianie `ContentPath` lista kafelków wraca, a `GET /media/courses/<slug>/<slug>.md` zwraca 404 — eb4883f
+- [x] 1.6 `GET api/courses/course-content?slug=korpo-cte-300` przez Swaggera z JWT zwraca treść, a bez JWT zwraca 401 — eb4883f
 
 ### Phase 2: Klient — strona kursu
 
 #### Automated
 
-- [ ] 2.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (w `src/client/app01`)
-- [ ] 2.2 `npm run lint` przechodzi
-- [ ] 2.3 `npm test` przechodzi, w tym `courseMediaUrl.test.ts`, `CourseMarkdown.test.tsx`, `CourseDetailsPage.test.tsx` i zaktualizowany `CourseTile.test.tsx`
-- [ ] 2.4 `npm run build` przechodzi (`tsc -b` + Vite)
-- [ ] 2.5 `npm audit --audit-level=high` przechodzi
-- [ ] 2.6 `dotnet build APPS.sln` i `dotnet test APPS.sln` nadal przechodzą
+- [x] 2.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (w `src/client/app01`)
+- [x] 2.2 `npm run lint` przechodzi
+- [x] 2.3 `npm test` przechodzi, w tym `courseMediaUrl.test.ts`, `CourseMarkdown.test.tsx`, `CourseDetailsPage.test.tsx` i zaktualizowany `CourseTile.test.tsx`
+- [x] 2.4 `npm run build` przechodzi (`tsc -b` + Vite)
+- [x] 2.5 `npm audit --audit-level=high` przechodzi
+- [x] 2.6 `dotnet build APPS.sln` i `dotnet test APPS.sln` nadal przechodzą
 
 #### Manual
 
-- [ ] 2.7 Po poprawie ścieżek w pliku kursu (`images/01.png`, `thumbnail.png`, `/images/przypadek.png`) zalogowany użytkownik klika kafelek i widzi tytuł, tagi, sformatowaną treść, obrazki i podświetlony blok kodu
-- [ ] 2.8 Niezalogowany klika kafelek, trafia do logowania i po zalogowaniu wraca na `/courses/<slug>` (FR-012)
-- [ ] 2.9 Wejście na `/courses/<slug>` kursu z przyszłą datą albo nieistniejącego pokazuje „Kurs nie istnieje lub nie jest jeszcze opublikowany”
-- [ ] 2.10 „Powrót do kursów” wraca do listy; menu, Apki, Gry, logowanie i ekrany admina działają bez zmian
-- [ ] 2.11 Strona kursu jest czytelna na mobile (tabele i obrazki nie rozpychają layoutu)
+- [x] 2.7 Po poprawie ścieżek w pliku kursu (`images/01.png`, `thumbnail.png`, `/images/przypadek.png`) zalogowany użytkownik klika kafelek i widzi tytuł, tagi, sformatowaną treść, obrazki i podświetlony blok kodu
+- [x] 2.8 Niezalogowany klika kafelek, trafia do logowania i po zalogowaniu wraca na `/courses/<slug>` (FR-012)
+- [x] 2.9 Wejście na `/courses/<slug>` kursu z przyszłą datą albo nieistniejącego pokazuje „Kurs nie istnieje lub nie jest jeszcze opublikowany”
+- [x] 2.10 „Powrót do kursów” wraca do listy; menu, Apki, Gry, logowanie i ekrany admina działają bez zmian
+- [x] 2.11 Strona kursu jest czytelna na mobile (tabele i obrazki nie rozpychają layoutu)
