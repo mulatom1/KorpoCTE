@@ -1,4 +1,5 @@
-﻿using App01.Shared.Application.Entities.Lotto;
+﻿using App01.Shared.Application.Entities.Courses;
+using App01.Shared.Application.Entities.Lotto;
 using App01.Shared.Application.Entities.Portal;
 
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,10 @@ public class AppDbContext : DbContext
     public DbSet<Draw> Draws { get; set; } = null!;
 
     public DbSet<Ticket> Tickets { get; set; } = null!;
+
+
+    // Courses
+    public DbSet<Course> Courses { get; set; } = null!;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
