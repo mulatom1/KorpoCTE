@@ -3,7 +3,7 @@ project: "Kursy i bootcampy"
 version: 1
 status: draft
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-10-07
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -41,7 +41,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 
 | ID   | Change ID                     | Outcome (user can …)                                                                 | Prerequisites | PRD refs                          | Status   |
 | ---- | ----------------------------- | ------------------------------------------------------------------------------------ | ------------- | --------------------------------- | -------- |
-| F-01 | courses-module-skeleton       | (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w testach              | —             | FR-012, FR-013, FR-014            | ready    |
+| F-01 | courses-module-skeleton       | (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w testach              | —             | FR-012, FR-013, FR-014            | in-progress |
 | S-01 | answer-verification-earns-flag | uczestnik wysyła wynik zadania w hangarze i przy poprawnej odpowiedzi dostaje flagę | F-01          | US-01, FR-005, FR-006, FR-011     | proposed |
 | S-02 | hangar-flag-list              | uczestnik widzi w hangarze wszystkie flagi z podziałem na zdobyte i niezdobyte       | S-01          | US-01, FR-007                     | proposed |
 | S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | proposed |
@@ -86,7 +86,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Najmniejsza możliwa zmiana w hoście, zrobiona raz; jeśli rejestracja nowego modułu zepsuje start aplikacji, wyjdzie to przed jakąkolwiek logiką domenową.
-- **Status:** ready
+- **Status:** in-progress
 
 ## Slices
 

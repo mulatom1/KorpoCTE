@@ -1,6 +1,7 @@
 using System.Reflection;
 
 using App01.Bootstrapper.Api;
+using App01.Modules.Courses;
 using App01.Modules.Flashcards;
 using App01.Modules.Lotto;
 using App01.Modules.Portal;
@@ -30,6 +31,7 @@ builder.Services.AddSharedInfrastructureServices(builder.Configuration, builder.
 builder.Services.AddModulePortalServices();
 builder.Services.AddModuleLottoServices();
 builder.Services.AddModuleFlashcardsServices();
+builder.Services.AddModuleCoursesServices();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
@@ -102,6 +104,7 @@ app.UseAuthorization();
 app.UseModulePortalEndpoints();
 app.UseModuleLottoEndpoints();
 app.UseModuleFlashcardsEndpoints();
+app.UseModuleCoursesEndpoints();
 
 // SPA fallback – zwraca index.html dla wszystkich tras nieznanych serwerowi
 // (obsługa client-side routingu React)

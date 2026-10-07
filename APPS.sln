@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App01.Bootstrapper.Api.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App01.Modules.Flashcards", "src\server\App01\App01.Modules.Flashcards\App01.Modules.Flashcards.csproj", "{CA905249-4B86-4FE6-949B-67EC4C90B6E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App01.Modules.Courses", "src\server\App01\App01.Modules.Courses\App01.Modules.Courses.csproj", "{DB47A018-62A5-4A39-8228-F9FD6CF631E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,6 +70,10 @@ Global
 		{CA905249-4B86-4FE6-949B-67EC4C90B6E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA905249-4B86-4FE6-949B-67EC4C90B6E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA905249-4B86-4FE6-949B-67EC4C90B6E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB47A018-62A5-4A39-8228-F9FD6CF631E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB47A018-62A5-4A39-8228-F9FD6CF631E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB47A018-62A5-4A39-8228-F9FD6CF631E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB47A018-62A5-4A39-8228-F9FD6CF631E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -85,6 +91,7 @@ Global
 		{D85FC547-00C4-4B78-AE5B-8040F1799FCA} = {87008D2B-D29E-68B5-A223-E2B1CD68373E}
 		{2B954633-8A0B-FD26-4636-3FAAEA35EDA5} = {D85FC547-00C4-4B78-AE5B-8040F1799FCA}
 		{CA905249-4B86-4FE6-949B-67EC4C90B6E9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{DB47A018-62A5-4A39-8228-F9FD6CF631E9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B7ABFB7-C174-43FF-9E9F-6C6E60B7E57A}
