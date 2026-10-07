@@ -315,17 +315,17 @@ Brak migracji bazy. Wdrożenie wymaga, żeby na serwerze `Courses:ContentPath` w
 
 #### Automated
 
-- [x] 2.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (w `src/client/app01`)
-- [x] 2.2 `npm run lint` przechodzi
-- [x] 2.3 `npm test` przechodzi, w tym `courseMediaUrl.test.ts`, `CourseMarkdown.test.tsx`, `CourseDetailsPage.test.tsx` i zaktualizowany `CourseTile.test.tsx`
-- [x] 2.4 `npm run build` przechodzi (`tsc -b` + Vite)
-- [x] 2.5 `npm audit --audit-level=high` przechodzi
-- [x] 2.6 `dotnet build APPS.sln` i `dotnet test APPS.sln` nadal przechodzą
+- [x] 2.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (w `src/client/app01`) — ad25256
+- [x] 2.2 `npm run lint` przechodzi — ad25256
+- [x] 2.3 `npm test` przechodzi, w tym `courseMediaUrl.test.ts`, `CourseMarkdown.test.tsx`, `CourseDetailsPage.test.tsx` i zaktualizowany `CourseTile.test.tsx` — ad25256
+- [x] 2.4 `npm run build` przechodzi (`tsc -b` + Vite) — ad25256
+- [x] 2.5 `npm audit --audit-level=high` przechodzi — ad25256
+- [x] 2.6 `dotnet build APPS.sln` i `dotnet test APPS.sln` nadal przechodzą — ad25256
 
 #### Manual
 
-- [x] 2.7 Po poprawie ścieżek w pliku kursu (`images/01.png`, `thumbnail.png`, `/images/przypadek.png`) zalogowany użytkownik klika kafelek i widzi tytuł, tagi, sformatowaną treść, obrazki i podświetlony blok kodu
-- [x] 2.8 Niezalogowany klika kafelek, trafia do logowania i po zalogowaniu wraca na `/courses/<slug>` (FR-012)
-- [x] 2.9 Wejście na `/courses/<slug>` kursu z przyszłą datą albo nieistniejącego pokazuje „Kurs nie istnieje lub nie jest jeszcze opublikowany”
-- [x] 2.10 „Powrót do kursów” wraca do listy; menu, Apki, Gry, logowanie i ekrany admina działają bez zmian
-- [x] 2.11 Strona kursu jest czytelna na mobile (tabele i obrazki nie rozpychają layoutu)
+- [x] 2.7 Po poprawie ścieżek w pliku kursu (`images/01.png`, `thumbnail.png`, `/images/przypadek.png`) zalogowany użytkownik klika kafelek i widzi tytuł, tagi, sformatowaną treść, obrazki i podświetlony blok kodu — ad25256
+- [x] 2.8 Niezalogowany klika kafelek, trafia do logowania i po zalogowaniu wraca na `/courses/<slug>` (FR-012) — ad25256
+- [x] 2.9 Wejście na `/courses/<slug>` kursu z przyszłą datą albo nieistniejącego pokazuje „Kurs nie istnieje lub nie jest jeszcze opublikowany” — ad25256
+- [x] 2.10 „Powrót do kursów” wraca do listy; menu, Apki, Gry, logowanie i ekrany admina działają bez zmian — ad25256
+- [x] 2.11 Strona kursu jest czytelna na mobile (tabele i obrazki nie rozpychają layoutu) — ad25256

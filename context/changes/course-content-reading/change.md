@@ -1,7 +1,7 @@
 ---
 change_id: course-content-reading
 title: Course content reading
-status: implementing
+status: implemented
 created: 2026-10-07
 updated: 2026-10-07
 archived_at: null
