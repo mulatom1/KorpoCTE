@@ -45,7 +45,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 | S-01 | answer-verification-earns-flag | uczestnik wysyła wynik zadania w hangarze i przy poprawnej odpowiedzi dostaje flagę | F-01          | US-01, FR-005, FR-006, FR-011     | proposed |
 | S-02 | hangar-flag-list              | uczestnik widzi w hangarze wszystkie flagi z podziałem na zdobyte i niezdobyte       | S-01          | US-01, FR-007                     | proposed |
 | S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | done |
-| S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | in-progress |
+| S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | done |
 | S-05 | leaderboard                   | zalogowany użytkownik widzi listę zasłużonych według liczby zdobytych flag           | S-01          | US-01, FR-008                     | proposed |
 | S-06 | flag-activation               | uczestnik aktywuje zdobytą flagę przez formularz aktywacji w hangarze                | S-01          | FR-004                            | proposed |
 | S-07 | group-progress-dashboard      | zalogowany użytkownik widzi dashboard z czterema wskaźnikami postępu grupy           | S-01          | US-01, FR-009                     | proposed |
@@ -139,7 +139,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Granica prywatności — treść kursu nie może wyciec do niezalogowanych ani przez publiczne pliki statyczne; logowanie musi działać jak wcześniej (FR-012).
-- **Status:** in-progress
+- **Status:** done
 
 ### S-05: Lista zasłużonych
 
@@ -217,3 +217,4 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 
 - **S-03: odwiedzający bez konta może wejść do modułu Kursy z menu głównego i zobaczyć kafelki kursów (tytuł, krótki opis, tagi, grafika), a administrator publikuje kurs przez wgranie plików poza aplikacją; istniejące pozycje menu, Apki, Gry i ekrany administratora działają bez zmian.** — Archived 2026-10-07 → `context/archive/2026-10-07-public-course-tiles/`. Lesson: —.
 - **F-01: (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w projekcie testów, bez żadnej funkcji i bez zmian w istniejących modułach.** — Archived 2026-10-07 → `context/archive/2026-10-07-courses-module-skeleton/`. Lesson: —.
+- **S-04: zalogowany użytkownik może otworzyć stronę szczegółową opublikowanego kursu (data publikacji ≤ dziś) i przeczytać jego sformatowaną treść; kurs niepublikowany jest niewidoczny, a niezalogowany trafia do logowania i wraca do kursu.** — Archived 2026-10-07 → `context/archive/2026-10-07-course-content-reading/`. Lesson: —.
