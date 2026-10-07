@@ -377,33 +377,33 @@ Przy skali „small” (kilkadziesiąt kursów) odczyt kilkudziesięciu małych 
 
 #### Automated
 
-- [x] 2.1 `dotnet restore --locked-mode` przechodzi z zacommitowanymi `packages.lock.json`
-- [x] 2.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete`
-- [x] 2.3 `dotnet test APPS.sln` przechodzi, w tym nowe `Features/Courses/CourseTiles/EndpointTests.cs`
-- [x] 2.4 `dotnet format APPS.sln --verify-no-changes` przechodzi
-- [x] 2.5 `appsettings.Example.json` zawiera sekcję `Courses` z `ContentPath` i `MediaUrlBase`
+- [x] 2.1 `dotnet restore --locked-mode` przechodzi z zacommitowanymi `packages.lock.json` — 519a8dd
+- [x] 2.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete` — 519a8dd
+- [x] 2.3 `dotnet test APPS.sln` przechodzi, w tym nowe `Features/Courses/CourseTiles/EndpointTests.cs` — 519a8dd
+- [x] 2.4 `dotnet format APPS.sln --verify-no-changes` przechodzi — 519a8dd
+- [x] 2.5 `appsettings.Example.json` zawiera sekcję `Courses` z `ContentPath` i `MediaUrlBase` — 519a8dd
 
 #### Manual
 
-- [x] 2.6 Na lokalnej bazie po `INSERT INTO Courses.Courses (Slug, PublishDate) VALUES ('korpo-cte-300', '2026-08-28T04:00:00')` i wgraniu pliku z frontmatterem `GET api/courses/course-tiles` z `X-TOKEN` (Swagger/curl, bez JWT) zwraca kafelek
-- [x] 2.7 Grafika z `wwwroot/media/courses/korpo-cte-300/` otwiera się pod zwróconym `ImageUrl`
-- [x] 2.8 Kurs z literówką w nazwie katalogu znika z listy z ostrzeżeniem w logu, a reszta listy działa
+- [x] 2.6 Na lokalnej bazie po `INSERT INTO Courses.Courses (Slug, PublishDate) VALUES ('korpo-cte-300', '2026-08-28T04:00:00')` i wgraniu pliku z frontmatterem `GET api/courses/course-tiles` z `X-TOKEN` (Swagger/curl, bez JWT) zwraca kafelek — 519a8dd
+- [x] 2.7 Grafika z `wwwroot/media/courses/korpo-cte-300/` otwiera się pod zwróconym `ImageUrl` — 519a8dd
+- [x] 2.8 Kurs z literówką w nazwie katalogu znika z listy z ostrzeżeniem w logu, a reszta listy działa — 519a8dd
 
 ### Phase 3: Strona Kursy w kliencie
 
 #### Automated
 
-- [ ] 3.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (w `src/client/app01`)
-- [ ] 3.2 `npm run lint` przechodzi
-- [ ] 3.3 `npm test` przechodzi, w tym `CourseTile.test.tsx` i `CoursesPage.test.tsx`
-- [ ] 3.4 `npm run build` przechodzi (`tsc -b` + Vite)
-- [ ] 3.5 `npm audit --audit-level=high` bez nowych problemów
-- [ ] 3.6 `dotnet build APPS.sln` i `dotnet test APPS.sln` nadal przechodzą
+- [x] 3.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (w `src/client/app01`)
+- [x] 3.2 `npm run lint` przechodzi
+- [x] 3.3 `npm test` przechodzi, w tym `CourseTile.test.tsx` i `CoursesPage.test.tsx`
+- [x] 3.4 `npm run build` przechodzi (`tsc -b` + Vite)
+- [x] 3.5 `npm audit --audit-level=high` bez nowych problemów
+- [x] 3.6 `dotnet build APPS.sln` i `dotnet test APPS.sln` nadal przechodzą
 
 #### Manual
 
-- [ ] 3.7 Niezalogowany odwiedzający widzi „Kursy” w menu (desktop i mobile), a `/courses` pokazuje kafelki z grafiką, tytułem, opisem i tagami; kafelek nie reaguje na kliknięcie
-- [ ] 3.8 Użytkownik z wygasłą sesją wchodzi na `/courses` i nie jest przekierowany do logowania
-- [ ] 3.9 Pozostałe pozycje menu (Home, Apki, Gry, O mnie, Kontakt) są w tej samej kolejności i działają; Flashcard, Lotto, AgentPLN, Invaders działają jak przed zmianą (FR-013)
-- [ ] 3.10 Zalogowany admin nadal widzi i otwiera Users oraz Rejestrację, a zwykły użytkownik ich nie widzi (FR-014); logowanie i wylogowanie bez zmian (FR-012)
-- [ ] 3.11 Strona `/courses` nie ma animowanego tła (istniejący wyłącznik), a kafelki są czytelne na mobile
+- [x] 3.7 Niezalogowany odwiedzający widzi „Kursy” w menu (desktop i mobile), a `/courses` pokazuje kafelki z grafiką, tytułem, opisem i tagami; kafelek nie reaguje na kliknięcie
+- [x] 3.8 Użytkownik z wygasłą sesją wchodzi na `/courses` i nie jest przekierowany do logowania
+- [x] 3.9 Pozostałe pozycje menu (Home, Apki, Gry, O mnie, Kontakt) są w tej samej kolejności i działają; Flashcard, Lotto, AgentPLN, Invaders działają jak przed zmianą (FR-013)
+- [x] 3.10 Zalogowany admin nadal widzi i otwiera Users oraz Rejestrację, a zwykły użytkownik ich nie widzi (FR-014); logowanie i wylogowanie bez zmian (FR-012)
+- [x] 3.11 Strona `/courses` nie ma animowanego tła (istniejący wyłącznik), a kafelki są czytelne na mobile

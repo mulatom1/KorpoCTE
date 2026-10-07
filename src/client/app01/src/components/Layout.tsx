@@ -262,6 +262,7 @@ const menuItems = [
   { label: "Home", to: "/" },
   { label: "Apki", to: "/apps" },
   { label: "Gry", to: "/games" },
+  { label: "Kursy", to: "/courses" },
   { label: "O mnie", to: "/about" },
   { label: "Kontakt", to: "/contact" },
 ];

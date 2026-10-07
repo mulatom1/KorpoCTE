@@ -21,6 +21,9 @@ import AppsPage from "./pages/apps/AppsPage";
 // Games module pages
 import GamesPage from "./pages/games/GamesPage";
 
+// Courses module pages
+import CoursesPage from "./pages/courses/CoursesPage";
+
 // Flashcards module pages
 import FlashcardsPage from "./pages/flashcards/FlashcardsPage";
 
@@ -38,6 +41,7 @@ createRoot(document.getElementById("root")!).render(
         <Route index element={<HomePage />} />
         <Route path="apps" element={<AppsPage />} />
         <Route path="games" element={<GamesPage />} />
+        <Route path="courses" element={<CoursesPage />} />
         <Route path="about" element={<AboutMePage />} />
         <Route path="my-cv" element={<MyCvPage />} />
         <Route path="contact" element={<ContactPage />} />
