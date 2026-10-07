@@ -44,7 +44,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 | F-01 | courses-module-skeleton       | (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w testach              | —             | FR-012, FR-013, FR-014            | in-progress |
 | S-01 | answer-verification-earns-flag | uczestnik wysyła wynik zadania w hangarze i przy poprawnej odpowiedzi dostaje flagę | F-01          | US-01, FR-005, FR-006, FR-011     | proposed |
 | S-02 | hangar-flag-list              | uczestnik widzi w hangarze wszystkie flagi z podziałem na zdobyte i niezdobyte       | S-01          | US-01, FR-007                     | proposed |
-| S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | in-progress |
+| S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | done |
 | S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | proposed |
 | S-05 | leaderboard                   | zalogowany użytkownik widzi listę zasłużonych według liczby zdobytych flag           | S-01          | US-01, FR-008                     | proposed |
 | S-06 | flag-activation               | uczestnik aktywuje zdobytą flagę przez formularz aktywacji w hangarze                | S-01          | FR-004                            | proposed |
@@ -127,7 +127,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **Unknowns:**
   - Czy publiczna lista kafelków pokazuje także kursy z przyszłą datą publikacji, czy stosuje ten sam filtr co FR-003? — Owner: właściciel portalu. Block: no.
 - **Risk:** Zmiana menu i layoutu dotyka każdej strony portalu; ryzyko regresji FR-013/FR-014 trzeba sprawdzić w tym wycinku, a błędny wpis kursu nie może wywalić listy.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-04: Czytanie treści kursu
 
@@ -214,3 +214,5 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 ## Milestone History
 
 ## Done
+
+- **S-03: odwiedzający bez konta może wejść do modułu Kursy z menu głównego i zobaczyć kafelki kursów (tytuł, krótki opis, tagi, grafika), a administrator publikuje kurs przez wgranie plików poza aplikacją; istniejące pozycje menu, Apki, Gry i ekrany administratora działają bez zmian.** — Archived 2026-10-07 → `context/archive/2026-10-07-public-course-tiles/`. Lesson: —.
