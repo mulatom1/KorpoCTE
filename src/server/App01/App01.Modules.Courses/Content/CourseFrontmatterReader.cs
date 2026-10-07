@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -9,18 +10,19 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace App01.Modules.Courses.Content;
 
-// Metadane kursu z frontmattera YAML pliku <ContentPath>/<Slug>/<Slug>.md
-public record CourseFrontmatter(
+// Metadane kursu z frontmattera YAML pliku <ContentPath>/<Slug>/<Slug>.md oraz treść Markdown po frontmatterze
+public record CourseDocument(
     string Title,
     string Description,
     IReadOnlyList<string> Tags,
-    string? Image
+    string? Image,
+    string Body
 );
 
 public interface ICourseFrontmatterReader
 {
-    // Zwraca metadane albo null (z ostrzeżeniem w logu); nigdy nie rzuca wyjątku do wywołującego
-    Task<CourseFrontmatter?> ReadAsync(string slug, CancellationToken cancellationToken);
+    // Zwraca metadane i treść albo null (z ostrzeżeniem w logu); nigdy nie rzuca wyjątku do wywołującego
+    Task<CourseDocument?> ReadAsync(string slug, CancellationToken cancellationToken);
 }
 
 public partial class CourseFrontmatterReader : ICourseFrontmatterReader
@@ -34,14 +36,17 @@ public partial class CourseFrontmatterReader : ICourseFrontmatterReader
 
     private readonly IConfiguration _configuration;
     private readonly ILogger<CourseFrontmatterReader> _logger;
+    private readonly IWebHostEnvironment _environment;
 
 
     public CourseFrontmatterReader(
         IConfiguration configuration,
-        ILogger<CourseFrontmatterReader> logger)
+        ILogger<CourseFrontmatterReader> logger,
+        IWebHostEnvironment environment)
     {
         _configuration = configuration;
         _logger = logger;
+        _environment = environment;
     }
 
     // Dozwolony slug: małe litery, cyfry, '-' i '_', bez separatorów ścieżki i bez '..'
@@ -51,7 +56,11 @@ public partial class CourseFrontmatterReader : ICourseFrontmatterReader
     public static bool IsValidSlug(string? slug) =>
         !string.IsNullOrEmpty(slug) && SlugRegex().IsMatch(slug);
 
-    public async Task<CourseFrontmatter?> ReadAsync(string slug, CancellationToken cancellationToken)
+    // Porównanie ścieżek bez wielkości liter na Windows
+    private static StringComparison PathComparison =>
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+    public async Task<CourseDocument?> ReadAsync(string slug, CancellationToken cancellationToken)
     {
         try
         {
@@ -69,8 +78,7 @@ public partial class CourseFrontmatterReader : ICourseFrontmatterReader
 
             // Ścieżka budowana wyłącznie ze sluga z bazy; po normalizacji musi leżeć wewnątrz ContentPath
             var filePath = Path.GetFullPath(Path.Combine(contentRoot, slug, slug + ".md"));
-            var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-            if (!filePath.StartsWith(contentRoot, comparison))
+            if (!filePath.StartsWith(contentRoot, PathComparison))
             {
                 _logger.LogWarning("Course skipped: path for slug {Slug} is outside of content directory", slug);
                 return null;
@@ -84,14 +92,14 @@ public partial class CourseFrontmatterReader : ICourseFrontmatterReader
 
             var text = await File.ReadAllTextAsync(filePath, cancellationToken);
 
-            var yaml = ExtractFrontmatter(text);
-            if (yaml is null)
+            var document = SplitDocument(text);
+            if (document is null)
             {
                 _logger.LogWarning("Course skipped: missing frontmatter block in file for slug {Slug}", slug);
                 return null;
             }
 
-            var data = YamlDeserializer.Deserialize<FrontmatterYaml?>(yaml);
+            var data = YamlDeserializer.Deserialize<FrontmatterYaml?>(document.Value.Yaml);
             if (data is null || string.IsNullOrWhiteSpace(data.Title) || string.IsNullOrWhiteSpace(data.Description))
             {
                 _logger.LogWarning("Course skipped: frontmatter for slug {Slug} lacks required title or description", slug);
@@ -105,7 +113,7 @@ public partial class CourseFrontmatterReader : ICourseFrontmatterReader
 
             var image = string.IsNullOrWhiteSpace(data.Image) ? null : data.Image.Trim();
 
-            return new CourseFrontmatter(data.Title.Trim(), data.Description.Trim(), tags, image);
+            return new CourseDocument(data.Title.Trim(), data.Description.Trim(), tags, image, document.Value.Body);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -129,12 +137,33 @@ public partial class CourseFrontmatterReader : ICourseFrontmatterReader
             return null;
         }
 
-        var root = Path.GetFullPath(configured, AppContext.BaseDirectory);
-        return Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar;
+        var root = WithTrailingSeparator(Path.GetFullPath(configured, AppContext.BaseDirectory));
+
+        // Bezpiecznik: treść w publicznym wwwroot byłaby serwowana przez UseStaticFiles bez logowania.
+        // Pusty WebRootPath (brak wwwroot) wyłącza sprawdzenie.
+        var webRootPath = _environment.WebRootPath;
+        if (!string.IsNullOrWhiteSpace(webRootPath))
+        {
+            var webRoot = WithTrailingSeparator(Path.GetFullPath(webRootPath));
+            if (root.StartsWith(webRoot, PathComparison))
+            {
+                _logger.LogError(
+                    "Courses:ContentPath {ContentPath} is inside public web root {WebRootPath} - course content is disabled; move content files outside wwwroot",
+                    root,
+                    webRoot);
+                return null;
+            }
+        }
+
+        return root;
     }
 
-    // Wycina blok YAML między liniami '---' z początku pliku (tolerancja BOM i CRLF)
-    private static string? ExtractFrontmatter(string text)
+    private static string WithTrailingSeparator(string path) =>
+        Path.EndsInDirectorySeparator(path) ? path : path + Path.DirectorySeparatorChar;
+
+    // Dzieli plik na blok YAML między liniami '---' z początku pliku i treść po nim (tolerancja BOM i CRLF).
+    // Treść ma końce linii LF i nie zaczyna się od pustych linii.
+    private static (string Yaml, string Body)? SplitDocument(string text)
     {
         var normalized = text.TrimStart('﻿').Replace("\r\n", "\n").Replace('\r', '\n');
         var lines = normalized.Split('\n');
@@ -148,7 +177,16 @@ public partial class CourseFrontmatterReader : ICourseFrontmatterReader
         {
             if (lines[i].TrimEnd() == FrontmatterDelimiter)
             {
-                return string.Join('\n', lines, 1, i - 1);
+                var yaml = string.Join('\n', lines, 1, i - 1);
+
+                var bodyStart = i + 1;
+                while (bodyStart < lines.Length && string.IsNullOrWhiteSpace(lines[bodyStart]))
+                {
+                    bodyStart++;
+                }
+
+                var body = string.Join('\n', lines, bodyStart, lines.Length - bodyStart);
+                return (yaml, body);
             }
         }
 

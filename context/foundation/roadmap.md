@@ -45,7 +45,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 | S-01 | answer-verification-earns-flag | uczestnik wysyła wynik zadania w hangarze i przy poprawnej odpowiedzi dostaje flagę | F-01          | US-01, FR-005, FR-006, FR-011     | proposed |
 | S-02 | hangar-flag-list              | uczestnik widzi w hangarze wszystkie flagi z podziałem na zdobyte i niezdobyte       | S-01          | US-01, FR-007                     | proposed |
 | S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | done |
-| S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | proposed |
+| S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | in-progress |
 | S-05 | leaderboard                   | zalogowany użytkownik widzi listę zasłużonych według liczby zdobytych flag           | S-01          | US-01, FR-008                     | proposed |
 | S-06 | flag-activation               | uczestnik aktywuje zdobytą flagę przez formularz aktywacji w hangarze                | S-01          | FR-004                            | proposed |
 | S-07 | group-progress-dashboard      | zalogowany użytkownik widzi dashboard z czterema wskaźnikami postępu grupy           | S-01          | US-01, FR-009                     | proposed |
@@ -139,7 +139,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Granica prywatności — treść kursu nie może wyciec do niezalogowanych ani przez publiczne pliki statyczne; logowanie musi działać jak wcześniej (FR-012).
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-05: Lista zasłużonych
 

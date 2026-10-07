@@ -6,6 +6,7 @@ using App01.Modules.Courses.Features.CourseTiles;
 using App01.Shared.Application.Entities.Courses;
 using App01.Shared.Infrastructure.Repositories;
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -57,13 +58,18 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
         public override DateTimeOffset GetUtcNow() => _utcNow;
     }
 
-    private WebApplicationFactory<Program> CreateFactory(Action<AppDbContext>? seedData = null, string? contentPath = null)
+    private WebApplicationFactory<Program> CreateFactory(Action<AppDbContext>? seedData = null, string? contentPath = null, string? webRoot = null)
     {
         // Stała nazwa bazy na fabrykę - seed i żądania widzą te same dane
         var dbName = $"TestDb_{Guid.NewGuid()}";
 
         return _factory.WithWebHostBuilder(builder =>
         {
+            if (webRoot is not null)
+            {
+                builder.UseSetting(WebHostDefaults.WebRootKey, webRoot);
+            }
+
             builder.ConfigureAppConfiguration((context, config) =>
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
@@ -367,6 +373,35 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
         var client = CreateClient(CreateFactory(
             db => db.Courses.Add(new Course { Id = 1, Slug = "kurs-a", PublishDate = Now.AddDays(-1) }),
             contentPath: string.Empty));
+
+        // Act
+        var response = await client.GetAsync(Url);
+
+        // Assert
+        var result = await ReadResponse(response);
+        Assert.Empty(result.Courses);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CourseTiles_WithContentPathInsideWebRoot_ReturnsEmptyList(bool webRootEqualsContentPath)
+    {
+        // Arrange - poprawny, opublikowany kurs w ContentPath; bez bezpiecznika lista miałaby jeden kafelek.
+        // Webroot = _contentPath, a ContentPath to ten sam katalog albo jego podkatalog z kopią kursu.
+        WriteValidCourse("kurs-a", "Kurs A");
+        var contentPath = _contentPath;
+        if (!webRootEqualsContentPath)
+        {
+            contentPath = Path.Combine(_contentPath, "media", "courses");
+            var dir = Path.Combine(contentPath, "kurs-a");
+            Directory.CreateDirectory(dir);
+            File.Copy(Path.Combine(_contentPath, "kurs-a", "kurs-a.md"), Path.Combine(dir, "kurs-a.md"));
+        }
+        var client = CreateClient(CreateFactory(
+            db => db.Courses.Add(new Course { Id = 1, Slug = "kurs-a", PublishDate = Now.AddDays(-1) }),
+            contentPath: contentPath,
+            webRoot: _contentPath));
 
         // Act
         var response = await client.GetAsync(Url);
