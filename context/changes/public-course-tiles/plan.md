@@ -393,17 +393,17 @@ Przy skali „small” (kilkadziesiąt kursów) odczyt kilkudziesięciu małych 
 
 #### Automated
 
-- [x] 3.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (w `src/client/app01`)
-- [x] 3.2 `npm run lint` przechodzi
-- [x] 3.3 `npm test` przechodzi, w tym `CourseTile.test.tsx` i `CoursesPage.test.tsx`
-- [x] 3.4 `npm run build` przechodzi (`tsc -b` + Vite)
-- [x] 3.5 `npm audit --audit-level=high` bez nowych problemów
-- [x] 3.6 `dotnet build APPS.sln` i `dotnet test APPS.sln` nadal przechodzą
+- [x] 3.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (w `src/client/app01`) — dc93540
+- [x] 3.2 `npm run lint` przechodzi — dc93540
+- [x] 3.3 `npm test` przechodzi, w tym `CourseTile.test.tsx` i `CoursesPage.test.tsx` — dc93540
+- [x] 3.4 `npm run build` przechodzi (`tsc -b` + Vite) — dc93540
+- [x] 3.5 `npm audit --audit-level=high` bez nowych problemów — dc93540
+- [x] 3.6 `dotnet build APPS.sln` i `dotnet test APPS.sln` nadal przechodzą — dc93540
 
 #### Manual
 
-- [x] 3.7 Niezalogowany odwiedzający widzi „Kursy” w menu (desktop i mobile), a `/courses` pokazuje kafelki z grafiką, tytułem, opisem i tagami; kafelek nie reaguje na kliknięcie
-- [x] 3.8 Użytkownik z wygasłą sesją wchodzi na `/courses` i nie jest przekierowany do logowania
-- [x] 3.9 Pozostałe pozycje menu (Home, Apki, Gry, O mnie, Kontakt) są w tej samej kolejności i działają; Flashcard, Lotto, AgentPLN, Invaders działają jak przed zmianą (FR-013)
-- [x] 3.10 Zalogowany admin nadal widzi i otwiera Users oraz Rejestrację, a zwykły użytkownik ich nie widzi (FR-014); logowanie i wylogowanie bez zmian (FR-012)
-- [x] 3.11 Strona `/courses` nie ma animowanego tła (istniejący wyłącznik), a kafelki są czytelne na mobile
+- [x] 3.7 Niezalogowany odwiedzający widzi „Kursy” w menu (desktop i mobile), a `/courses` pokazuje kafelki z grafiką, tytułem, opisem i tagami; kafelek nie reaguje na kliknięcie — dc93540
+- [x] 3.8 Użytkownik z wygasłą sesją wchodzi na `/courses` i nie jest przekierowany do logowania — dc93540
+- [x] 3.9 Pozostałe pozycje menu (Home, Apki, Gry, O mnie, Kontakt) są w tej samej kolejności i działają; Flashcard, Lotto, AgentPLN, Invaders działają jak przed zmianą (FR-013) — dc93540
+- [x] 3.10 Zalogowany admin nadal widzi i otwiera Users oraz Rejestrację, a zwykły użytkownik ich nie widzi (FR-014); logowanie i wylogowanie bez zmian (FR-012) — dc93540
+- [x] 3.11 Strona `/courses` nie ma animowanego tła (istniejący wyłącznik), a kafelki są czytelne na mobile — dc93540

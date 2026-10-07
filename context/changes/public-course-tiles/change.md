@@ -1,7 +1,7 @@
 ---
 change_id: public-course-tiles
 title: Public course tiles
-status: implementing
+status: implemented
 created: 2026-10-07
 updated: 2026-10-07
 archived_at: null
