@@ -20,4 +20,5 @@ nul
 
 
 # Ignoruj lokalne, osobiste ustawienia Kurs.
-kurs
+kurs/
+my-courses/
