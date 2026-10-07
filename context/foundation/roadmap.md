@@ -41,7 +41,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 
 | ID   | Change ID                     | Outcome (user can …)                                                                 | Prerequisites | PRD refs                          | Status   |
 | ---- | ----------------------------- | ------------------------------------------------------------------------------------ | ------------- | --------------------------------- | -------- |
-| F-01 | courses-module-skeleton       | (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w testach              | —             | FR-012, FR-013, FR-014            | in-progress |
+| F-01 | courses-module-skeleton       | (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w testach              | —             | FR-012, FR-013, FR-014            | done |
 | S-01 | answer-verification-earns-flag | uczestnik wysyła wynik zadania w hangarze i przy poprawnej odpowiedzi dostaje flagę | F-01          | US-01, FR-005, FR-006, FR-011     | proposed |
 | S-02 | hangar-flag-list              | uczestnik widzi w hangarze wszystkie flagi z podziałem na zdobyte i niezdobyte       | S-01          | US-01, FR-007                     | proposed |
 | S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | done |
@@ -86,7 +86,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Najmniejsza możliwa zmiana w hoście, zrobiona raz; jeśli rejestracja nowego modułu zepsuje start aplikacji, wyjdzie to przed jakąkolwiek logiką domenową.
-- **Status:** in-progress
+- **Status:** done
 
 ## Slices
 
@@ -216,3 +216,4 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 ## Done
 
 - **S-03: odwiedzający bez konta może wejść do modułu Kursy z menu głównego i zobaczyć kafelki kursów (tytuł, krótki opis, tagi, grafika), a administrator publikuje kurs przez wgranie plików poza aplikacją; istniejące pozycje menu, Apki, Gry i ekrany administratora działają bez zmian.** — Archived 2026-10-07 → `context/archive/2026-10-07-public-course-tiles/`. Lesson: —.
+- **F-01: (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w projekcie testów, bez żadnej funkcji i bez zmian w istniejących modułach.** — Archived 2026-10-07 → `context/archive/2026-10-07-courses-module-skeleton/`. Lesson: —.
