@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\server\App01\App01.Bootstrapper.Api\App01.Bootstrapper.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\src\server\App01\App01.Modules.Courses\App01.Modules.Courses.csproj" />
     <ProjectReference Include="..\..\..\..\src\server\App01\App01.Modules.Lotto\App01.Modules.Lotto.csproj" />
     <ProjectReference Include="..\..\..\..\src\server\App01\App01.Modules.Portal\App01.Modules.Portal.csproj" />    
     <ProjectReference Include="..\..\..\..\src\server\App01\App01.Shared.Infrastructure\App01.Shared.Infrastructure.csproj" />

@@ -216,26 +216,26 @@ Brak zmian w bazie i migracji. Wdrożenie: nowy projekt jest publikowany razem z
 
 #### Automated
 
-- [x] 1.1 Przywracanie w trybie zablokowanym przechodzi: `dotnet restore --locked-mode`
-- [x] 1.2 Build solucji przechodzi bez nowych ostrzeżeń `obsolete`: `dotnet build APPS.sln`
-- [x] 1.3 Wszystkie istniejące testy przechodzą: `dotnet test APPS.sln`
-- [x] 1.4 Formatowanie zgodne z `.editorconfig`: `dotnet format APPS.sln --verify-no-changes`
+- [x] 1.1 Przywracanie w trybie zablokowanym przechodzi: `dotnet restore --locked-mode` — 21c51f6
+- [x] 1.2 Build solucji przechodzi bez nowych ostrzeżeń `obsolete`: `dotnet build APPS.sln` — 21c51f6
+- [x] 1.3 Wszystkie istniejące testy przechodzą: `dotnet test APPS.sln` — 21c51f6
+- [x] 1.4 Formatowanie zgodne z `.editorconfig`: `dotnet format APPS.sln --verify-no-changes` — 21c51f6
 
 #### Manual
 
-- [x] 1.5 Aplikacja startuje lokalnie z modułem Courses, a `GET /api/courses/module-hello` z JWT i `X-TOKEN` zwraca JSON `{ "message": "Hello from module Courses!" }` (Swagger lub curl)
-- [x] 1.6 Logowanie, Apki (Lotto), Gry i ekrany administratora działają jak przed zmianą, a trasa SPA (np. `/courses`) nadal zwraca `index.html`
+- [x] 1.5 Aplikacja startuje lokalnie z modułem Courses, a `GET /api/courses/module-hello` z JWT i `X-TOKEN` zwraca JSON `{ "message": "Hello from module Courses!" }` (Swagger lub curl) — 21c51f6
+- [x] 1.6 Logowanie, Apki (Lotto), Gry i ekrany administratora działają jak przed zmianą, a trasa SPA (np. `/courses`) nadal zwraca `index.html` — 21c51f6
 
 ### Phase 2: Testy modułu w projekcie testów
 
 #### Automated
 
-- [ ] 2.1 Przywracanie w trybie zablokowanym przechodzi: `dotnet restore --locked-mode`
-- [ ] 2.2 Build solucji przechodzi: `dotnet build APPS.sln`
-- [ ] 2.3 Wszystkie testy przechodzą, w tym 4 nowe testy `ModuleHello`: `dotnet test APPS.sln`
-- [ ] 2.4 Formatowanie zgodne z `.editorconfig`: `dotnet format APPS.sln --verify-no-changes`
-- [ ] 2.5 Kroki CI klienta przechodzą bez zmian (z `src/client/app01`): `npx prettier --check "src/**/*.{ts,tsx,css}"`, `npm run lint`, `npm test`, `npm run build`
+- [x] 2.1 Przywracanie w trybie zablokowanym przechodzi: `dotnet restore --locked-mode`
+- [x] 2.2 Build solucji przechodzi: `dotnet build APPS.sln`
+- [x] 2.3 Wszystkie testy przechodzą, w tym 4 nowe testy `ModuleHello`: `dotnet test APPS.sln`
+- [x] 2.4 Formatowanie zgodne z `.editorconfig`: `dotnet format APPS.sln --verify-no-changes`
+- [x] 2.5 Kroki CI klienta przechodzą bez zmian (z `src/client/app01`): `npx prettier --check "src/**/*.{ts,tsx,css}"`, `npm run lint`, `npm test`, `npm run build`
 
 #### Manual
 
-- [ ] 2.6 W wynikach `dotnet test` widać 4 testy z `Features.Courses.ModuleHello.EndpointTests` i żaden nie jest pominięty
+- [x] 2.6 W wynikach `dotnet test` widać 4 testy z `Features.Courses.ModuleHello.EndpointTests` i żaden nie jest pominięty
