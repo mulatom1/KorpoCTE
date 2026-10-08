@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { ApiCoursesService } from "../../services/api-courses-service";
 import type { CourseTileDto } from "../../services/contracts/courses-course-tiles-response";
 import CourseTile from "../../components/CourseTile";
+import SubMenu from "../../components/SubMenu";
+import { isAuthenticated } from "../../utils/auth";
+import { coursesSubMenuItems } from "./coursesSubMenu";
 
 function CoursesPage() {
   const [isVisible, setIsVisible] = useState(false);
@@ -67,6 +70,15 @@ function CoursesPage() {
             Opublikowane kursy
           </p>
         </div>
+
+        {/* Podmenu kursów tylko dla zalogowanych - gość widzi same kafelki */}
+        {isAuthenticated() && (
+          <SubMenu
+            backPath="/"
+            isVisible={isVisible}
+            items={coursesSubMenuItems}
+          />
+        )}
 
         {error && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 text-sm">

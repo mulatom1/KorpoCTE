@@ -80,7 +80,7 @@ describe("CourseDetailsPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("ma przycisk powrotu do listy kursów", async () => {
+  it("ma podmenu kursów z powrotem i terminalem TOMO-AI-001", async () => {
     getCourseContent.mockResolvedValue({
       slug: "kurs-a",
       title: "Kurs A",
@@ -92,7 +92,12 @@ describe("CourseDetailsPage", () => {
     renderPage();
 
     expect(
-      await screen.findByRole("button", { name: "Powrót do kursów" }),
+      await screen.findByRole("button", { name: "Powrót" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Terminal TOMO-AI-001",
+      }),
     ).toBeInTheDocument();
   });
 });

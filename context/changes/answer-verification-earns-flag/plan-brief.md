@@ -12,7 +12,7 @@ Moduł Kursy ma kafelki i treść kursów (`Course`: Slug + PublishDate, wstawia
 
 ## Desired End State
 
-Zalogowany użytkownik widzi w menu „Hangar”. Wybiera w nim z listy zadanie z opublikowanego kursu, wysyła odpowiedź i widzi jeden z wyników: „poprawna” z kodem flagi do aktywacji, „niepoprawna”, „masz już tę flagę” albo „ocena niedostępna” z przyciskiem „Spróbuj ponownie”. Administrator definiuje zadania SQL-em w `Courses.Flags`, a zdobyte flagi trafią do `Courses.UserFlags` dopiero przez aktywację (S-06).
+Zalogowany użytkownik widzi w podmenu listy kursów i szczegółów kursu pozycję „Terminal TOMO-AI-001” (`/tomo-ai-001`). Wybiera w terminalu z listy zadanie z opublikowanego kursu, wysyła odpowiedź i widzi jeden z wyników: „poprawna” z kodem flagi do aktywacji, „niepoprawna”, „masz już tę flagę” albo „ocena niedostępna” z przyciskiem „Spróbuj ponownie”. Administrator definiuje zadania SQL-em w `Courses.Flags`, a zdobyte flagi trafią do `Courses.UserFlags` dopiero przez aktywację (S-06).
 
 ## Key Decisions Made
 
@@ -24,7 +24,7 @@ Zalogowany użytkownik widzi w menu „Hangar”. Wybiera w nim z listy zadanie 
 | Wybór zadania           | Lista rozwijana z `GET api/courses/hangar-tasks`, zdobyte wyłączone                      | Bez literówek; S-02 rozbuduje ten sam endpoint                                            |
 | Werdykt `Incorrect`     | Stały komunikat „Odpowiedź niepoprawna.”, a `reason` modelu tylko w logu                 | Zero ryzyka wycieku kryteriów                                                             |
 | Koszt i nadużycia       | Odpowiedź 1–4000 znaków, przycisk zablokowany w trakcie oceny, bez limitu prób           | Mała zamknięta grupa, brak nowej infrastruktury                                           |
-| Menu                    | „Hangar” doklejany tylko przy sesji (jak „Users” dla admina), trasa za `RequireAuth`     | Gość nie widzi niedostępnej funkcji; istniejące pozycje bez zmian                         |
+| Nawigacja               | Podmenu kursów (`SubMenu`) z „Terminal TOMO-AI-001”, tylko dla zalogowanych; menu główne bez zmian — zmiana z 2026-10-08 | Decyzja użytkownika: funkcja należy do kursów, nie do menu głównego |
 | Awarie modelu           | 200 + `Unavailable` (timeout ≤ 4 s, wyjątek, nieparsowalny JSON), bez zapisu             | Reguła CLAUDE.md; awaria to nie ocena negatywna                                           |
 | Wynik `Correct`         | Zwraca `Flag.Code`, bez zapisu; flagę zapisuje aktywacja (S-06) — zmiana z 2026-10-08    | Decyzja użytkownika: uczestnik sam rejestruje flagę w funkcji aktywacji                   |
 | Wyścig o flagę          | Unikalny indeks `(UserId, FlagId)` (faza 1); `DbUpdateException` obsłuży aktywacja (S-06) | Flaga nie może zostać policzona dwa razy (PRD)                                            |
@@ -35,7 +35,7 @@ Zalogowany użytkownik widzi w menu „Hangar”. Wybiera w nim z listy zadanie 
 - Encje `Flag` i `UserFlag` z migracją `CoursesFlags`.
 - Endpointy `hangar-tasks` i `verify-answer` z testami.
 - Klucz `Courses:VerificationTimeoutSeconds`.
-- Strona `/hangar`, pozycja w menu, kontrakty TS i testy Vitest.
+- Strona `/tomo-ai-001` (Terminal TOMO-AI-001), podmenu kursów, kontrakty TS i testy Vitest.
 
 **Out of scope:**
 - Pełny hangar z listą flag (S-02).
@@ -65,7 +65,7 @@ Każda awaria techniczna kończy się statusem `Unavailable`.
 | --------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- |
 | 1. Serwer — model flag i lista zadań          | Tabele `Flags`/`UserFlags`, migracja, `hangar-tasks`, testy      | Wyciek `Criteria` w projekcji (test sprawdza surowy JSON)         |
 | 2. Serwer — weryfikacja i przyznanie flagi    | `verify-answer` z timeoutem, parsowaniem, zapisem, testy z mockiem | Wstrzyknięcie polecenia; wyścigu nie da się przetestować na InMemory |
-| 3. Klient — hangar                            | `/hangar`, formularz, „Spróbuj ponownie”, menu, testy Vitest     | Regresja menu w `Layout.tsx` (dotyka każdej strony)               |
+| 3. Klient — terminal TOMO-AI-001              | `/tomo-ai-001`, formularz, „Spróbuj ponownie”, podmenu kursów, testy Vitest | Regresja stron kursów (podmenu zastępuje „Powrót do kursów”)     |
 
 **Prerequisites:** F-01 zrobiony. Do testu ręcznego potrzebne są klucz OpenRouter w user-secrets oraz co najmniej jedna flaga z kryteriami wstawiona SQL-em.
 **Estimated effort:** ~2–3 sesje, 3 fazy.

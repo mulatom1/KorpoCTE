@@ -5,6 +5,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import CoursesPage from "./CoursesPage";
 
 const getCourseTiles = vi.fn();
+const isAuthenticated = vi.fn();
+
+vi.mock("../../utils/auth", () => ({
+  isAuthenticated: () => isAuthenticated(),
+}));
 
 vi.mock("../../services/api-courses-service", () => ({
   ApiCoursesService: class {
@@ -23,6 +28,8 @@ function renderPage() {
 describe("CoursesPage", () => {
   beforeEach(() => {
     getCourseTiles.mockReset();
+    isAuthenticated.mockReset();
+    isAuthenticated.mockReturnValue(false);
   });
 
   it("renderuje kursy w kolejności z odpowiedzi", async () => {
@@ -49,6 +56,33 @@ describe("CoursesPage", () => {
 
     const headings = await screen.findAllByRole("heading", { level: 3 });
     expect(headings.map((h) => h.textContent)).toEqual(["Kurs B", "Kurs A"]);
+  });
+
+  it("gość nie widzi podmenu z terminalem TOMO-AI-001", async () => {
+    getCourseTiles.mockResolvedValue({ courses: [] });
+
+    renderPage();
+
+    await screen.findByText("Brak opublikowanych kursów");
+    expect(
+      screen.queryByRole("button", {
+        name: "Terminal TOMO-AI-001",
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("zalogowany widzi podmenu z terminalem TOMO-AI-001", async () => {
+    isAuthenticated.mockReturnValue(true);
+    getCourseTiles.mockResolvedValue({ courses: [] });
+
+    renderPage();
+
+    await screen.findByText("Brak opublikowanych kursów");
+    expect(
+      screen.getByRole("button", {
+        name: "Terminal TOMO-AI-001",
+      }),
+    ).toBeInTheDocument();
   });
 
   it("pokazuje komunikat, gdy brak kursów", async () => {

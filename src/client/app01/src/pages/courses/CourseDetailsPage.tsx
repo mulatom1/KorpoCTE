@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { ApiCoursesService } from "../../services/api-courses-service";
 import type { CoursesCourseContentResponse } from "../../services/contracts/courses-course-content-response";
-import ButtonSecondary from "../../components/ButtonSecondary";
+import SubMenu from "../../components/SubMenu";
+import { coursesSubMenuItems } from "./coursesSubMenu";
 import CourseMarkdown from "../../components/CourseMarkdown";
 
 function CourseDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
   const [course, setCourse] = useState<CoursesCourseContentResponse | null>(
     null,
   );
@@ -60,11 +60,12 @@ function CourseDetailsPage() {
   return (
     <section className="min-h-[calc(100vh-4rem)] px-4 py-16">
       <div className="max-w-4xl mx-auto w-full min-w-0">
-        <div className="mb-8">
-          <ButtonSecondary type="button" onClick={() => navigate("/courses")}>
-            Powrót do kursów
-          </ButtonSecondary>
-        </div>
+        {/* Strona chroniona (RequireAuth) - podmenu kursów zawsze widoczne; "Powrót" prowadzi do listy kursów */}
+        <SubMenu
+          backPath="/courses"
+          isVisible={true}
+          items={coursesSubMenuItems}
+        />
 
         {error && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 text-sm">

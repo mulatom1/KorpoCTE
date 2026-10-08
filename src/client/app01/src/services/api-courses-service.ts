@@ -1,6 +1,9 @@
 import type { CoursesCourseTilesResponse } from "./contracts/courses-course-tiles-response";
 import type { CoursesCourseContentRequest } from "./contracts/courses-course-content-request";
 import type { CoursesCourseContentResponse } from "./contracts/courses-course-content-response";
+import type { CoursesHangarTasksResponse } from "./contracts/courses-hangar-tasks-response";
+import type { CoursesVerifyAnswerRequest } from "./contracts/courses-verify-answer-request";
+import type { CoursesVerifyAnswerResponse } from "./contracts/courses-verify-answer-response";
 import { apiFetch } from "./api-fetch";
 
 export class ApiCoursesService {
@@ -84,4 +87,64 @@ export class ApiCoursesService {
 
     return response.json();
   }
+
+  // Lista zadań hangaru – wymaga zalogowania (Bearer).
+  public async getHangarTasks(): Promise<CoursesHangarTasksResponse> {
+    const response = await apiFetch(`${this.apiUrl}/api/courses/hangar-tasks`, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        getProblemMessage(errorData) ||
+          `Błąd pobierania listy zadań: ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  // Weryfikacja odpowiedzi – wymaga zalogowania (Bearer). Awaria modelu wraca
+  // jako 200 ze statusem Unavailable; wyjątek oznacza błąd HTTP (400/404/inne).
+  public async verifyAnswer(
+    request: CoursesVerifyAnswerRequest,
+  ): Promise<CoursesVerifyAnswerResponse> {
+    const response = await apiFetch(
+      `${this.apiUrl}/api/courses/verify-answer`,
+      {
+        method: "POST",
+        headers: this.getHeaders(),
+        body: JSON.stringify(request),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        getProblemMessage(errorData) ||
+          `Błąd weryfikacji odpowiedzi: ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+}
+
+// Komunikat z ProblemDetails: detail (403/404/500), pierwszy błąd walidacji
+// z errors (400) albo message.
+function getProblemMessage(errorData: unknown): string | null {
+  if (!errorData || typeof errorData !== "object") return null;
+  const data = errorData as {
+    detail?: string;
+    message?: string;
+    errors?: Record<string, string[]>;
+  };
+  if (data.detail) return data.detail;
+  if (data.errors) {
+    const first = Object.values(data.errors).flat()[0];
+    if (first) return first;
+  }
+  return data.message || null;
 }
