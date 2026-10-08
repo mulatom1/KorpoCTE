@@ -42,7 +42,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 | ID   | Change ID                     | Outcome (user can …)                                                                 | Prerequisites | PRD refs                          | Status   |
 | ---- | ----------------------------- | ------------------------------------------------------------------------------------ | ------------- | --------------------------------- | -------- |
 | F-01 | courses-module-skeleton       | (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w testach              | —             | FR-012, FR-013, FR-014            | done |
-| S-01 | answer-verification-earns-flag | uczestnik wysyła wynik zadania w hangarze i przy poprawnej odpowiedzi dostaje flagę | F-01          | US-01, FR-005, FR-006, FR-011     | in-progress |
+| S-01 | answer-verification-earns-flag | uczestnik wysyła wynik zadania w terminalu TOMO-AI-001 i przy poprawnej odpowiedzi dostaje flagę | F-01          | US-01, FR-005, FR-006, FR-011     | done |
 | S-02 | hangar-flag-list              | uczestnik widzi w hangarze wszystkie flagi z podziałem na zdobyte i niezdobyte       | S-01          | US-01, FR-007                     | proposed |
 | S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | done |
 | S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | done |
@@ -92,7 +92,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 
 ### S-01: Zweryfikowana odpowiedź daje flagę
 
-- **Outcome:** uczestnik może wkleić wynik zadania w formularzu „Do sprawdzenia” w hangarze i w czasie poniżej 5 s dostać werdykt; przy poprawnej odpowiedzi flaga zostaje przyznana raz na zawsze. Awaria oceny jest komunikowana jako awaria z możliwością ponowienia, a flaga już zdobyta blokuje ponowną ocenę.
+- **Outcome:** uczestnik może wkleić wynik zadania w terminalu „TOMO-AI001” w czasie poniżej 5 s dostać werdykt; przy poprawnej odpowiedzi flaga zostaje wyświetlona. Awaria oceny jest komunikowana jako awaria z możliwością ponowienia, a flaga już zdobyta blokuje ponowną ocenę.
 - **Change ID:** answer-verification-earns-flag
 - **PRD refs:** US-01, FR-005, FR-006, FR-011
 - **Prerequisites:** F-01; co najmniej jedno zadanie z kryteriami i flagą zdefiniowane przez administratora poza aplikacją
@@ -102,7 +102,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
   - Jak uczestnik wskazuje w formularzu, którego zadania dotyczy odpowiedź (wybór z listy czy numer zadania)? — Owner: właściciel portalu. Block: no.
   - Treść kryteriów pierwszego prawdziwego zadania do testu end-to-end. — Owner: właściciel portalu. Block: no.
 - **Risk:** Ocena modelem jest niedeterministyczna i podatna na wstrzykiwanie poleceń w treści odpowiedzi; stąd pierwsza pozycja — jeśli tu się nie uda, reszta modułu nie ma sensu.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-02: Hangar z listą flag
 
@@ -218,3 +218,4 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **S-03: odwiedzający bez konta może wejść do modułu Kursy z menu głównego i zobaczyć kafelki kursów (tytuł, krótki opis, tagi, grafika), a administrator publikuje kurs przez wgranie plików poza aplikacją; istniejące pozycje menu, Apki, Gry i ekrany administratora działają bez zmian.** — Archived 2026-10-07 → `context/archive/2026-10-07-public-course-tiles/`. Lesson: —.
 - **F-01: (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w projekcie testów, bez żadnej funkcji i bez zmian w istniejących modułach.** — Archived 2026-10-07 → `context/archive/2026-10-07-courses-module-skeleton/`. Lesson: —.
 - **S-04: zalogowany użytkownik może otworzyć stronę szczegółową opublikowanego kursu (data publikacji ≤ dziś) i przeczytać jego sformatowaną treść; kurs niepublikowany jest niewidoczny, a niezalogowany trafia do logowania i wraca do kursu.** — Archived 2026-10-07 → `context/archive/2026-10-07-course-content-reading/`. Lesson: —.
+- **S-01: uczestnik może wkleić wynik zadania w formularzu „Do sprawdzenia” w hangarze i w czasie poniżej 5 s dostać werdykt; przy poprawnej odpowiedzi flaga zostaje przyznana raz na zawsze. Awaria oceny jest komunikowana jako awaria z możliwością ponowienia, a flaga już zdobyta blokuje ponowną ocenę.** — Archived 2026-10-08 → `context/archive/2026-10-08-answer-verification-earns-flag/`. Lesson: —.
