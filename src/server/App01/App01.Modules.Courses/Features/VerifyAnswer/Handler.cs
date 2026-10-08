@@ -24,7 +24,7 @@ public partial class VerifyAnswerHandler : IRequestHandler<Contracts.Request, Co
     // Jeden komunikat dla każdego powodu niedostępności - nie zdradza istnienia flag ani kursów nieopublikowanych
     private const string NotFoundMessage = "Zadanie nie istnieje lub nie jest dostępne";
 
-    private const string MessageCorrect = "Odpowiedź poprawna! Zapisz kod flagi i aktywuj go w hangarze.";
+    private const string MessageCorrect = "Odpowiedź poprawna! Zapisz kod flagi i aktywuj go w formularzu aktywacji.";
     private const string MessageIncorrect = "Odpowiedź niepoprawna.";
     private const string MessageUnavailable = "Ocena jest chwilowo niedostępna. Spróbuj ponownie.";
     private const string MessageAlreadyOwned = "Masz już tę flagę.";

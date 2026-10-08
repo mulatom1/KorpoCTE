@@ -175,7 +175,7 @@ Endpoint oceniający odpowiedź modelem i przyznający flagę, z obsługą awari
 - `Request(int FlagId, string Answer)`, `Response(string Status, string Message, string? Code = null)`; `Code` wypełniony tylko dla `Correct`.
 - `Status` ∈ `Correct | Incorrect | Unavailable | AlreadyOwned`. Stałe nazw statusów są w klasie statycznej w `Contracts`.
 - `Message` to stały polski tekst dla każdego statusu, np.:
-  - `Correct`: „Odpowiedź poprawna! Zapisz kod flagi i aktywuj go w hangarze.”;
+  - `Correct`: „Odpowiedź poprawna! Zapisz kod flagi i aktywuj go w formularzu aktywacji.”;
   - `Incorrect`: „Odpowiedź niepoprawna.”;
   - `Unavailable`: „Ocena jest chwilowo niedostępna. Spróbuj ponownie.”;
   - `AlreadyOwned`: „Masz już tę flagę.”
@@ -347,7 +347,7 @@ Strona „Terminal TOMO-AI-001” (`/tomo-ai-001`) dla zalogowanych z listą zad
 
 ### Unit Tests:
 
-- Vitest: zachowanie `HangarPage` (warunkowe renderowanie, kliknięcia, ponowienie). Bez testowania klas Tailwind.
+- Vitest: zachowanie `TomoAiTerminalPage` (warunkowe renderowanie, kliknięcia, ponowienie). Bez testowania klas Tailwind.
 
 ### Integration Tests:
 
@@ -355,7 +355,7 @@ Strona „Terminal TOMO-AI-001” (`/tomo-ai-001`) dla zalogowanych z listą zad
 
 ### Manual Testing Steps:
 
-1. `dotnet ef database update`, potem SQL-em: kurs opublikowany (jeśli brak) i flaga, np. `INSERT INTO Courses.Flags (CourseId, Code, Title, Criteria) VALUES (<id>, 'cte-01', 'Zadanie 1: …', N'<kryteria>')`.
+1. `dotnet ef database update`, potem SQL-em: kurs opublikowany (jeśli brak) i flaga, np. `INSERT INTO Courses.Flags (CourseId, Code, Title, Criteria) VALUES (<id>, LEFT(REPLACE(NEWID(),'-',''),16), N'Zadanie 1: …', N'<kryteria>')` — `Code` jest sekretem aktywacji, więc losowy, nie czytelny skrót.
 2. Zaloguj się, wejdź w Kursy → „Terminal TOMO-AI-001”, wybierz zadanie, wyślij odpowiedź poprawną, a potem jeszcze raz tę samą.
 3. Wyślij odpowiedź niepoprawną oraz próbę wstrzyknięcia polecenia.
 4. Ustaw błędny `OpenRouter:ApiKey` i sprawdź komunikat awarii oraz ponowienie.
@@ -427,7 +427,7 @@ Decyzja użytkownika po weryfikacji ręcznej fazy 3: strona formularza ma trasę
 
 - [x] 3.1 `npm run build` (z `tsc -b`) przechodzi w `src/client/app01` — 92f4a6c
 - [x] 3.2 `npm run lint` przechodzi — 92f4a6c
-- [x] 3.3 `npm test` przechodzi, w tym `HangarPage.test.tsx` — 92f4a6c
+- [x] 3.3 `npm test` przechodzi, w tym `TomoAiTerminalPage.test.tsx` — 92f4a6c
 - [x] 3.4 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi — 92f4a6c
 
 #### Manual

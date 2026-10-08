@@ -175,6 +175,7 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
             new Flag { Id = 10, CourseId = 1, Code = "S-1", Title = "Zadanie starsze 1", Criteria = SecretCriteria },
             new Flag { Id = 13, CourseId = 1, Code = "S-NULL", Title = "Bez kryteriów", Criteria = null },
             new Flag { Id = 14, CourseId = 1, Code = "S-EMPTY", Title = "Puste kryteria", Criteria = "" },
+            new Flag { Id = 16, CourseId = 1, Code = "S-WS", Title = "Białe znaki", Criteria = "  \t\n " },
             new Flag { Id = 15, CourseId = 3, Code = "P-1", Title = "Zadanie przyszłe", Criteria = SecretCriteria });
 
         db.UserFlags.AddRange(
@@ -218,7 +219,7 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert
         Assert.NotNull(result);
-        Assert.DoesNotContain(result.Tasks, t => t.FlagId is 13 or 14 or 15);
+        Assert.DoesNotContain(result.Tasks, t => t.FlagId is 13 or 14 or 15 or 16);
         Assert.DoesNotContain(result.Tasks, t => t.CourseSlug == "kurs-przyszly");
     }
 
@@ -236,6 +237,10 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
         var json = await response.Content.ReadAsStringAsync();
         Assert.DoesNotContain("criteria", json, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(SecretCriteria, json);
+        // Code to sekret aktywacji flagi - lista zadań nigdy go nie zwraca
+        Assert.DoesNotContain("\"code\"", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("S-1", json);
+        Assert.DoesNotContain("N-1", json);
     }
 
     [Fact]

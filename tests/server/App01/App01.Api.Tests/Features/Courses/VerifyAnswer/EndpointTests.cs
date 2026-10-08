@@ -258,7 +258,7 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert - uczestnik dostaje kod flagi; flagę zapisuje dopiero aktywacja (S-06)
         Assert.Equal(Contracts.Statuses.Correct, result.Status);
-        Assert.Equal("Odpowiedź poprawna! Zapisz kod flagi i aktywuj go w hangarze.", result.Message);
+        Assert.Equal("Odpowiedź poprawna! Zapisz kod flagi i aktywuj go w formularzu aktywacji.", result.Message);
         Assert.Equal("S-1", result.Code);
         Assert.Empty(GetCurrentUserFlags(context, PublishedFlagId));
     }

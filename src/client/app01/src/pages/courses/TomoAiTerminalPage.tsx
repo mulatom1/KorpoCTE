@@ -45,6 +45,7 @@ function TomoAiTerminalPage() {
 
   const fetchTasks = useCallback(async () => {
     setIsLoading(true);
+    setError("");
     try {
       const response = await createApiService().getHangarTasks();
       setTasks(response.tasks);
@@ -131,7 +132,7 @@ function TomoAiTerminalPage() {
 
           {isLoading ? (
             <div className="p-8 text-center text-gray-400">Ładowanie...</div>
-          ) : tasks.length === 0 ? (
+          ) : error && tasks.length === 0 ? null : tasks.length === 0 ? (
             <div className="p-8 text-center text-gray-400">
               Brak zadań do sprawdzenia
             </div>

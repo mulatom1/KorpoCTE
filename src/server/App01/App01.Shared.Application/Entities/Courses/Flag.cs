@@ -7,7 +7,7 @@ public class Flag
     public required int CourseId { get; set; }
     public virtual Course Course { get; set; } = null!;
 
-    // Krótki kod flagi dla administratora (unikalny)
+    // Sekret aktywacji flagi - nieodgadywalny, unikalny; zwracany wyłącznie przy werdykcie Correct
     public required string Code { get; set; } = string.Empty;
 
     // Tytuł zadania widoczny dla uczestnika

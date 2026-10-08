@@ -1,7 +1,7 @@
 ---
 change_id: answer-verification-earns-flag
 title: Answer verification earns flag
-status: implemented
+status: impl_reviewed
 created: 2026-10-08
 updated: 2026-10-08
 archived_at: null

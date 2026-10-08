@@ -63,6 +63,17 @@ describe("TomoAiTerminalPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("błąd pobrania listy pokazuje sam błąd, bez komunikatu o pustej liście", async () => {
+    getHangarTasks.mockRejectedValue(new Error("Serwer niedostępny"));
+
+    renderPage();
+
+    expect(await screen.findByText("Serwer niedostępny")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Brak zadań do sprawdzenia"),
+    ).not.toBeInTheDocument();
+  });
+
   it("przycisk jest wyłączony bez zadania i bez odpowiedzi", async () => {
     renderPage();
 
@@ -83,7 +94,8 @@ describe("TomoAiTerminalPage", () => {
   it("Correct pokazuje sukces i kod flagi z odpowiedzi", async () => {
     verifyAnswer.mockResolvedValue({
       status: "Correct",
-      message: "Odpowiedź poprawna! Zapisz kod flagi i aktywuj go w hangarze.",
+      message:
+        "Odpowiedź poprawna! Zapisz kod flagi i aktywuj go w formularzu aktywacji.",
       code: "FLAG-1234",
     });
 

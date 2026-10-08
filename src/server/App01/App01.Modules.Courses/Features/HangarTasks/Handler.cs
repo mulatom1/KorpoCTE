@@ -48,7 +48,7 @@ public class HangarTasksHandler : IRequestHandler<Contracts.Request, Contracts.R
         // Tylko flagi z kryteriami (zdobywalne przez weryfikację) w opublikowanych kursach (UTC, równość = widoczny)
         var now = _timeProvider.GetUtcNow().UtcDateTime;
         var tasks = await _dbContext.Flags
-            .Where(f => f.Criteria != null && f.Criteria != "" && f.Course.PublishDate <= now)
+            .Where(f => !string.IsNullOrWhiteSpace(f.Criteria) && f.Course.PublishDate <= now)
             .OrderBy(f => f.Course.PublishDate)
             .ThenBy(f => f.Id)
             .Select(f => new Contracts.HangarTaskDto(
