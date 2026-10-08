@@ -31,6 +31,10 @@ public class AppDbContext : DbContext
     // Courses
     public DbSet<Course> Courses { get; set; } = null!;
 
+    public DbSet<Flag> Flags { get; set; } = null!;
+
+    public DbSet<UserFlag> UserFlags { get; set; } = null!;
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

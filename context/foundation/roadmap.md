@@ -3,7 +3,7 @@ project: "Kursy i bootcampy"
 version: 1
 status: draft
 created: 2026-09-29
-updated: 2026-10-07
+updated: 2026-10-08
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -42,7 +42,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 | ID   | Change ID                     | Outcome (user can …)                                                                 | Prerequisites | PRD refs                          | Status   |
 | ---- | ----------------------------- | ------------------------------------------------------------------------------------ | ------------- | --------------------------------- | -------- |
 | F-01 | courses-module-skeleton       | (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w testach              | —             | FR-012, FR-013, FR-014            | done |
-| S-01 | answer-verification-earns-flag | uczestnik wysyła wynik zadania w hangarze i przy poprawnej odpowiedzi dostaje flagę | F-01          | US-01, FR-005, FR-006, FR-011     | proposed |
+| S-01 | answer-verification-earns-flag | uczestnik wysyła wynik zadania w hangarze i przy poprawnej odpowiedzi dostaje flagę | F-01          | US-01, FR-005, FR-006, FR-011     | in-progress |
 | S-02 | hangar-flag-list              | uczestnik widzi w hangarze wszystkie flagi z podziałem na zdobyte i niezdobyte       | S-01          | US-01, FR-007                     | proposed |
 | S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | done |
 | S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | done |
@@ -102,7 +102,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
   - Jak uczestnik wskazuje w formularzu, którego zadania dotyczy odpowiedź (wybór z listy czy numer zadania)? — Owner: właściciel portalu. Block: no.
   - Treść kryteriów pierwszego prawdziwego zadania do testu end-to-end. — Owner: właściciel portalu. Block: no.
 - **Risk:** Ocena modelem jest niedeterministyczna i podatna na wstrzykiwanie poleceń w treści odpowiedzi; stąd pierwsza pozycja — jeśli tu się nie uda, reszta modułu nie ma sensu.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-02: Hangar z listą flag
 
