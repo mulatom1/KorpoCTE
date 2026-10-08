@@ -4,7 +4,7 @@
 
 ## What & Why
 
-Wycinek S-01, gwiazda przewodnia roadmapy. Uczestnik w hangarze wkleja wynik zadania i w czasie poniżej 5 s dostaje werdykt modelu. Przy poprawnej odpowiedzi flaga zostaje przyznana raz na zawsze. To realizacja jedynej nowej reguły domenowej PRD („flaga dowodzi wykonania, nie przeczytania”) i największe ryzyko techniczne modułu.
+Wycinek S-01, gwiazda przewodnia roadmapy. Uczestnik w hangarze wkleja wynik zadania i w czasie poniżej 5 s dostaje werdykt modelu. Przy poprawnej odpowiedzi uczestnik dostaje kod flagi, którym sam aktywuje flagę w funkcji aktywacji (S-06). To realizacja jedynej nowej reguły domenowej PRD („flaga dowodzi wykonania, nie przeczytania”) i największe ryzyko techniczne modułu.
 
 ## Starting Point
 
@@ -12,21 +12,22 @@ Moduł Kursy ma kafelki i treść kursów (`Course`: Slug + PublishDate, wstawia
 
 ## Desired End State
 
-Zalogowany użytkownik widzi w menu „Hangar”. Wybiera w nim z listy zadanie z opublikowanego kursu, wysyła odpowiedź i widzi jeden z wyników: „poprawna — flaga zdobyta”, „niepoprawna”, „masz już tę flagę” albo „ocena niedostępna” z przyciskiem „Spróbuj ponownie”. Administrator definiuje zadania SQL-em w `Courses.Flags`, a zdobyte flagi trafiają do `Courses.UserFlags`.
+Zalogowany użytkownik widzi w menu „Hangar”. Wybiera w nim z listy zadanie z opublikowanego kursu, wysyła odpowiedź i widzi jeden z wyników: „poprawna” z kodem flagi do aktywacji, „niepoprawna”, „masz już tę flagę” albo „ocena niedostępna” z przyciskiem „Spróbuj ponownie”. Administrator definiuje zadania SQL-em w `Courses.Flags`, a zdobyte flagi trafią do `Courses.UserFlags` dopiero przez aktywację (S-06).
 
 ## Key Decisions Made
 
 | Decision                | Choice                                                                                   | Why (1 sentence)                                                                          |
 | ----------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | Miejsce kryteriów       | Kolumna `Criteria` w tabeli `Courses.Flags`, wstawiana SQL-em                            | Zgodne z PRD („zmiana promptu = SQL”), kryteria nigdy nie trafiają na dysk publiczny ani do klienta |
-| Model danych            | Flaga = zadanie, przypięta do kursu, a weryfikowalna, gdy `Criteria` niepuste            | Najprostszy model; ranking liczy flagi; S-06 doda kod aktywacji bez przebudowy             |
+| Model danych            | Flaga = zadanie, przypięta do kursu, a weryfikowalna, gdy `Criteria` niepuste            | Najprostszy model; ranking liczy flagi; S-06 aktywuje flagę istniejącym `Flag.Code`             |
 | Widoczność zadań        | Tylko zadania kursów z `PublishDate <= teraz`                                            | Spójne z FR-003: nieopublikowany kurs nie zdradza zadań                                   |
 | Wybór zadania           | Lista rozwijana z `GET api/courses/hangar-tasks`, zdobyte wyłączone                      | Bez literówek; S-02 rozbuduje ten sam endpoint                                            |
 | Werdykt `Incorrect`     | Stały komunikat „Odpowiedź niepoprawna.”, a `reason` modelu tylko w logu                 | Zero ryzyka wycieku kryteriów                                                             |
 | Koszt i nadużycia       | Odpowiedź 1–4000 znaków, przycisk zablokowany w trakcie oceny, bez limitu prób           | Mała zamknięta grupa, brak nowej infrastruktury                                           |
 | Menu                    | „Hangar” doklejany tylko przy sesji (jak „Users” dla admina), trasa za `RequireAuth`     | Gość nie widzi niedostępnej funkcji; istniejące pozycje bez zmian                         |
 | Awarie modelu           | 200 + `Unavailable` (timeout ≤ 4 s, wyjątek, nieparsowalny JSON), bez zapisu             | Reguła CLAUDE.md; awaria to nie ocena negatywna                                           |
-| Wyścig o flagę          | Unikalny indeks `(UserId, FlagId)` + `DbUpdateException` → `AlreadyOwned`                | Flaga nie może zostać policzona dwa razy (PRD)                                            |
+| Wynik `Correct`         | Zwraca `Flag.Code`, bez zapisu; flagę zapisuje aktywacja (S-06) — zmiana z 2026-10-08    | Decyzja użytkownika: uczestnik sam rejestruje flagę w funkcji aktywacji                   |
+| Wyścig o flagę          | Unikalny indeks `(UserId, FlagId)` (faza 1); `DbUpdateException` obsłuży aktywacja (S-06) | Flaga nie może zostać policzona dwa razy (PRD)                                            |
 
 ## Scope
 
@@ -54,7 +55,7 @@ Zalogowany użytkownik widzi w menu „Hangar”. Wybiera w nim z listy zadanie 
 4. jeśli flaga jest już zdobyta, zwraca `AlreadyOwned`;
 5. woła `IOpenRouterService` z timeoutem (kryteria w `system`, odpowiedź w `<answer>` w `user`);
 6. parsuje JSON `{verdict, reason}`;
-7. przy `pass` zapisuje `UserFlag`.
+7. przy `pass` zwraca `Correct` z `Flag.Code`, bez zapisu.
 
 Każda awaria techniczna kończy się statusem `Unavailable`.
 
@@ -75,8 +76,10 @@ Każda awaria techniczna kończy się statusem `Unavailable`.
 - Tolerujemy jedno otaczające ogrodzenie ```` ```json ```` w odpowiedzi modelu. Każdy inny format daje `Unavailable`.
 - Bez limitu prób jedno konto może generować koszt serią wysyłek. Akceptowane dla małej grupy.
 
+- `Flag.Code` jest zarazem sekretem aktywacji — administrator musi nadawać kody trudne do zgadnięcia. Do czasu S-06 flagi nie da się zdobyć.
+
 ## Success Criteria (Summary)
 
-- Uczestnik zdobywa flagę za poprawną odpowiedź w czasie poniżej 5 s. Ponowne wysłanie jest blokowane bez wywołania modelu.
+- Uczestnik dostaje kod flagi za poprawną odpowiedź w czasie poniżej 5 s. Ponowne wysłanie dla flagi już zdobytej jest blokowane bez wywołania modelu.
 - Awaria modelu nigdy nie daje 500 ani oceny negatywnej, tylko komunikat z ponowieniem.
 - CI przechodzi, a istniejące moduły i menu działają bez zmian.
