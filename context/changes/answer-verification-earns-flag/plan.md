@@ -425,14 +425,14 @@ Decyzja użytkownika po weryfikacji ręcznej fazy 3: strona formularza ma trasę
 
 #### Automated
 
-- [x] 3.1 `npm run build` (z `tsc -b`) przechodzi w `src/client/app01`
-- [x] 3.2 `npm run lint` przechodzi
-- [x] 3.3 `npm test` przechodzi, w tym `HangarPage.test.tsx`
-- [x] 3.4 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi
+- [x] 3.1 `npm run build` (z `tsc -b`) przechodzi w `src/client/app01` — 92f4a6c
+- [x] 3.2 `npm run lint` przechodzi — 92f4a6c
+- [x] 3.3 `npm test` przechodzi, w tym `HangarPage.test.tsx` — 92f4a6c
+- [x] 3.4 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi — 92f4a6c
 
 #### Manual
 
-- [x] 3.5 Gość nie widzi podmenu terminala na liście kursów, a wejście na `/tomo-ai-001` przekierowuje do logowania i po zalogowaniu wraca do terminala; zalogowany widzi „Terminal TOMO-AI-001” w podmenu listy kursów i szczegółów kursu
-- [x] 3.6 Zalogowany użytkownik wybiera zadanie, wysyła poprawną odpowiedź i w czasie poniżej 5 s widzi sukces z kodem flagi do aktywacji
-- [x] 3.7 Odpowiedź niepoprawna pokazuje komunikat negatywny, a awaria (np. wyłączony klucz OpenRouter) pokazuje komunikat awarii z działającym „Spróbuj ponownie”
-- [x] 3.8 Istniejące pozycje menu, Kursy, Apki, Gry, Lotto, Fiszki oraz ekrany admina (Users, Rejestracja) działają bez zmian, także na mobile
+- [x] 3.5 Gość nie widzi podmenu terminala na liście kursów, a wejście na `/tomo-ai-001` przekierowuje do logowania i po zalogowaniu wraca do terminala; zalogowany widzi „Terminal TOMO-AI-001” w podmenu listy kursów i szczegółów kursu — 92f4a6c
+- [x] 3.6 Zalogowany użytkownik wybiera zadanie, wysyła poprawną odpowiedź i w czasie poniżej 5 s widzi sukces z kodem flagi do aktywacji — 92f4a6c
+- [x] 3.7 Odpowiedź niepoprawna pokazuje komunikat negatywny, a awaria (np. wyłączony klucz OpenRouter) pokazuje komunikat awarii z działającym „Spróbuj ponownie” — 92f4a6c
+- [x] 3.8 Istniejące pozycje menu, Kursy, Apki, Gry, Lotto, Fiszki oraz ekrany admina (Users, Rejestracja) działają bez zmian, także na mobile — 92f4a6c
