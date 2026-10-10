@@ -1,14 +1,22 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import HangarPage from "./HangarPage";
 
 const getHangarFlags = vi.fn();
+const activateFlag = vi.fn();
 
 vi.mock("../../services/api-courses-service", () => ({
   ApiCoursesService: class {
     getHangarFlags = getHangarFlags;
+    activateFlag = activateFlag;
     setUsrToken = vi.fn();
   },
 }));
@@ -59,6 +67,7 @@ describe("HangarPage", () => {
   beforeEach(() => {
     getHangarFlags.mockReset();
     getHangarFlags.mockResolvedValue(pageResponse());
+    activateFlag.mockReset();
   });
 
   it("pokazuje tabelę flag i pobiera pierwszą stronę bez filtra", async () => {
@@ -262,5 +271,150 @@ describe("HangarPage", () => {
       "Serwer niedostępny",
     );
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  describe("aktywacja flagi", () => {
+    function typeCode(value: string) {
+      fireEvent.change(screen.getByLabelText("Kod flagi"), {
+        target: { value },
+      });
+    }
+
+    function submit() {
+      fireEvent.click(screen.getByRole("button", { name: "Aktywuj" }));
+    }
+
+    it("pokazuje nagłówek Hangar z trofeami", async () => {
+      renderPage();
+
+      expect(
+        screen.getByRole("heading", { level: 1, name: "Hangar z trofeami" }),
+      ).toBeInTheDocument();
+      await screen.findByRole("table");
+    });
+
+    it("sekcja aktywacji jest w DOM przed tabelą", async () => {
+      renderPage();
+
+      const table = await screen.findByRole("table");
+      const heading = screen.getByRole("heading", { name: "Aktywacja flagi" });
+      expect(
+        heading.compareDocumentPosition(table) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it("Aktywuj jest wyłączony przy pustym polu", async () => {
+      renderPage();
+      await screen.findByRole("table");
+
+      expect(screen.getByRole("button", { name: "Aktywuj" })).toBeDisabled();
+      typeCode("   ");
+      expect(screen.getByRole("button", { name: "Aktywuj" })).toBeDisabled();
+      typeCode("FLAG-1");
+      expect(screen.getByRole("button", { name: "Aktywuj" })).toBeEnabled();
+    });
+
+    it("wysyłka woła activateFlag z kodem", async () => {
+      activateFlag.mockResolvedValue({
+        status: "Invalid",
+        message: "Nieprawidłowy kod flagi.",
+        flagTitle: null,
+      });
+      renderPage();
+      await screen.findByRole("table");
+
+      typeCode("FLAG-XYZ");
+      submit();
+
+      await screen.findByRole("status");
+      expect(activateFlag).toHaveBeenCalledWith({ code: "FLAG-XYZ" });
+    });
+
+    it("Activated pokazuje komunikat, czyści pole i odświeża listę na bieżącej stronie", async () => {
+      getHangarFlags.mockImplementation(async ({ page }: { page: number }) =>
+        pageResponse({ page, totalPages: 2, totalCount: 25 }),
+      );
+      activateFlag.mockResolvedValue({
+        status: "Activated",
+        message: "Flaga aktywowana.",
+        flagTitle: "Flaga B",
+      });
+      renderPage();
+      await screen.findByText("Strona 1 z 2");
+      fireEvent.click(screen.getByRole("button", { name: "Następna" }));
+      await screen.findByText("Strona 2 z 2");
+      const callsBefore = getHangarFlags.mock.calls.length;
+
+      typeCode("FLAG-B");
+      submit();
+
+      const status = await screen.findByRole("status");
+      expect(status).toHaveTextContent("Flaga aktywowana.");
+      expect(status).toHaveTextContent("Flaga B");
+      expect(screen.getByLabelText("Kod flagi")).toHaveValue("");
+      await waitFor(() =>
+        expect(getHangarFlags.mock.calls.length).toBe(callsBefore + 1),
+      );
+      expect(getHangarFlags).toHaveBeenLastCalledWith({
+        filter: "All",
+        page: 2,
+        pageSize: 20,
+      });
+    });
+
+    it("AlreadyOwned pokazuje komunikat bez ponownego pobierania listy", async () => {
+      activateFlag.mockResolvedValue({
+        status: "AlreadyOwned",
+        message: "Masz już tę flagę.",
+        flagTitle: "Flaga A",
+      });
+      renderPage();
+      await screen.findByRole("table");
+      const callsBefore = getHangarFlags.mock.calls.length;
+
+      typeCode("FLAG-1234");
+      submit();
+
+      expect(await screen.findByRole("status")).toHaveTextContent(
+        "Masz już tę flagę.",
+      );
+      expect(getHangarFlags).toHaveBeenCalledTimes(callsBefore);
+    });
+
+    it("Invalid pokazuje komunikat, zostawia kod w polu i nie odświeża listy", async () => {
+      activateFlag.mockResolvedValue({
+        status: "Invalid",
+        message: "Nieprawidłowy kod flagi.",
+        flagTitle: null,
+      });
+      renderPage();
+      await screen.findByRole("table");
+      const callsBefore = getHangarFlags.mock.calls.length;
+
+      typeCode("ZLY-KOD");
+      submit();
+
+      expect(await screen.findByRole("status")).toHaveTextContent(
+        "Nieprawidłowy kod flagi.",
+      );
+      expect(screen.getByLabelText("Kod flagi")).toHaveValue("ZLY-KOD");
+      expect(getHangarFlags).toHaveBeenCalledTimes(callsBefore);
+    });
+
+    it("błąd serwisu pokazuje alert w sekcji aktywacji, tabela zostaje", async () => {
+      activateFlag.mockRejectedValue(new Error("Kod flagi jest wymagany"));
+      renderPage();
+      await screen.findByRole("table");
+
+      typeCode("FLAG-1");
+      submit();
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Kod flagi jest wymagany",
+      );
+      expect(screen.getByRole("table")).toBeInTheDocument();
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
   });
 });

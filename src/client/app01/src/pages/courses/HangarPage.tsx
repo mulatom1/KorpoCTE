@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { ApiCoursesService } from "../../services/api-courses-service";
+import type { CoursesActivateFlagResponse } from "../../services/contracts/courses-activate-flag-response";
 import type { CoursesHangarFlagsFilter } from "../../services/contracts/courses-hangar-flags-request";
 import type { CoursesHangarFlagsResponse } from "../../services/contracts/courses-hangar-flags-response";
 import FormCard from "../../components/FormCard";
 import SubMenu from "../../components/SubMenu";
+import TextEdit from "../../components/TextEdit";
 import ButtonPrimary from "../../components/ButtonPrimary";
 import ButtonSecondary from "../../components/ButtonSecondary";
 import { formatDateTime } from "../../utils/formatDateTime";
@@ -15,6 +17,9 @@ const FLAG_CODE_MASK = "********";
 
 // Liczba flag na stronie listy.
 const PAGE_SIZE = 20;
+
+// Maksymalna długość kodu flagi – jak w walidatorze ActivateFlag na serwerze.
+const CODE_MAX_LENGTH = 50;
 
 const FILTERS: { value: CoursesHangarFlagsFilter; label: string }[] = [
   { value: "All", label: "Wszystkie" },
@@ -80,9 +85,18 @@ function HangarPage() {
   const [data, setData] = useState<CoursesHangarFlagsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  // Zwiększenie licznika wymusza ponowne pobranie listy na bieżącym filtrze i stronie.
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Sekcja aktywacji flagi – stan niezależny od tabeli.
+  const [code, setCode] = useState("");
+  const [isActivating, setIsActivating] = useState(false);
+  const [activation, setActivation] =
+    useState<CoursesActivateFlagResponse | null>(null);
+  const [activationError, setActivationError] = useState("");
 
   useEffect(() => {
-    document.title = "Hangar | tomsoft1 workspace";
+    document.title = "Hangar z trofeami | tomsoft1 workspace";
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
@@ -116,12 +130,40 @@ function HangarPage() {
     return () => {
       isStale = true;
     };
-  }, [filter, page]);
+  }, [filter, page, refreshKey]);
 
   // Zmiana filtra zawsze wraca na pierwszą stronę.
   const changeFilter = (value: CoursesHangarFlagsFilter) => {
     setFilter(value);
     setPage(1);
+  };
+
+  const canActivate = code.trim().length > 0 && !isActivating;
+
+  const handleActivate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canActivate) return;
+
+    setIsActivating(true);
+    setActivation(null);
+    setActivationError("");
+
+    try {
+      const response = await createApiService().activateFlag({ code });
+      setActivation(response);
+
+      if (response.status === "Activated") {
+        // Nowa flaga zmienia tabelę i licznik – pobierz je ponownie.
+        setCode("");
+        setRefreshKey((k) => k + 1);
+      }
+    } catch (err) {
+      setActivationError(
+        err instanceof Error ? err.message : "Błąd aktywacji flagi",
+      );
+    } finally {
+      setIsActivating(false);
+    }
   };
 
   return (
@@ -135,7 +177,7 @@ function HangarPage() {
                 : "opacity-0 translate-y-8"
             }`}
           >
-            Hangar
+            Hangar z trofeami
           </h1>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
             Twoje flagi zdobyte w kursach i te, które wciąż czekają.
@@ -147,6 +189,77 @@ function HangarPage() {
           isVisible={isVisible}
           items={coursesSubMenuItems}
         />
+
+        <FormCard isVisible={isVisible} borderColor="cyan">
+          <section aria-labelledby="activate-flag-heading">
+            <h2
+              id="activate-flag-heading"
+              className="text-2xl font-bold text-cyan-400 mb-6"
+            >
+              Aktywacja flagi
+            </h2>
+
+            <form onSubmit={handleActivate}>
+              <TextEdit
+                label="Kod flagi"
+                id="flagCode"
+                name="flagCode"
+                maxLength={CODE_MAX_LENGTH}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="Wklej kod flagi..."
+              />
+
+              <ButtonPrimary
+                className="w-full py-3"
+                type="submit"
+                disabled={!canActivate}
+              >
+                {isActivating ? "Aktywuję…" : "Aktywuj"}
+              </ButtonPrimary>
+            </form>
+
+            {activationError && (
+              <div
+                role="alert"
+                className="mt-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 text-sm"
+              >
+                {activationError}
+              </div>
+            )}
+
+            {/* Treść komunikatów pochodzi wyłącznie z serwera */}
+            {activation?.status === "Activated" && (
+              <div
+                role="status"
+                className="mt-6 p-4 bg-green-500/20 border border-green-500/50 rounded-xl text-green-400 text-sm space-y-1"
+              >
+                <p className="font-semibold">{activation.message}</p>
+                {activation.flagTitle && (
+                  <p className="text-green-300">{activation.flagTitle}</p>
+                )}
+              </div>
+            )}
+
+            {activation?.status === "AlreadyOwned" && (
+              <div
+                role="status"
+                className="mt-6 p-4 bg-cyan-500/20 border border-cyan-500/50 rounded-xl text-cyan-300 text-sm"
+              >
+                <p>{activation.message}</p>
+              </div>
+            )}
+
+            {activation?.status === "Invalid" && (
+              <div
+                role="status"
+                className="mt-6 p-4 bg-orange-500/20 border border-orange-500/50 rounded-xl text-orange-300 text-sm"
+              >
+                <p className="font-semibold">{activation.message}</p>
+              </div>
+            )}
+          </section>
+        </FormCard>
 
         <FormCard isVisible={isVisible} borderColor="green">
           <div className="flex flex-wrap gap-3 justify-center mb-6">

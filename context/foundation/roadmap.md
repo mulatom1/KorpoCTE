@@ -47,7 +47,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 | S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | done |
 | S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | done |
 | S-05 | leaderboard                   | zalogowany użytkownik widzi listę zasłużonych według liczby zdobytych flag           | S-01          | US-01, FR-008                     | proposed |
-| S-06 | flag-activation               | uczestnik aktywuje zdobytą flagę przez formularz aktywacji w hangarze                | S-01          | FR-004                            | proposed |
+| S-06 | flag-activation               | uczestnik aktywuje zdobytą flagę przez formularz aktywacji w hangarze                | S-01          | FR-004                            | in-progress |
 | S-07 | group-progress-dashboard      | zalogowany użytkownik widzi dashboard z czterema wskaźnikami postępu grupy           | S-01          | US-01, FR-009                     | proposed |
 
 ## Streams
@@ -165,7 +165,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **Unknowns:**
   - Skąd uczestnik bierze kod flagi do aktywacji i czy każda flaga ma kod, czy tylko flagi niezwiązane z zadaniem ocenianym przez AI? — Owner: właściciel portalu. Block: no.
 - **Risk:** Druga droga zdobycia flagi korzysta z tej samej gwarancji jednokrotności co S-01; osobno, żeby nie rozdmuchać pierwszego dowodu działania.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-07: Dashboard postępu grupy
 

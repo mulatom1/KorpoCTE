@@ -1,3 +1,5 @@
+import type { CoursesActivateFlagRequest } from "./contracts/courses-activate-flag-request";
+import type { CoursesActivateFlagResponse } from "./contracts/courses-activate-flag-response";
 import type { CoursesCourseTilesResponse } from "./contracts/courses-course-tiles-response";
 import type { CoursesCourseContentRequest } from "./contracts/courses-course-content-request";
 import type { CoursesCourseContentResponse } from "./contracts/courses-course-content-response";
@@ -156,6 +158,31 @@ export class ApiCoursesService {
       throw new Error(
         getProblemMessage(errorData) ||
           `Błąd weryfikacji odpowiedzi: ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  // Aktywacja flagi kodem – wymaga zalogowania (Bearer). Nieprawidłowy lub
+  // posiadany kod wraca jako 200 ze statusem; wyjątek oznacza błąd HTTP (400/inne).
+  public async activateFlag(
+    request: CoursesActivateFlagRequest,
+  ): Promise<CoursesActivateFlagResponse> {
+    const response = await apiFetch(
+      `${this.apiUrl}/api/courses/activate-flag`,
+      {
+        method: "POST",
+        headers: this.getHeaders(),
+        body: JSON.stringify(request),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        getProblemMessage(errorData) ||
+          `Błąd aktywacji flagi: ${response.statusText}`,
       );
     }
 

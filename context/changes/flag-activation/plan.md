@@ -247,25 +247,25 @@ Brak migracji. Unikalne indeksy `Courses.Flags(Code)` i `Courses.UserFlags(UserI
 
 #### Automated
 
-- [x] 1.1 `dotnet format APPS.sln --verify-no-changes` przechodzi
-- [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń
-- [x] 1.3 `dotnet test APPS.sln` przechodzi, w tym nowe `ActivateFlag/EndpointTests.cs` oraz istniejące testy `HangarFlags` i `VerifyAnswer`
+- [x] 1.1 `dotnet format APPS.sln --verify-no-changes` przechodzi — 845c2e7
+- [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń — 845c2e7
+- [x] 1.3 `dotnet test APPS.sln` przechodzi, w tym nowe `ActivateFlag/EndpointTests.cs` oraz istniejące testy `HangarFlags` i `VerifyAnswer` — 845c2e7
 
 #### Manual
 
-- [x] 1.4 Na lokalnej bazie `POST api/courses/activate-flag` (Swagger, JWT + `X-TOKEN`) z kodem flagi opublikowanego kursu zwraca `Activated`, a w `Courses.UserFlags` pojawia się wiersz. Drugie wywołanie zwraca `AlreadyOwned`, a błędny kod zwraca `Invalid`. `GET api/courses/hangar-flags` pokazuje flagę jako zdobytą.
+- [x] 1.4 Na lokalnej bazie `POST api/courses/activate-flag` (Swagger, JWT + `X-TOKEN`) z kodem flagi opublikowanego kursu zwraca `Activated`, a w `Courses.UserFlags` pojawia się wiersz. Drugie wywołanie zwraca `AlreadyOwned`, a błędny kod zwraca `Invalid`. `GET api/courses/hangar-flags` pokazuje flagę jako zdobytą. — 845c2e7
 
 ### Phase 2: Klient — sekcja aktywacji i tytuł hangaru
 
 #### Automated
 
-- [ ] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
-- [ ] 2.2 `npm run lint` przechodzi
-- [ ] 2.3 `npm test` przechodzi, w tym rozszerzony `HangarPage.test.tsx`
-- [ ] 2.4 `npm run build` przechodzi (`tsc -b`)
+- [x] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
+- [x] 2.2 `npm run lint` przechodzi
+- [x] 2.3 `npm test` przechodzi, w tym rozszerzony `HangarPage.test.tsx`
+- [x] 2.4 `npm run build` przechodzi (`tsc -b`)
 
 #### Manual
 
-- [ ] 2.5 Strona `/hangar` ma tytuł „Hangar z trofeami”, a sekcja „Aktywacja flagi” jest pod podmenu i nad tabelą (także na telefonie)
-- [ ] 2.6 Kod skopiowany z terminalu TOMO-AI-001 (werdykt `Correct`) aktywuje flagę. Komunikat pokazuje tytuł flagi, tabela pokazuje ją jako „Zdobyta”, a licznik rośnie o 1
-- [ ] 2.7 Ponowna aktywacja tego samego kodu pokazuje „Masz już tę flagę.”, a wymyślony kod pokazuje „Nieprawidłowy kod flagi.”
+- [x] 2.5 Strona `/hangar` ma tytuł „Hangar z trofeami”, a sekcja „Aktywacja flagi” jest pod podmenu i nad tabelą (także na telefonie)
+- [x] 2.6 Kod skopiowany z terminalu TOMO-AI-001 (werdykt `Correct`) aktywuje flagę. Komunikat pokazuje tytuł flagi, tabela pokazuje ją jako „Zdobyta”, a licznik rośnie o 1
+- [x] 2.7 Ponowna aktywacja tego samego kodu pokazuje „Masz już tę flagę.”, a wymyślony kod pokazuje „Nieprawidłowy kod flagi.”
