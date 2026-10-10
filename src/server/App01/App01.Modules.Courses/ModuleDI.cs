@@ -30,6 +30,7 @@ public static class ModuleDI
         Features.VerifyAnswer.Endpoint.AddEndpoint(app);
         Features.HangarFlags.Endpoint.AddEndpoint(app);
         Features.ActivateFlag.Endpoint.AddEndpoint(app);
+        Features.Leaderboard.Endpoint.AddEndpoint(app);
 
         return app;
     }
