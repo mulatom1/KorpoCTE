@@ -259,13 +259,13 @@ Brak migracji. Unikalne indeksy `Courses.Flags(Code)` i `Courses.UserFlags(UserI
 
 #### Automated
 
-- [x] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
-- [x] 2.2 `npm run lint` przechodzi
-- [x] 2.3 `npm test` przechodzi, w tym rozszerzony `HangarPage.test.tsx`
-- [x] 2.4 `npm run build` przechodzi (`tsc -b`)
+- [x] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`) — 29aa508
+- [x] 2.2 `npm run lint` przechodzi — 29aa508
+- [x] 2.3 `npm test` przechodzi, w tym rozszerzony `HangarPage.test.tsx` — 29aa508
+- [x] 2.4 `npm run build` przechodzi (`tsc -b`) — 29aa508
 
 #### Manual
 
-- [x] 2.5 Strona `/hangar` ma tytuł „Hangar z trofeami”, a sekcja „Aktywacja flagi” jest pod podmenu i nad tabelą (także na telefonie)
-- [x] 2.6 Kod skopiowany z terminalu TOMO-AI-001 (werdykt `Correct`) aktywuje flagę. Komunikat pokazuje tytuł flagi, tabela pokazuje ją jako „Zdobyta”, a licznik rośnie o 1
-- [x] 2.7 Ponowna aktywacja tego samego kodu pokazuje „Masz już tę flagę.”, a wymyślony kod pokazuje „Nieprawidłowy kod flagi.”
+- [x] 2.5 Strona `/hangar` ma tytuł „Hangar z trofeami”, a sekcja „Aktywacja flagi” jest pod podmenu i nad tabelą (także na telefonie) — 29aa508
+- [x] 2.6 Kod skopiowany z terminalu TOMO-AI-001 (werdykt `Correct`) aktywuje flagę. Komunikat pokazuje tytuł flagi, tabela pokazuje ją jako „Zdobyta”, a licznik rośnie o 1 — 29aa508
+- [x] 2.7 Ponowna aktywacja tego samego kodu pokazuje „Masz już tę flagę.”, a wymyślony kod pokazuje „Nieprawidłowy kod flagi.” — 29aa508
