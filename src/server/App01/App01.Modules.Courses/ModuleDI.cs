@@ -29,6 +29,7 @@ public static class ModuleDI
         Features.HangarTasks.Endpoint.AddEndpoint(app);
         Features.VerifyAnswer.Endpoint.AddEndpoint(app);
         Features.HangarFlags.Endpoint.AddEndpoint(app);
+        Features.ActivateFlag.Endpoint.AddEndpoint(app);
 
         return app;
     }
