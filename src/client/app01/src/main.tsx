@@ -27,6 +27,7 @@ import CourseDetailsPage from "./pages/courses/CourseDetailsPage";
 import TomoAiTerminalPage from "./pages/courses/TomoAiTerminalPage";
 import HangarPage from "./pages/courses/HangarPage";
 import LeaderboardPage from "./pages/courses/LeaderboardPage";
+import GroupProgressPage from "./pages/courses/GroupProgressPage";
 
 // Flashcards module pages
 import FlashcardsPage from "./pages/flashcards/FlashcardsPage";
@@ -61,6 +62,7 @@ createRoot(document.getElementById("root")!).render(
           <Route path="tomo-ai-001" element={<TomoAiTerminalPage />} />
           <Route path="hangar" element={<HangarPage />} />
           <Route path="leaderboard" element={<LeaderboardPage />} />
+          <Route path="group-progress" element={<GroupProgressPage />} />
           <Route path="users" element={<UserPage />} />
           <Route path="lotto/draws" element={<LottoDrawsPage />} />
           <Route

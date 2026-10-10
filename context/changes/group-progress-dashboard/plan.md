@@ -265,25 +265,25 @@ Brak migracji.
 
 #### Automated
 
-- [x] 1.1 `dotnet format APPS.sln --verify-no-changes` przechodzi
-- [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń
-- [x] 1.3 `dotnet test APPS.sln` przechodzi, w tym nowe `GroupProgress/EndpointTests.cs`
+- [x] 1.1 `dotnet format APPS.sln --verify-no-changes` przechodzi — ac07f14
+- [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń — ac07f14
+- [x] 1.3 `dotnet test APPS.sln` przechodzi, w tym nowe `GroupProgress/EndpointTests.cs` — ac07f14
 
 #### Manual
 
-- [x] 1.4 Na lokalnej bazie `GET api/courses/group-progress` (Swagger, JWT + `X-TOKEN`) bez `asOf` zwraca wskaźniki zgodne z danymi: liczba możliwych = `allCount` w hangarze, użytkownicy = liczba osób na liście zasłużonych. Z `asOf` sprzed pierwszej aktywacji zwraca 0 zdobytych i 0 użytkowników.
+- [x] 1.4 Na lokalnej bazie `GET api/courses/group-progress` (Swagger, JWT + `X-TOKEN`) bez `asOf` zwraca wskaźniki zgodne z danymi: liczba możliwych = `allCount` w hangarze, użytkownicy = liczba osób na liście zasłużonych. Z `asOf` sprzed pierwszej aktywacji zwraca 0 zdobytych i 0 użytkowników. — ac07f14
 
 ### Phase 2: Klient — strona Postęp grupy
 
 #### Automated
 
-- [ ] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
-- [ ] 2.2 `npm run lint` przechodzi
-- [ ] 2.3 `npm test` przechodzi, w tym `GroupProgressPage.test.tsx` i `endOfLocalDay.test.ts`
-- [ ] 2.4 `npm run build` przechodzi (`tsc -b`)
+- [x] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
+- [x] 2.2 `npm run lint` przechodzi
+- [x] 2.3 `npm test` przechodzi, w tym `GroupProgressPage.test.tsx` i `endOfLocalDay.test.ts`
+- [x] 2.4 `npm run build` przechodzi (`tsc -b`)
 
 #### Manual
 
-- [ ] 2.5 „Postęp grupy” jest ostatnią pozycją podmenu kursów, a strona pokazuje cztery wskaźniki zgodne z hangarem (flagi do zdobycia) i listą zasłużonych (użytkownicy z flagą)
-- [ ] 2.6 Po aktywacji nowej (wcześniej przez nikogo niezdobytej) flagi i odświeżeniu strony rosną „Flagi zdobyte przez grupę” i procent. Wybór wczorajszej daty pokazuje stan bez dzisiejszych zdobyć, a w polu daty nie da się wybrać jutra
-- [ ] 2.7 Niezalogowany wchodzący na `/group-progress` trafia do logowania; pozostałe strony kursów, menu, Apki i Gry działają bez zmian
+- [x] 2.5 „Postęp grupy” jest ostatnią pozycją podmenu kursów, a strona pokazuje cztery wskaźniki zgodne z hangarem (flagi do zdobycia) i listą zasłużonych (użytkownicy z flagą)
+- [x] 2.6 Po aktywacji nowej (wcześniej przez nikogo niezdobytej) flagi i odświeżeniu strony rosną „Flagi zdobyte przez grupę” i procent. Wybór wczorajszej daty pokazuje stan bez dzisiejszych zdobyć, a w polu daty nie da się wybrać jutra
+- [x] 2.7 Niezalogowany wchodzący na `/group-progress` trafia do logowania; pozostałe strony kursów, menu, Apki i Gry działają bez zmian

@@ -3,6 +3,8 @@ import type { CoursesActivateFlagResponse } from "./contracts/courses-activate-f
 import type { CoursesCourseTilesResponse } from "./contracts/courses-course-tiles-response";
 import type { CoursesCourseContentRequest } from "./contracts/courses-course-content-request";
 import type { CoursesCourseContentResponse } from "./contracts/courses-course-content-response";
+import type { CoursesGroupProgressRequest } from "./contracts/courses-group-progress-request";
+import type { CoursesGroupProgressResponse } from "./contracts/courses-group-progress-response";
 import type { CoursesHangarFlagsRequest } from "./contracts/courses-hangar-flags-request";
 import type { CoursesHangarFlagsResponse } from "./contracts/courses-hangar-flags-response";
 import type { CoursesHangarTasksResponse } from "./contracts/courses-hangar-tasks-response";
@@ -162,6 +164,34 @@ export class ApiCoursesService {
       throw new Error(
         getProblemMessage(errorData) ||
           `Błąd pobierania listy zasłużonych: ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  // Wskaźniki postępu grupy na wybrany moment (Postęp grupy) – wymaga
+  // zalogowania (Bearer). Bez asOf serwer liczy stan na teraz.
+  public async getGroupProgress(
+    request: CoursesGroupProgressRequest,
+  ): Promise<CoursesGroupProgressResponse> {
+    const params = new URLSearchParams();
+    if (request.asOf !== null) params.append("asOf", request.asOf);
+    const query = params.toString();
+
+    const response = await apiFetch(
+      `${this.apiUrl}/api/courses/group-progress${query ? `?${query}` : ""}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        getProblemMessage(errorData) ||
+          `Błąd pobierania postępu grupy: ${response.statusText}`,
       );
     }
 

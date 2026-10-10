@@ -2,6 +2,7 @@
 export const HANGAR_PATH = "/hangar";
 export const LEADERBOARD_PATH = "/leaderboard";
 export const TOMO_AI_TERMINAL_PATH = "/tomo-ai-001";
+export const GROUP_PROGRESS_PATH = "/group-progress";
 
 export const coursesSubMenuItems = [
   {
@@ -15,5 +16,9 @@ export const coursesSubMenuItems = [
   {
     label: "Lista zasłużonych",
     path: LEADERBOARD_PATH,
+  },
+  {
+    label: "Postęp grupy",
+    path: GROUP_PROGRESS_PATH,
   },
 ];
