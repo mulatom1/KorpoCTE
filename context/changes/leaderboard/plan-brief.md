@@ -12,7 +12,7 @@ Flagi zdobywa się aktywacją kodem (S-06), a jednokrotność pilnuje unikalny i
 
 ## Desired End State
 
-W podmenu kursów jest pozycja „Lista zasłużonych” (`/leaderboard`, tylko dla zalogowanych). Strona pokazuje tabelę Miejsce | Uczestnik | Flagi, po 20 wierszy, z nawigacją Poprzednia / Następna. Na liście są wszyscy, którzy mają co najmniej jedną flagę z opublikowanego kursu, także administratorzy. Uczestnik jest pokazany jako część e-maila przed `@`.
+W podmenu kursów jest pozycja „Lista zasłużonych” (`/leaderboard`, tylko dla zalogowanych), jako ostatnia: Hangar z trofeami → Terminal TOMO-AI-001 → Lista zasłużonych. Strona pokazuje tabelę Miejsce | Uczestnik | Flagi, po 20 wierszy, z nawigacją Poprzednia / Następna. Na liście są wszyscy, którzy mają co najmniej jedną flagę z opublikowanego kursu, także administratorzy. Uczestnik jest pokazany jako część e-maila przed `@`.
 
 ## Key Decisions Made
 
@@ -24,6 +24,7 @@ W podmenu kursów jest pozycja „Lista zasłużonych” (`/leaderboard`, tylko 
 | Tożsamość           | Część e-maila przed `@`, wyliczana na serwerze; bez domeny i `UserId` w odpowiedzi       | Znajomi się rozpoznają, adresy nie wyciekają do całej grupy                                 |
 | Widok               | Paginacja po 20 (max 100), jak w hangarze; numer miejsca ciągły między stronami         | Spójne z hangarem; skaluje się przy większej grupie                                          |
 | Własna pozycja      | Bez wyróżnienia wiersza i bez paska „Twoje miejsce”                                     | Decyzja użytkownika; prostszy kontrakt                                                       |
+| Podmenu kursów      | Kolejność: Hangar z trofeami → Terminal TOMO-AI-001 → Lista zasłużonych; etykieta hangaru = tytuł strony — zmiana z 2026-10-10 | Decyzja użytkownika przy weryfikacji fazy 2                                                   |
 | S-07                | Kogo liczy „liczba użytkowników” — decyzja przy planowaniu S-07                         | Ta odpowiedź dotyczyła rankingu                                                              |
 
 ## Scope
@@ -31,7 +32,7 @@ W podmenu kursów jest pozycja „Lista zasłużonych” (`/leaderboard`, tylko 
 **In scope:**
 - Wycinek `Leaderboard` (4 pliki), rejestracja w `ModuleDI`, `EndpointTests.cs`.
 - Kontrakty TS, `getLeaderboard()` i `LeaderboardPage` z testami Vitest.
-- Trasa `/leaderboard` i pozycja „Lista zasłużonych” w podmenu kursów.
+- Trasa `/leaderboard` i pozycja „Lista zasłużonych” na końcu podmenu kursów; etykieta „Hangar” w podmenu zmieniona na „Hangar z trofeami” (jak tytuł strony).
 
 **Out of scope:**
 - Wyróżnianie własnego wiersza.

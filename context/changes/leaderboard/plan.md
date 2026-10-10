@@ -17,7 +17,7 @@ Wycinek S-05 roadmapy (US-01, FR-008). Zalogowany użytkownik widzi ranking ucze
 - `GET api/courses/leaderboard?page=1&pageSize=20` (JWT + `X-TOKEN`) zwraca ranking osób z co najmniej jedną flagą z opublikowanego kursu, razem z administratorami. Każdy wpis to `rank`, `displayName` (część e-maila przed `@`) i `flagCount`.
 - Kolejność: `flagCount` malejąco, potem wcześniejsza data ostatniej zaliczonej flagi wyżej, potem `UserId`. Miejsce w rankingu jest wspólne przy tej samej liczbie flag (1, 1, 3) i ciągłe między stronami.
 - Odpowiedź nie zawiera pełnego e-maila, domeny ani `UserId`.
-- Zalogowany użytkownik wchodzi z podmenu kursów w „Lista zasłużonych” (`/leaderboard`). Widzi tabelę Miejsce | Uczestnik | Flagi po 20 wierszy, z nawigacją Poprzednia / Następna. Własny wiersz nie jest wyróżniany.
+- Zalogowany użytkownik wchodzi z podmenu kursów w „Lista zasłużonych” (`/leaderboard`). Podmenu ma kolejność: Hangar z trofeami, Terminal TOMO-AI-001, Lista zasłużonych. Widzi tabelę Miejsce | Uczestnik | Flagi po 20 wierszy, z nawigacją Poprzednia / Następna. Własny wiersz nie jest wyróżniany.
 
 ### Key Discoveries:
 
@@ -171,7 +171,7 @@ Kontrakty TS, metoda serwisu, `LeaderboardPage` z tabelą i paginacją, trasa i 
 
 **Intent**: Udostępnić stronę zalogowanym i dodać ją do podmenu kursów. Menu główne bez zmian.
 
-**Contract**: `<Route path="leaderboard" element={<LeaderboardPage />} />` wewnątrz `<Route element={<RequireAuth />}>`. W `coursesSubMenu.ts` stała `LEADERBOARD_PATH = "/leaderboard"` i pozycja `{ label: "Lista zasłużonych", path: LEADERBOARD_PATH }` między „Hangar” a „Terminal TOMO-AI-001”.
+**Contract**: `<Route path="leaderboard" element={<LeaderboardPage />} />` wewnątrz `<Route element={<RequireAuth />}>`. W `coursesSubMenu.ts` stała `LEADERBOARD_PATH = "/leaderboard"` i pozycja `{ label: "Lista zasłużonych", path: LEADERBOARD_PATH }` po „Terminal TOMO-AI-001” (kolejność: Hangar z trofeami, Terminal TOMO-AI-001, Lista zasłużonych; etykieta „Hangar” zmieniona na „Hangar z trofeami” — zmiany z 2026-10-10).
 
 #### 5. Testy Vitest
 
@@ -245,25 +245,25 @@ Brak migracji.
 
 #### Automated
 
-- [x] 1.1 `dotnet format APPS.sln --verify-no-changes` przechodzi
-- [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń
-- [x] 1.3 `dotnet test APPS.sln` przechodzi, w tym nowe `Leaderboard/EndpointTests.cs`
+- [x] 1.1 `dotnet format APPS.sln --verify-no-changes` przechodzi — aee3cdb
+- [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń — aee3cdb
+- [x] 1.3 `dotnet test APPS.sln` przechodzi, w tym nowe `Leaderboard/EndpointTests.cs` — aee3cdb
 
 #### Manual
 
-- [x] 1.4 Na lokalnej bazie z kilkoma użytkownikami (w tym admin) i flagami aktywowanymi w hangarze `GET api/courses/leaderboard` (Swagger, JWT + `X-TOKEN`) zwraca ranking zgodny z liczbami `earnedCount` w hangarze każdego z nich, bez e-maili z domeną
+- [x] 1.4 Na lokalnej bazie z kilkoma użytkownikami (w tym admin) i flagami aktywowanymi w hangarze `GET api/courses/leaderboard` (Swagger, JWT + `X-TOKEN`) zwraca ranking zgodny z liczbami `earnedCount` w hangarze każdego z nich, bez e-maili z domeną — aee3cdb
 
 ### Phase 2: Klient — strona Lista zasłużonych
 
 #### Automated
 
-- [ ] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
-- [ ] 2.2 `npm run lint` przechodzi
-- [ ] 2.3 `npm test` przechodzi, w tym `LeaderboardPage.test.tsx` i istniejące testy stron kursów
-- [ ] 2.4 `npm run build` przechodzi (`tsc -b`)
+- [x] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
+- [x] 2.2 `npm run lint` przechodzi
+- [x] 2.3 `npm test` przechodzi, w tym `LeaderboardPage.test.tsx` i istniejące testy stron kursów
+- [x] 2.4 `npm run build` przechodzi (`tsc -b`)
 
 #### Manual
 
-- [ ] 2.5 Zalogowany użytkownik widzi „Lista zasłużonych” w podmenu kursów (lista kursów, szczegóły kursu, hangar, terminal); strona pokazuje ranking zgodny z danymi z bazy, z nazwami bez domeny
-- [ ] 2.6 Po aktywacji flagi w hangarze i odświeżeniu listy zasłużonych liczba flag i miejsce użytkownika się aktualizują
-- [ ] 2.7 Niezalogowany wchodzący na `/leaderboard` trafia do logowania; menu główne, hangar, terminal, Apki i Gry działają bez zmian
+- [x] 2.5 Zalogowany użytkownik widzi „Lista zasłużonych” w podmenu kursów (lista kursów, szczegóły kursu, hangar, terminal); strona pokazuje ranking zgodny z danymi z bazy, z nazwami bez domeny
+- [x] 2.6 Po aktywacji flagi w hangarze i odświeżeniu listy zasłużonych liczba flag i miejsce użytkownika się aktualizują
+- [x] 2.7 Niezalogowany wchodzący na `/leaderboard` trafia do logowania; menu główne, hangar, terminal, Apki i Gry działają bez zmian

@@ -6,6 +6,8 @@ import type { CoursesCourseContentResponse } from "./contracts/courses-course-co
 import type { CoursesHangarFlagsRequest } from "./contracts/courses-hangar-flags-request";
 import type { CoursesHangarFlagsResponse } from "./contracts/courses-hangar-flags-response";
 import type { CoursesHangarTasksResponse } from "./contracts/courses-hangar-tasks-response";
+import type { CoursesLeaderboardRequest } from "./contracts/courses-leaderboard-request";
+import type { CoursesLeaderboardResponse } from "./contracts/courses-leaderboard-response";
 import type { CoursesVerifyAnswerRequest } from "./contracts/courses-verify-answer-request";
 import type { CoursesVerifyAnswerResponse } from "./contracts/courses-verify-answer-response";
 import { apiFetch } from "./api-fetch";
@@ -133,6 +135,33 @@ export class ApiCoursesService {
       throw new Error(
         getProblemMessage(errorData) ||
           `Błąd pobierania listy flag: ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  // Strona rankingu uczestników (Lista zasłużonych) – wymaga zalogowania (Bearer).
+  public async getLeaderboard(
+    request: CoursesLeaderboardRequest,
+  ): Promise<CoursesLeaderboardResponse> {
+    const params = new URLSearchParams();
+    params.append("page", request.page.toString());
+    params.append("pageSize", request.pageSize.toString());
+
+    const response = await apiFetch(
+      `${this.apiUrl}/api/courses/leaderboard?${params.toString()}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        getProblemMessage(errorData) ||
+          `Błąd pobierania listy zasłużonych: ${response.statusText}`,
       );
     }
 
