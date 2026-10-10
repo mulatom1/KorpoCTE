@@ -1,6 +1,6 @@
 ---
 project: "Kursy i bootcampy"
-version: 1
+version: 2
 status: draft
 created: 2026-09-23
 context_type: brownfield
@@ -21,9 +21,8 @@ timeline_budget:
 
 **Cel systemu:** tomsoft1.pl to wielomodułowy portal webowy prowadzony przez jednego właściciela, udostępniający jego aplikacje, gry i informacje o nim samym.
 
-**Stack techniczny:** architektura = modularny monolit ASP.NET Core 10 + React SPA serwowane z tego samego hosta, logowanie oparte o JWT; dwie role — zwykły użytkownik oraz administrator, rozróżniane flagą `IsAdmin` na obiekcie User; wspólny layout i menu główne współdzielone przez wszystkie moduły.
+**Stack techniczny:** architektura = modularny monolit ASP.NET Core 10 (jeden host składa moduły Portal, Lotto, Flashcards, Kursy; moduły nie referencjonują się nawzajem) + React SPA serwowane z tego samego hosta, logowanie oparte o JWT; dwie role — zwykły użytkownik oraz administrator, rozróżniane flagą `IsAdmin` na obiekcie User; wspólny layout i menu główne współdzielone przez wszystkie moduły.
 
-# TODO: kształt architektury portalu (monolit / usługi rozdzielone / inne) — see Open Questions
 
 **Obecna baza użytkowników:** zalogowani użytkownicy portalu, administrator będący właścicielem portalu, odwiedzający bez konta. Konta zakłada wyłącznie administrator — samodzielnej rejestracji nie ma.
 
@@ -69,11 +68,11 @@ Widzi, że moduł Kursy istnieje, i ma podgląd listy kursów. Nie jest personą
 ### Primary
 
 - Pełna ścieżka działa end-to-end na co najmniej jednym kursie: uczestnik otwiera kurs, wykonuje zadanie, wysyła odpowiedź do weryfikacji lub aktywuje flagę, flaga pojawia się w hangarze, pozycja uczestnika aktualizuje się na liście zasłużonych.
-- Co najmniej **70%** dostępnych flag i zadań zostaje zaliczonych przez uczestników bootcampu.
+- Co najmniej **70%** dostępnych flag i zadań zostaje zaliczonych przez uczestników bootcampu. Mierzone w trakcie trwania bootcampu wskaźnikiem „Procent zdobytych flag” na dashboardzie postępu grupy (różne flagi zdobyte przez grupę / flagi opublikowanych kursów).
 
 ### Secondary
 
-- Średnia ocena co najmniej **4/5** w ankiecie satysfakcji wśród pierwszych uczestników.
+- Średnia ocena co najmniej **4/5** w ankiecie satysfakcji wśród pierwszych uczestników. Ankieta jest przeprowadzana po zakończeniu bootcampu, poza portalem.
 
 ### Guardrails
 
@@ -213,5 +212,6 @@ Następstwem reguły, nie regułą samą w sobie, jest punktacja: zdobyte flagi 
 
 1. **Czy moduł potrzebuje operacji zarządzania treścią wewnątrz aplikacji?** — Decyzja MVP: nie. Publikacja kursów oraz definiowanie zadań i kryteriów odbywają się poza interfejsem aplikacji, a edycja i usuwanie są poza zakresem. Konsekwencja przyjęta świadomie: jedyną operacją zapisu wykonywaną przez człowieka przez interfejs jest zdobycie flagi przez uczestnika. Do rewizji, jeśli poprawka kryteriów w trakcie trwającego bootcampu okaże się potrzebna. Owner: właściciel portalu.
 2. **Czy lista kursów ma pozostać publiczna?** — Decyzja: tak. Zarzut, że publiczna lista wystawia nazwy materiałów osobom spoza grupy, został uznany za trafny i mimo to lista zostaje otwarta — nazwy pełnią rolę wizytówki modułu. Do rewizji przed publikacją materiału, którego tytuł ma pozostać zamknięty. Owner: właściciel portalu.
-3. **W jakim oknie czasowym mierzone jest kryterium ≥70% zaliczonych flag?** — Nierozstrzygnięte. Kryterium dotyczy uczestników bootcampu, ale moment pomiaru (koniec bootcampu, konkretna data, stan po N tygodniach od publikacji) nie został ustalony. Owner: właściciel portalu.
-4. **Jaki jest kształt architektury istniejącego portalu?** — Nieustalone w materiale wejściowym. Sekcja Current System Overview wymaga tej informacji, a kolejny krok łańcucha — ocena istniejącego stacku — opiera się na niej wprost. Owner: właściciel portalu.
+3. **W jakim oknie czasowym mierzone jest kryterium ≥70% zaliczonych flag?** — Decyzja (2026-10-10): w trakcie trwania bootcampu. Miarą jest wskaźnik „Procent zdobytych flag” na dashboardzie postępu grupy (S-07), który wystarcza do oceny kryterium. Owner: właściciel portalu.
+4. **Jaki jest kształt architektury istniejącego portalu?** — Decyzja (2026-10-10): modularny monolit ASP.NET Core 10 z React SPA serwowanym z tego samego hosta (opis w Current System Overview oraz w instrukcjach repozytorium). Owner: właściciel portalu.
+5. **Jak zbierana jest ankieta satysfakcji (kryterium „Secondary” 4/5)?** — Decyzja (2026-10-10): po zakończeniu bootcampu, poza portalem; portal nie dostaje funkcji ankiety. Owner: właściciel portalu.

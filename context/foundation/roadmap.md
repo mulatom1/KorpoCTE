@@ -9,7 +9,7 @@ main_goal: speed
 top_blocker: time
 milestone_id: courses-bootcamp-mvp
 milestone_seq: 1
-milestone_status: open
+milestone_status: done
 ---
 
 # Roadmap: Kursy i bootcampy
@@ -20,7 +20,7 @@ milestone_status: open
 
 ## Milestone
 
-**M-1: MVP modułu Kursy** — Status: open
+**M-1: MVP modułu Kursy** — Status: done
 
 - **Intent:** Uczestnik bootcampu przechodzi w portalu pełną ścieżkę: otwiera kurs, wykonuje zadanie, zdobywa flagę (oceną AI lub aktywacją), widzi ją w hangarze i swoją pozycję na liście zasłużonych — bez regresji istniejących modułów.
 - **Source materials:** `context/foundation/prd.md` (v1)
@@ -212,6 +212,8 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **Ankieta satysfakcji w portalu** — Why parked: brak FR; przy celu „szybkość” zbierana poza portalem, dopóki PRD nie zdecyduje inaczej.
 
 ## Milestone History
+
+- **M-1: MVP modułu Kursy** (`courses-bootcamp-mvp`) — closed 2026-10-10. Pełna ścieżka „Primary” działa end-to-end na prawdziwym kursie: kurs → zadanie → weryfikacja AI i kod → aktywacja w hangarze → lista zasłużonych i postęp grupy; F-01 i S-01…S-07 zarchiwizowane.
 
 ## Done
 
