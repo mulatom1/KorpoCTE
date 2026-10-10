@@ -257,13 +257,13 @@ Brak migracji.
 
 #### Automated
 
-- [x] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
-- [x] 2.2 `npm run lint` przechodzi
-- [x] 2.3 `npm test` przechodzi, w tym `LeaderboardPage.test.tsx` i istniejące testy stron kursów
-- [x] 2.4 `npm run build` przechodzi (`tsc -b`)
+- [x] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`) — 1d69276
+- [x] 2.2 `npm run lint` przechodzi — 1d69276
+- [x] 2.3 `npm test` przechodzi, w tym `LeaderboardPage.test.tsx` i istniejące testy stron kursów — 1d69276
+- [x] 2.4 `npm run build` przechodzi (`tsc -b`) — 1d69276
 
 #### Manual
 
-- [x] 2.5 Zalogowany użytkownik widzi „Lista zasłużonych” w podmenu kursów (lista kursów, szczegóły kursu, hangar, terminal); strona pokazuje ranking zgodny z danymi z bazy, z nazwami bez domeny
-- [x] 2.6 Po aktywacji flagi w hangarze i odświeżeniu listy zasłużonych liczba flag i miejsce użytkownika się aktualizują
-- [x] 2.7 Niezalogowany wchodzący na `/leaderboard` trafia do logowania; menu główne, hangar, terminal, Apki i Gry działają bez zmian
+- [x] 2.5 Zalogowany użytkownik widzi „Lista zasłużonych” w podmenu kursów (lista kursów, szczegóły kursu, hangar, terminal); strona pokazuje ranking zgodny z danymi z bazy, z nazwami bez domeny — 1d69276
+- [x] 2.6 Po aktywacji flagi w hangarze i odświeżeniu listy zasłużonych liczba flag i miejsce użytkownika się aktualizują — 1d69276
+- [x] 2.7 Niezalogowany wchodzący na `/leaderboard` trafia do logowania; menu główne, hangar, terminal, Apki i Gry działają bez zmian — 1d69276
