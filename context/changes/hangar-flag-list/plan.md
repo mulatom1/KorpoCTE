@@ -14,7 +14,7 @@ Wycinek S-02 roadmapy (US-01, FR-007). Zalogowany uczestnik otwiera stronę „H
 
 ## Desired End State
 
-- `GET api/courses/hangar-flags` (JWT + `X-TOKEN`) zwraca wszystkie flagi kursów z `PublishDate <= teraz`, także te bez `Criteria`. Dla każdej flagi zwraca `flagId`, `title`, `courseSlug`, `isEarned`, `earnedAt` (UTC lub `null`) i `code` w kontekście bieżącego użytkownika. `code` jest wypełniony wyłącznie dla flag zdobytych przez bieżącego użytkownika, a dla niezdobytych ma wartość `null`. Uczestnik potrzebuje swoich kodów ostatniego dnia bootcampu. Odpowiedź nigdy nie zawiera `Criteria`. (Zmiana z 2026-10-10, decyzja użytkownika w trakcie fazy 1; zawęża regułę z `CLAUDE.md` „nigdy nie zwracaj `Code` poza `Correct`”.)
+- `GET api/courses/hangar-flags` (JWT + `X-TOKEN`) zwraca wszystkie flagi kursów z `PublishDate <= teraz`, także te bez `Criteria`. Dla każdej flagi zwraca `flagId`, `title`, `courseSlug`, `isEarned`, `earnedAt` (UTC lub `null`) i `code` w kontekście bieżącego użytkownika. `code` jest wypełniony wyłącznie dla flag zdobytych przez bieżącego użytkownika, a dla niezdobytych ma wartość `null`. Uczestnik wylicza kod w zadaniu i potrzebuje swoich kodów na koniec kursu. Odpowiedź nigdy nie zawiera `Criteria`. (Zmiana z 2026-10-10, decyzja użytkownika w trakcie fazy 1; zawęża regułę z `CLAUDE.md` „nigdy nie zwracaj `Code` poza `Correct`”.)
 - W hangarze kod zdobytej flagi jest zamaskowany gwiazdkami i odsłania się po najechaniu myszką (oraz po fokusie lub dotknięciu, żeby działało z klawiatury i na telefonie).
 - Endpoint przyjmuje w query `filter=All|Earned|Unearned` (domyślnie `All`), `page` (domyślnie 1) i `pageSize` (domyślnie 20, zakres 1–100); błędne wartości dają 400. Lista jest posortowana po dacie zdobycia od najnowszej, a niezdobyte są na końcu (według daty publikacji kursu, potem Id flagi). Filtr i strona są nakładane po sortowaniu. Odpowiedź ma też `totalCount` i `totalPages` (po filtrze) oraz `allCount` i `earnedCount` (niezależne od filtra, do licznika). (Zmiana z 2026-10-10 (2), uwagi użytkownika po fazie 2: ponad 100 flag, filtr wybierany kliknięciem, jedna lista.)
 - Zalogowany użytkownik wchodzi z podmenu kursów w „Hangar” (`/hangar`, chronione `RequireAuth`). Widzi licznik „Zdobyte flagi: X / Y”, przyciski filtra Wszystkie / Zdobyte / Niezdobyte i jedną tabelę z kolumnami Flaga | Kurs | Status | Data zdobycia | Kod, po 20 flag na stronę, z nawigacją Poprzednia / Następna.
@@ -148,7 +148,7 @@ Nowy wycinek `Features/HangarFlags/` z czterema plikami, rejestracja w `ModuleDI
 
 ### Overview
 
-Kontrakt TS, metoda serwisu, strona `/hangar` z dwiema sekcjami i licznikiem, pozycja „Hangar” w podmenu kursów, testy Vitest.
+Kontrakt TS, metoda serwisu, strona `/hangar` z jedną tabelą, filtrem, paginacją i licznikiem (pierwotnie dwie sekcje — zmiana z 2026-10-10 (2)), pozycja „Hangar” w podmenu kursów, testy Vitest.
 
 ### Changes Required:
 
