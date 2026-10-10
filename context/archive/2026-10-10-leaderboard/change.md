@@ -1,10 +1,10 @@
 ---
 change_id: leaderboard
 title: Leaderboard
-status: implemented
+status: archived
 created: 2026-10-10
 updated: 2026-10-10
-archived_at: null
+archived_at: 2026-10-10T09:55:49Z
 ---
 
 ## Notes

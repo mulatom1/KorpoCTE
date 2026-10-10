@@ -46,7 +46,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 | S-02 | hangar-flag-list              | uczestnik widzi w hangarze wszystkie flagi z podziałem na zdobyte i niezdobyte       | S-01          | US-01, FR-007                     | done |
 | S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | done |
 | S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | done |
-| S-05 | leaderboard                   | zalogowany użytkownik widzi listę zasłużonych według liczby zdobytych flag           | S-01          | US-01, FR-008                     | in-progress |
+| S-05 | leaderboard                   | zalogowany użytkownik widzi listę zasłużonych według liczby zdobytych flag           | S-01          | US-01, FR-008                     | done |
 | S-06 | flag-activation               | uczestnik aktywuje zdobytą flagę przez formularz aktywacji w hangarze                | S-01          | FR-004                            | done |
 | S-07 | group-progress-dashboard      | zalogowany użytkownik widzi dashboard z czterema wskaźnikami postępu grupy           | S-01          | US-01, FR-009                     | proposed |
 
@@ -152,7 +152,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **Unknowns:**
   - Czy ranking obejmuje wszystkich użytkowników portalu, czy tylko uczestników bootcampu (np. bez administratora)? — Owner: właściciel portalu. Block: no.
 - **Risk:** Ostatni brakujący element pełnej ścieżki z kryterium sukcesu „Primary”; poprawność zależy od gwarancji „flaga liczona raz” z S-01.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-06: Aktywacja flagi
 
@@ -221,3 +221,4 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **S-01: uczestnik może wkleić wynik zadania w formularzu „Do sprawdzenia” w hangarze i w czasie poniżej 5 s dostać werdykt; przy poprawnej odpowiedzi flaga zostaje przyznana raz na zawsze. Awaria oceny jest komunikowana jako awaria z możliwością ponowienia, a flaga już zdobyta blokuje ponowną ocenę.** — Archived 2026-10-08 → `context/archive/2026-10-08-answer-verification-earns-flag/`. Lesson: —.
 - **S-02: uczestnik może zobaczyć w hangarze wszystkie flagi z rozróżnieniem zdobytych i niezdobytych; flaga przyznana w S-01 od razu zmienia status na zdobytą.** — Archived 2026-10-10 → `context/archive/2026-10-10-hangar-flag-list/`. Lesson: —.
 - **S-06: uczestnik może aktywować zdobytą flagę przez formularz aktywacji w hangarze; flaga aktywowana drugi raz nie jest liczona ponownie.** — Archived 2026-10-10 → `context/archive/2026-10-10-flag-activation/`. Lesson: —.
+- **S-05: zalogowany użytkownik może zobaczyć ranking uczestników według liczby zdobytych flag — tej samej liczby, którą widzi w hangarze.** — Archived 2026-10-10 → `context/archive/2026-10-10-leaderboard/`. Lesson: —.
