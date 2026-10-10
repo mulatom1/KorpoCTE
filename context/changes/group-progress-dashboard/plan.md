@@ -277,13 +277,13 @@ Brak migracji.
 
 #### Automated
 
-- [x] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
-- [x] 2.2 `npm run lint` przechodzi
-- [x] 2.3 `npm test` przechodzi, w tym `GroupProgressPage.test.tsx` i `endOfLocalDay.test.ts`
-- [x] 2.4 `npm run build` przechodzi (`tsc -b`)
+- [x] 2.1 `npx prettier --check --end-of-line auto "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`) — 5b1fb55
+- [x] 2.2 `npm run lint` przechodzi — 5b1fb55
+- [x] 2.3 `npm test` przechodzi, w tym `GroupProgressPage.test.tsx` i `endOfLocalDay.test.ts` — 5b1fb55
+- [x] 2.4 `npm run build` przechodzi (`tsc -b`) — 5b1fb55
 
 #### Manual
 
-- [x] 2.5 „Postęp grupy” jest ostatnią pozycją podmenu kursów, a strona pokazuje cztery wskaźniki zgodne z hangarem (flagi do zdobycia) i listą zasłużonych (użytkownicy z flagą)
-- [x] 2.6 Po aktywacji nowej (wcześniej przez nikogo niezdobytej) flagi i odświeżeniu strony rosną „Flagi zdobyte przez grupę” i procent. Wybór wczorajszej daty pokazuje stan bez dzisiejszych zdobyć, a w polu daty nie da się wybrać jutra
-- [x] 2.7 Niezalogowany wchodzący na `/group-progress` trafia do logowania; pozostałe strony kursów, menu, Apki i Gry działają bez zmian
+- [x] 2.5 „Postęp grupy” jest ostatnią pozycją podmenu kursów, a strona pokazuje cztery wskaźniki zgodne z hangarem (flagi do zdobycia) i listą zasłużonych (użytkownicy z flagą) — 5b1fb55
+- [x] 2.6 Po aktywacji nowej (wcześniej przez nikogo niezdobytej) flagi i odświeżeniu strony rosną „Flagi zdobyte przez grupę” i procent. Wybór wczorajszej daty pokazuje stan bez dzisiejszych zdobyć, a w polu daty nie da się wybrać jutra — 5b1fb55
+- [x] 2.7 Niezalogowany wchodzący na `/group-progress` trafia do logowania; pozostałe strony kursów, menu, Apki i Gry działają bez zmian — 5b1fb55
