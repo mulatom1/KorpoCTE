@@ -190,9 +190,9 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
             new UserFlag { Id = 5, UserId = CurrentUserId, FlagId = 15, EarnedAt = Now.AddHours(-1) });
     }
 
-    private static async Task<Contracts.Response> GetFlagsAsync(HttpClient client)
+    private static async Task<Contracts.Response> GetFlagsAsync(HttpClient client, string query = "")
     {
-        var response = await client.GetAsync(Url);
+        var response = await client.GetAsync(Url + query);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         // Fallback SPA też zwraca 200 - sprawdzamy, że to JSON z kontraktu
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
@@ -323,6 +323,95 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.DoesNotContain("KOD-SREDNI-17", json);
         Assert.DoesNotContain("KOD-NOWSZY-12", json);
         Assert.DoesNotContain("KOD-PRZYSZLY-15", json);
+    }
+
+    [Fact]
+    public async Task HangarFlags_WithoutQuery_UsesDefaultsAllFirstPageOf20()
+    {
+        // Arrange
+        var client = CreateClient(CreateFactory(SeedFlags));
+
+        // Act
+        var result = await GetFlagsAsync(client);
+
+        // Assert
+        Assert.Equal(1, result.Page);
+        Assert.Equal(20, result.PageSize);
+        Assert.Equal(7, result.TotalCount);
+        Assert.Equal(1, result.TotalPages);
+        Assert.Equal(7, result.AllCount);
+        Assert.Equal(3, result.EarnedCount);
+    }
+
+    [Fact]
+    public async Task HangarFlags_FilterEarned_ReturnsOnlyEarnedAndCountersIgnoreFilter()
+    {
+        // Arrange
+        var client = CreateClient(CreateFactory(SeedFlags));
+
+        // Act
+        var result = await GetFlagsAsync(client, "?filter=Earned");
+
+        // Assert
+        Assert.Equal([10, 14, 16], result.Flags.Select(f => f.FlagId));
+        Assert.Equal(3, result.TotalCount);
+        // Licznik hangaru liczy wszystkie widoczne flagi, niezależnie od filtra
+        Assert.Equal(7, result.AllCount);
+        Assert.Equal(3, result.EarnedCount);
+    }
+
+    [Fact]
+    public async Task HangarFlags_FilterUnearned_ReturnsOnlyUnearned()
+    {
+        // Arrange
+        var client = CreateClient(CreateFactory(SeedFlags));
+
+        // Act
+        var result = await GetFlagsAsync(client, "?filter=Unearned");
+
+        // Assert
+        Assert.Equal([11, 13, 17, 12], result.Flags.Select(f => f.FlagId));
+        Assert.Equal(4, result.TotalCount);
+        Assert.All(result.Flags, f => Assert.Null(f.Code));
+    }
+
+    [Theory]
+    [InlineData(1, new[] { 10, 14, 16 })]
+    [InlineData(2, new[] { 11, 13, 17 })]
+    [InlineData(3, new[] { 12 })]
+    [InlineData(4, new int[0])]
+    public async Task HangarFlags_Paginates_KeepingSortOrderAcrossPages(int page, int[] expectedIds)
+    {
+        // Arrange
+        var client = CreateClient(CreateFactory(SeedFlags));
+
+        // Act
+        var result = await GetFlagsAsync(client, $"?page={page}&pageSize=3");
+
+        // Assert
+        Assert.Equal(expectedIds, result.Flags.Select(f => f.FlagId));
+        Assert.Equal(page, result.Page);
+        Assert.Equal(3, result.PageSize);
+        Assert.Equal(7, result.TotalCount);
+        Assert.Equal(3, result.TotalPages);
+    }
+
+    [Theory]
+    [InlineData("?filter=Foo")]
+    [InlineData("?filter=earned")]
+    [InlineData("?page=0")]
+    [InlineData("?pageSize=0")]
+    [InlineData("?pageSize=101")]
+    public async Task HangarFlags_WithInvalidQuery_ReturnsBadRequest(string query)
+    {
+        // Arrange
+        var client = CreateClient(CreateFactory(SeedFlags));
+
+        // Act
+        var response = await client.GetAsync(Url + query);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

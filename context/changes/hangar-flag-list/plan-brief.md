@@ -12,7 +12,7 @@ S-01 dał encje `Flag`/`UserFlag` (unikalny indeks `(UserId, FlagId)`), endpoint
 
 ## Desired End State
 
-W podmenu kursów jest pozycja „Hangar” (`/hangar`, tylko dla zalogowanych). Strona pokazuje licznik „Zdobyte flagi: X / Y” oraz sekcje „Zdobyte” (z datą zdobycia i zamaskowanym kodem flagi, który odsłania się po najechaniu myszką) i „Niezdobyte”. Dane pochodzą z nowego `GET api/courses/hangar-flags`. Endpoint zwraca kod tylko dla flag zdobytych przez bieżącego użytkownika i nigdy nie zwraca kryteriów.
+W podmenu kursów jest pozycja „Hangar” (`/hangar`, tylko dla zalogowanych). Strona pokazuje licznik „Zdobyte flagi: X / Y”, przyciski filtra Wszystkie / Zdobyte / Niezdobyte i jedną tabelę (Flaga | Kurs | Status | Data zdobycia | Kod), po 20 flag na stronę. Kod zdobytej flagi jest zamaskowany i odsłania się po najechaniu myszką. Dane pochodzą z nowego `GET api/courses/hangar-flags`. Endpoint zwraca kod tylko dla flag zdobytych przez bieżącego użytkownika i nigdy nie zwraca kryteriów.
 
 ## Key Decisions Made
 
@@ -25,7 +25,9 @@ W podmenu kursów jest pozycja „Hangar” (`/hangar`, tylko dla zalogowanych).
 | Opis pozycji      | Tytuł flagi + slug kursu; zdobyta z datą zdobycia                             | Tylko dane z bazy, bez czytania plików kursów                                    |
 | Kolejność         | Zdobyte od najnowszej (`earnedAt`), niezdobyte wg daty publikacji kursu i Id  | Przewidywalna i taka sama jak w `hangar-tasks` dla niezdobytych                  |
 | Kod flagi         | Zwracany tylko dla flag zdobytych przez bieżącego użytkownika; w UI zamaskowany `********`, odsłaniany po najechaniu/fokusie/dotknięciu — zmiana z 2026-10-10 | Uczestnik potrzebuje swoich kodów ostatniego dnia bootcampu; zna je już, więc nic nie wycieka |
-| Data zdobycia     | Serwer zwraca UTC z `Z`, klient formatuje `pl-PL`                             | Bez przesunięcia strefy czasowej w przeglądarce                                  |
+| Filtr i lista     | Filtr `All/Earned/Unearned` w query endpointu, wybierany przyciskami; jedna tabela zamiast dwóch sekcji — zmiana z 2026-10-10 (2) | Ponad 100 flag; tabela z kolumnami czyta się lepiej niż dwie listy |
+| Paginacja         | Po stronie serwera, `page`/`pageSize` (domyślnie 20, max 100), wzorzec `DrawsGetList`; licznik `earnedCount/allCount` niezależny od filtra | Przy 100+ flagach klient nie pobiera wszystkiego naraz |
+| Data zdobycia     | Serwer zwraca UTC z `Z`, klient formatuje lokalnie `yyyy-MM-dd HH:mm:ss`                           | Bez przesunięcia strefy czasowej w przeglądarce                                  |
 
 ## Scope
 
@@ -42,21 +44,21 @@ W podmenu kursów jest pozycja „Hangar” (`/hangar`, tylko dla zalogowanych).
 
 ## Architecture / Approach
 
-`HangarFlagsHandler`: walidacja → `userId` z JWT → zapytanie `Flags` opublikowanych kursów z `EarnedAt` bieżącego użytkownika (podzapytanie do `UserFlags`) → oznaczenie UTC → sortowanie (zdobyte, potem niezdobyte). `HangarPage` pobiera jedną listę i dzieli ją według `isEarned`, zachowując kolejność z serwera.
+`HangarFlagsHandler`: walidacja → `userId` z JWT → zapytanie `Flags` opublikowanych kursów z `EarnedAt` bieżącego użytkownika (podzapytanie do `UserFlags`) → oznaczenie UTC → sortowanie po dacie zdobycia (niezdobyte na końcu) → liczniki → filtr → strona (w pamięci). `HangarPage` trzyma filtr i numer strony, pobiera daną stronę i pokazuje ją w tabeli w kolejności z serwera.
 
 ## Phases at a Glance
 
 | Phase                               | What it delivers                                         | Key risk                                                         |
 | ----------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- |
-| 1. Serwer — endpoint `hangar-flags` | Wycinek, rejestracja, 10 testów endpointu                | Wyciek `Code` niezdobytej flagi lub `Criteria`, `earnedAt` bez strefy (testy JSON) |
-| 2. Klient — strona Hangar           | `/hangar`, sekcje + licznik, podmenu, testy Vitest       | Regresja stron kursów przez nową pozycję podmenu                 |
+| 1. Serwer — endpoint `hangar-flags` | Wycinek z filtrem i paginacją, rejestracja, testy endpointu | Wyciek `Code` niezdobytej flagi lub `Criteria`, `earnedAt` bez strefy (testy JSON) |
+| 2. Klient — strona Hangar           | `/hangar`: tabela, filtr, paginacja, licznik, podmenu, testy Vitest | Regresja stron kursów przez nową pozycję podmenu                 |
 
 **Prerequisites:** S-01 zrobiony (tabele istnieją). Do testu ręcznego: flagi i wiersz `Courses.UserFlags` wstawione SQL-em.
 **Estimated effort:** ~1 sesja, 2 fazy.
 
 ## Open Risks & Assumptions
 
-- Do czasu S-06 nic w aplikacji nie zapisuje `UserFlag`, więc sekcja „Zdobyte” jest pusta poza danymi wstawionymi SQL-em. Wynik roadmapy „flaga przyznana w S-01 od razu zmienia status” spełni się dopiero po aktywacji.
+- Do czasu S-06 nic w aplikacji nie zapisuje `UserFlag`, więc filtr „Zdobyte” daje pustą listę poza danymi wstawionymi SQL-em. Wynik roadmapy „flaga przyznana w S-01 od razu zmienia status” spełni się dopiero po aktywacji.
 - Zwracanie kodu zdobytej flagi zmienia regułę z `CLAUDE.md` („nigdy nie zwracaj `Code` poza `Correct`”). `CLAUDE.md` trzeba zaktualizować, żeby kolejne zmiany (S-05, S-06) nie traktowały tego jako błędu.
 - Cofnięcie daty publikacji kursu ukrywa jego zdobyte flagi w hangarze. Ranking (S-05) musi stosować ten sam filtr, by liczba się zgadzała.
 

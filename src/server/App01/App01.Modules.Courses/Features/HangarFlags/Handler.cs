@@ -64,8 +64,9 @@ public class HangarFlagsHandler : IRequestHandler<Contracts.Request, Contracts.R
             })
             .ToListAsync(cancellationToken);
 
-        // Sortowanie w pamięci: zdobyte (najnowsze najpierw), potem niezdobyte wg daty publikacji kursu
-        var flags = rows
+        // Sortowanie w pamięci po dacie zdobycia (najnowsze najpierw), niezdobyte na końcu wg daty publikacji kursu;
+        // lista flag jest mała (setki), a liczniki i tak wymagają całego zbioru
+        var allFlags = rows
             .OrderBy(r => r.EarnedAt.HasValue ? 0 : 1)
             .ThenByDescending(r => r.EarnedAt)
             .ThenBy(r => r.EarnedAt.HasValue ? DateTime.MinValue : r.CoursePublishDate)
@@ -81,8 +82,28 @@ public class HangarFlagsHandler : IRequestHandler<Contracts.Request, Contracts.R
                 r.EarnedAt.HasValue ? r.Code : null))
             .ToList();
 
-        _logger.LogDebug("Retrieved {Count} hangar flags for user {UserId}", flags.Count, userId);
+        // Licznik hangaru nie zależy od filtra
+        var allCount = allFlags.Count;
+        var earnedCount = allFlags.Count(f => f.IsEarned);
 
-        return new Contracts.Response(flags);
+        var filtered = request.Filter switch
+        {
+            Contracts.HangarFlagsFilter.Earned => allFlags.Where(f => f.IsEarned).ToList(),
+            Contracts.HangarFlagsFilter.Unearned => allFlags.Where(f => !f.IsEarned).ToList(),
+            _ => allFlags
+        };
+
+        var totalCount = filtered.Count;
+        var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
+        var pageFlags = filtered
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToList();
+
+        _logger.LogDebug("Retrieved {Count} of {Total} hangar flags ({Filter}, page {Page}) for user {UserId}",
+            pageFlags.Count, totalCount, request.Filter, request.Page, userId);
+
+        return new Contracts.Response(
+            pageFlags, totalCount, request.Page, request.PageSize, totalPages, allCount, earnedCount);
     }
 }

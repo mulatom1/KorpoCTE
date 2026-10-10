@@ -16,7 +16,8 @@ Wycinek S-02 roadmapy (US-01, FR-007). Zalogowany uczestnik otwiera stronę „H
 
 - `GET api/courses/hangar-flags` (JWT + `X-TOKEN`) zwraca wszystkie flagi kursów z `PublishDate <= teraz`, także te bez `Criteria`. Dla każdej flagi zwraca `flagId`, `title`, `courseSlug`, `isEarned`, `earnedAt` (UTC lub `null`) i `code` w kontekście bieżącego użytkownika. `code` jest wypełniony wyłącznie dla flag zdobytych przez bieżącego użytkownika, a dla niezdobytych ma wartość `null`. Uczestnik potrzebuje swoich kodów ostatniego dnia bootcampu. Odpowiedź nigdy nie zawiera `Criteria`. (Zmiana z 2026-10-10, decyzja użytkownika w trakcie fazy 1; zawęża regułę z `CLAUDE.md` „nigdy nie zwracaj `Code` poza `Correct`”.)
 - W hangarze kod zdobytej flagi jest zamaskowany gwiazdkami i odsłania się po najechaniu myszką (oraz po fokusie lub dotknięciu, żeby działało z klawiatury i na telefonie).
-- Zalogowany użytkownik wchodzi z podmenu kursów w „Hangar” (`/hangar`, chronione `RequireAuth`). Widzi licznik „Zdobyte flagi: X / Y” oraz sekcje „Zdobyte” (z datą zdobycia, od najnowszej) i „Niezdobyte” (według daty publikacji kursu, potem Id flagi).
+- Endpoint przyjmuje w query `filter=All|Earned|Unearned` (domyślnie `All`), `page` (domyślnie 1) i `pageSize` (domyślnie 20, zakres 1–100); błędne wartości dają 400. Lista jest posortowana po dacie zdobycia od najnowszej, a niezdobyte są na końcu (według daty publikacji kursu, potem Id flagi). Filtr i strona są nakładane po sortowaniu. Odpowiedź ma też `totalCount` i `totalPages` (po filtrze) oraz `allCount` i `earnedCount` (niezależne od filtra, do licznika). (Zmiana z 2026-10-10 (2), uwagi użytkownika po fazie 2: ponad 100 flag, filtr wybierany kliknięciem, jedna lista.)
+- Zalogowany użytkownik wchodzi z podmenu kursów w „Hangar” (`/hangar`, chronione `RequireAuth`). Widzi licznik „Zdobyte flagi: X / Y”, przyciski filtra Wszystkie / Zdobyte / Niezdobyte i jedną tabelę z kolumnami Flaga | Kurs | Status | Data zdobycia | Kod, po 20 flag na stronę, z nawigacją Poprzednia / Następna.
 - `hangar-tasks`, terminal TOMO-AI-001, menu główne i pozostałe moduły działają bez zmian.
 
 ### Key Discoveries:
@@ -42,7 +43,7 @@ Nowy, osobny wycinek `HangarFlags` według wzorca `HangarTasks`. Serwer zwraca j
 
 ## Critical Implementation Details
 
-- **Strefa czasowa `earnedAt`:** EF czyta `datetime2` jako `DateTimeKind.Unspecified`, więc JSON nie miałby sufiksu `Z`, a przeglądarka zinterpretowałaby datę jako lokalną. Handler musi oznaczyć `EarnedAt` jako UTC (`DateTime.SpecifyKind(..., DateTimeKind.Utc)`) przed zbudowaniem DTO. Klient formatuje ją jako datę lokalną (`pl-PL`).
+- **Strefa czasowa `earnedAt`:** EF czyta `datetime2` jako `DateTimeKind.Unspecified`, więc JSON nie miałby sufiksu `Z`, a przeglądarka zinterpretowałaby datę jako lokalną. Handler musi oznaczyć `EarnedAt` jako UTC (`DateTime.SpecifyKind(..., DateTimeKind.Utc)`) przed zbudowaniem DTO. Klient formatuje ją w strefie lokalnej jako `yyyy-MM-dd HH:mm:ss` (helper `src/utils/formatDateTime.ts` z testem; zmiana z 2026-10-10 (4)).
 - **Sortowanie:** zdobyte malejąco po `earnedAt`, przy remisie rosnąco po `flagId`; niezdobyte rosnąco po `Course.PublishDate`, potem po `flagId`; zdobyte przed niezdobytymi. Przy małej liczbie flag wolno sortować w pamięci po projekcji. Projekcja `earnedAt` przez podzapytanie do `UserFlags` musi działać na EF InMemory i SQL Server (bez surowego SQL).
 
 ## Phase 1: Serwer — endpoint `hangar-flags`
@@ -103,7 +104,25 @@ Nowy wycinek `Features/HangarFlags/` z czterema plikami, rejestracja w `ModuleDI
 - `HangarFlags_WithoutJwtToken_ReturnsUnauthorized`.
 - `HangarFlags_WithoutXToken_ReturnsForbidden`.
 
-Przypadek 400 nie dotyczy, bo żądanie nie ma pól.
+#### 6. Filtr, sortowanie i paginacja (zmiana z 2026-10-10 (2))
+
+**File**: `Features/HangarFlags/{Contracts,Validator,Handler,Endpoint}.cs`, `EndpointTests.cs`
+
+**Intent**: Obsłużyć ponad 100 flag. Filtr Wszystkie/Zdobyte/Niezdobyte wybierany przez użytkownika i paginacja po stronie serwera, według wzorca `Lotto/Features/DrawsGetList`.
+
+**Contract**:
+- `Request(string Filter = "All", int Page = 1, int PageSize = 20)`; stałe `Contracts.HangarFlagsFilter.{All,Earned,Unearned}`.
+- `Response(Flags, TotalCount, Page, PageSize, TotalPages, AllCount, EarnedCount)`.
+- Walidator: `Filter` ∈ {All, Earned, Unearned} (wielkość liter ma znaczenie), `Page >= 1`, `PageSize` 1–100 → 400.
+- Endpoint: parametry query `filter`, `page`, `pageSize` z wartościami domyślnymi, `.Produces(400)`.
+- Handler: sortowanie jak w „Critical Implementation Details”, potem liczniki (`AllCount`, `EarnedCount`) z całego zbioru, filtr i `Skip`/`Take`, wszystko w pamięci.
+- Nowe testy:
+  - `HangarFlags_WithoutQuery_UsesDefaultsAllFirstPageOf20`
+  - `HangarFlags_FilterEarned_ReturnsOnlyEarnedAndCountersIgnoreFilter`
+  - `HangarFlags_FilterUnearned_ReturnsOnlyUnearned`
+  - `HangarFlags_Paginates_KeepingSortOrderAcrossPages` (strony 1–4 przy `pageSize=3`)
+  - `HangarFlags_WithInvalidQuery_ReturnsBadRequest` (`filter=Foo`, `filter=earned`, `page=0`, `pageSize=0`, `pageSize=101`)
+- Zdanie „Przypadek 400 nie dotyczy” przestało obowiązywać.
 
 ### Success Criteria:
 
@@ -112,11 +131,14 @@ Przypadek 400 nie dotyczy, bo żądanie nie ma pól.
 - `dotnet format APPS.sln --verify-no-changes` przechodzi
 - `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete`
 - `dotnet test APPS.sln` przechodzi, w tym nowe `HangarFlags/EndpointTests.cs` oraz istniejące testy `HangarTasks` i `VerifyAnswer` bez zmian
+- Po zmianie 6 `dotnet format APPS.sln --verify-no-changes` i `dotnet build APPS.sln` przechodzą bez ostrzeżeń
+- Po zmianie 6 `dotnet test APPS.sln` przechodzi, w tym testy filtra, paginacji i 400
 
 #### Manual Verification:
 
 - Na lokalnej bazie z flagą bez kryteriów i flagą z kryteriami w opublikowanym kursie oraz wierszem `Courses.UserFlags` wstawionym SQL-em `GET api/courses/hangar-flags` (Swagger, JWT + `X-TOKEN`) zwraca obie flagi. Zdobyta ma `isEarned=true` i `earnedAt` z `Z`, a odpowiedź nie zawiera kodu ani kryteriów
   - Uwaga (zmiana z 2026-10-10): tytuł kroku 1.4 zostaje bez zmian, ale obowiązuje nowa reguła. Zdobyta flaga ma `code` ze swoim kodem, niezdobyta ma `code: null`. Kryteriów nie ma nigdzie.
+- W Swaggerze `GET api/courses/hangar-flags` z `filter=Earned`, `filter=Unearned` oraz `page=2&pageSize=1` zwraca odpowiednio przefiltrowaną i stronicowaną listę; `allCount` i `earnedCount` są takie same dla każdego filtra, a `filter=Foo` daje 400
 
 **Implementation Note**: Po przejściu weryfikacji automatycznej zatrzymaj się na ręczne potwierdzenie przed fazą 2.
 
@@ -132,11 +154,15 @@ Kontrakt TS, metoda serwisu, strona `/hangar` z dwiema sekcjami i licznikiem, po
 
 #### 1. Kontrakt TS
 
-**File**: `src/client/app01/src/services/contracts/courses-hangar-flags-response.ts`
+**File**: `src/client/app01/src/services/contracts/courses-hangar-flags-request.ts`, `courses-hangar-flags-response.ts`
 
 **Intent**: Odwzorować 1:1 rekordy `HangarFlags.Contracts`.
 
-**Contract**: `CoursesHangarFlagDto { flagId: number; title: string; courseSlug: string; isEarned: boolean; earnedAt: string | null; code: string | null }`, `CoursesHangarFlagsResponse { flags: CoursesHangarFlagDto[] }`.
+**Contract**:
+- `CoursesHangarFlagsFilter = "All" | "Earned" | "Unearned"`.
+- `CoursesHangarFlagsRequest { filter; page; pageSize }`.
+- `CoursesHangarFlagDto { flagId: number; title: string; courseSlug: string; isEarned: boolean; earnedAt: string | null; code: string | null }`.
+- `CoursesHangarFlagsResponse { flags: CoursesHangarFlagDto[]; totalCount; page; pageSize; totalPages; allCount; earnedCount }` (zmiana z 2026-10-10 (2)).
 
 #### 2. Serwis API
 
@@ -144,15 +170,22 @@ Kontrakt TS, metoda serwisu, strona `/hangar` z dwiema sekcjami i licznikiem, po
 
 **Intent**: Dodać `getHangarFlags()` według wzorca `getHangarTasks()` (`apiFetch`, `getHeaders()`, komunikat z `getProblemMessage`).
 
-**Contract**: `getHangarFlags(): Promise<CoursesHangarFlagsResponse>` → `GET ${apiUrl}/api/courses/hangar-flags`.
+**Contract**: `getHangarFlags(request: CoursesHangarFlagsRequest): Promise<CoursesHangarFlagsResponse>` → `GET ${apiUrl}/api/courses/hangar-flags?filter=&page=&pageSize=` (`URLSearchParams`).
 
 #### 3. Strona Hangar
 
 **File**: `src/client/app01/src/pages/courses/HangarPage.tsx`
 
-**Intent**: Pokazać listę flag w dwóch sekcjach z licznikiem, w stylu terminala (nagłówek, `SubMenu` z `backPath="/courses"`, `Card`/`FormCard`).
+**Intent**: Pokazać flagi w jednej tabeli z filtrem, licznikiem i paginacją, w stylu terminala (nagłówek, `SubMenu` z `backPath="/courses"`, `FormCard`). Zmiana z 2026-10-10 (2): zamiast dwóch sekcji jest jedna lista.
 
-**Contract**: Default export `HangarPage`, `document.title = "Hangar | tomsoft1 workspace"`. Stany: ładowanie („Ładowanie...”), błąd (`role="alert"`), pusta lista („Brak flag do zdobycia”). Licznik „Zdobyte flagi: X / Y”. Sekcja „Zdobyte” zawiera tytuł, slug kursu, datę zdobycia (`toLocaleDateString("pl-PL")`) i kod flagi zamaskowany gwiazdkami (`********`). Prawdziwy kod pokazuje się po najechaniu myszką na pole kodu, a także po fokusie (pole z `tabIndex=0`) lub dotknięciu na telefonie. Odsłonięty kod daje się zaznaczyć i skopiować. Przy braku pozycji sekcja pokazuje „Nie masz jeszcze żadnej flagi”. Sekcja „Niezdobyte” zawiera tytuł i slug kursu. Kolejność pozycji jest taka jak z serwera.
+**Contract**: Default export `HangarPage`, `document.title = "Hangar | tomsoft1 workspace"`.
+- Przyciski filtra Wszystkie / Zdobyte / Niezdobyte (`aria-pressed`, domyślnie Wszystkie). Zmiana filtra wraca do strony 1.
+- Licznik „Zdobyte flagi: `earnedCount` / `allCount`”.
+- Tabela (`overflow-x-auto`) z kolumnami Flaga | Kurs (link `/courses/<slug>`, jak w `CourseTile`; zmiana z 2026-10-10 (3)) | Status | Data zdobycia (`formatDateTime`: `yyyy-MM-dd HH:mm:ss` w strefie lokalnej, lub „—”) | Kod.
+- Kod zdobytej flagi jest zamaskowany stałym `********` i odsłania się po najechaniu myszką, fokusie (`tabIndex=0`) lub dotknięciu. Odsłonięty kod daje się zaznaczyć i skopiować. Gdy jest zamaskowany, nie ma go w DOM.
+- Paginacja po 20: Poprzednia / Następna (wyłączone na krańcach) i „Strona X z Y”, ukryta przy jednej stronie. Nieaktualne odpowiedzi są ignorowane.
+- Stany: ładowanie („Ładowanie...”), błąd (`role="alert"`), pusta lista zależna od filtra („Brak flag do zdobycia” / „Nie masz jeszcze żadnej flagi” / „Wszystkie flagi zdobyte”).
+- Kolejność wierszy jest taka jak z serwera.
 
 #### 4. Routing i podmenu
 
@@ -169,12 +202,13 @@ Kontrakt TS, metoda serwisu, strona `/hangar` z dwiema sekcjami i licznikiem, po
 **Intent**: Sprawdzić zachowanie strony z zamockowanym `ApiCoursesService` (wzorzec `TomoAiTerminalPage.test.tsx`).
 
 **Contract**: Przypadki:
-- flagi trafiają do właściwych sekcji, a licznik pokazuje „1 / 2”;
-- zdobyta flaga pokazuje datę i zamaskowany kod (`********`), a po `mouseEnter`/`focus` pokazuje prawdziwy kod; `mouseLeave`/`blur` znowu go maskuje;
-- niezdobyta flaga nie ma pola kodu;
-- pusta lista pokazuje komunikat;
-- błąd serwisu pokazuje `role="alert"`;
-- brak zdobytych pokazuje „Nie masz jeszcze żadnej flagi”.
+- tabela pokazuje tytuł, kurs (link do `/courses/<slug>`), status i datę, a serwis jest wołany z `{ filter: "All", page: 1, pageSize: 20 }`;
+- licznik pokazuje `earnedCount / allCount`;
+- kliknięcie „Zdobyte” woła serwis z `filter: "Earned", page: 1` i ustawia `aria-pressed`;
+- „Następna” woła serwis ze stroną 2; Poprzednia/Następna są wyłączone na krańcach; paginacja jest ukryta przy jednej stronie;
+- zdobyta flaga ma zamaskowany kod (`********`), który odsłania się po `mouseEnter`/`focus` i chowa po `mouseLeave`/`blur`; niezdobyta nie ma pola kodu;
+- komunikaty pustej listy zależne od filtra;
+- błąd serwisu pokazuje `role="alert"`.
 
 Jeśli istniejące testy stron kursów liczą pozycje podmenu, zaktualizować je o „Hangar”.
 
@@ -183,6 +217,7 @@ Jeśli istniejące testy stron kursów liczą pozycje podmenu, zaktualizować je
 #### Automated Verification:
 
 - `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
+  - Uwaga: na Windows z `core.autocrlf=true` lokalny check zgłasza pliki z CRLF w kopii roboczej. W indeksie i w CI są LF, więc lokalnie weryfikujemy przez `--end-of-line auto`. Jedyne prawdziwe odstępstwo (`HomePage.tsx`) poprawił osobny commit `style:`.
 - `npm run lint` przechodzi
 - `npm test` przechodzi, w tym `HangarPage.test.tsx` i istniejące testy stron kursów
 - `npm run build` przechodzi (`tsc -b`)
@@ -192,6 +227,8 @@ Jeśli istniejące testy stron kursów liczą pozycje podmenu, zaktualizować je
 - Zalogowany użytkownik widzi „Hangar” w podmenu kursów (lista, szczegóły kursu, terminal). Strona `/hangar` pokazuje licznik i sekcje zgodne z danymi z bazy, a data zdobycia jest poprawna w lokalnej strefie
 - Po dodaniu SQL-em wiersza `Courses.UserFlags` i odświeżeniu strony flaga przechodzi z „Niezdobyte” do „Zdobyte”
 - Niezalogowany wchodzący na `/hangar` trafia do logowania; menu główne, terminal TOMO-AI-001, Apki i Gry działają bez zmian
+- Filtr Wszystkie / Zdobyte / Niezdobyte zmienia listę w tabeli, licznik się nie zmienia, a przy ponad 20 flagach działają Poprzednia / Następna; tabela przewija się w poziomie na telefonie
+  - Uwaga (zmiana z 2026-10-10 (2)): w krokach 2.5 i 2.6 „sekcje” oznaczają teraz kolumnę Status i filtr Zdobyte / Niezdobyte w jednej tabeli.
 
 **Implementation Note**: Po przejściu weryfikacji automatycznej zatrzymaj się na ręczne potwierdzenie.
 
@@ -239,25 +276,29 @@ Brak migracji. Tabele `Courses.Flags` i `Courses.UserFlags` istnieją od S-01 (`
 
 #### Automated
 
-- [x] 1.1 `dotnet format APPS.sln --verify-no-changes` przechodzi
-- [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete`
-- [x] 1.3 `dotnet test APPS.sln` przechodzi, w tym nowe `HangarFlags/EndpointTests.cs` oraz istniejące testy `HangarTasks` i `VerifyAnswer` bez zmian
+- [x] 1.1 `dotnet format APPS.sln --verify-no-changes` przechodzi — 5066b03
+- [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete` — 5066b03
+- [x] 1.3 `dotnet test APPS.sln` przechodzi, w tym nowe `HangarFlags/EndpointTests.cs` oraz istniejące testy `HangarTasks` i `VerifyAnswer` bez zmian — 5066b03
+- [x] 1.5 Po zmianie 6 `dotnet format APPS.sln --verify-no-changes` i `dotnet build APPS.sln` przechodzą bez ostrzeżeń
+- [x] 1.6 Po zmianie 6 `dotnet test APPS.sln` przechodzi, w tym testy filtra, paginacji i 400
 
 #### Manual
 
-- [x] 1.4 Na lokalnej bazie z flagą bez kryteriów i flagą z kryteriami w opublikowanym kursie oraz wierszem `Courses.UserFlags` wstawionym SQL-em `GET api/courses/hangar-flags` (Swagger, JWT + `X-TOKEN`) zwraca obie flagi. Zdobyta ma `isEarned=true` i `earnedAt` z `Z`, a odpowiedź nie zawiera kodu ani kryteriów
+- [x] 1.4 Na lokalnej bazie z flagą bez kryteriów i flagą z kryteriami w opublikowanym kursie oraz wierszem `Courses.UserFlags` wstawionym SQL-em `GET api/courses/hangar-flags` (Swagger, JWT + `X-TOKEN`) zwraca obie flagi. Zdobyta ma `isEarned=true` i `earnedAt` z `Z`, a odpowiedź nie zawiera kodu ani kryteriów — 5066b03
+- [x] 1.7 W Swaggerze `GET api/courses/hangar-flags` z `filter=Earned`, `filter=Unearned` oraz `page=2&pageSize=1` zwraca odpowiednio przefiltrowaną i stronicowaną listę; `allCount` i `earnedCount` są takie same dla każdego filtra, a `filter=Foo` daje 400
 
 ### Phase 2: Klient — strona Hangar
 
 #### Automated
 
-- [ ] 2.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
-- [ ] 2.2 `npm run lint` przechodzi
-- [ ] 2.3 `npm test` przechodzi, w tym `HangarPage.test.tsx` i istniejące testy stron kursów
-- [ ] 2.4 `npm run build` przechodzi (`tsc -b`)
+- [x] 2.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
+- [x] 2.2 `npm run lint` przechodzi
+- [x] 2.3 `npm test` przechodzi, w tym `HangarPage.test.tsx` i istniejące testy stron kursów
+- [x] 2.4 `npm run build` przechodzi (`tsc -b`)
 
 #### Manual
 
-- [ ] 2.5 Zalogowany użytkownik widzi „Hangar” w podmenu kursów (lista, szczegóły kursu, terminal). Strona `/hangar` pokazuje licznik i sekcje zgodne z danymi z bazy, a data zdobycia jest poprawna w lokalnej strefie
-- [ ] 2.6 Po dodaniu SQL-em wiersza `Courses.UserFlags` i odświeżeniu strony flaga przechodzi z „Niezdobyte” do „Zdobyte”
-- [ ] 2.7 Niezalogowany wchodzący na `/hangar` trafia do logowania; menu główne, terminal TOMO-AI-001, Apki i Gry działają bez zmian
+- [x] 2.5 Zalogowany użytkownik widzi „Hangar” w podmenu kursów (lista, szczegóły kursu, terminal). Strona `/hangar` pokazuje licznik i sekcje zgodne z danymi z bazy, a data zdobycia jest poprawna w lokalnej strefie
+- [x] 2.6 Po dodaniu SQL-em wiersza `Courses.UserFlags` i odświeżeniu strony flaga przechodzi z „Niezdobyte” do „Zdobyte”
+- [x] 2.7 Niezalogowany wchodzący na `/hangar` trafia do logowania; menu główne, terminal TOMO-AI-001, Apki i Gry działają bez zmian
+- [x] 2.8 Filtr Wszystkie / Zdobyte / Niezdobyte zmienia listę w tabeli, licznik się nie zmienia, a przy ponad 20 flagach działają Poprzednia / Następna; tabela przewija się w poziomie na telefonie
