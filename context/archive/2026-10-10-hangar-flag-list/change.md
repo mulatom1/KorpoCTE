@@ -1,10 +1,10 @@
 ---
 change_id: hangar-flag-list
 title: Hangar flag list
-status: implemented
+status: archived
 created: 2026-10-10
 updated: 2026-10-10
-archived_at: null
+archived_at: 2026-10-10T09:06:52Z
 ---
 
 ## Notes

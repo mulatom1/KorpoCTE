@@ -43,7 +43,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 | ---- | ----------------------------- | ------------------------------------------------------------------------------------ | ------------- | --------------------------------- | -------- |
 | F-01 | courses-module-skeleton       | (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w testach              | —             | FR-012, FR-013, FR-014            | done |
 | S-01 | answer-verification-earns-flag | uczestnik wysyła wynik zadania w terminalu TOMO-AI-001 i przy poprawnej odpowiedzi dostaje flagę | F-01          | US-01, FR-005, FR-006, FR-011     | done |
-| S-02 | hangar-flag-list              | uczestnik widzi w hangarze wszystkie flagi z podziałem na zdobyte i niezdobyte       | S-01          | US-01, FR-007                     | in-progress |
+| S-02 | hangar-flag-list              | uczestnik widzi w hangarze wszystkie flagi z podziałem na zdobyte i niezdobyte       | S-01          | US-01, FR-007                     | done |
 | S-03 | public-course-tiles           | odwiedzający wchodzi do Kursów z menu i widzi kafelki kursów                         | F-01          | FR-001, FR-010, FR-013, FR-014    | done |
 | S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | done |
 | S-05 | leaderboard                   | zalogowany użytkownik widzi listę zasłużonych według liczby zdobytych flag           | S-01          | US-01, FR-008                     | proposed |
@@ -114,7 +114,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Domyka kryteria akceptacji US-01 („przed zdobyciem flaga widnieje jako niezdobyta”); mały zakres, więc tuż po pierwszym dowodzie działania.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-03: Publiczne kafelki kursów w menu
 
@@ -219,3 +219,4 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **F-01: (foundation) pusty moduł Kursy jest zarejestrowany w hoście i w projekcie testów, bez żadnej funkcji i bez zmian w istniejących modułach.** — Archived 2026-10-07 → `context/archive/2026-10-07-courses-module-skeleton/`. Lesson: —.
 - **S-04: zalogowany użytkownik może otworzyć stronę szczegółową opublikowanego kursu (data publikacji ≤ dziś) i przeczytać jego sformatowaną treść; kurs niepublikowany jest niewidoczny, a niezalogowany trafia do logowania i wraca do kursu.** — Archived 2026-10-07 → `context/archive/2026-10-07-course-content-reading/`. Lesson: —.
 - **S-01: uczestnik może wkleić wynik zadania w formularzu „Do sprawdzenia” w hangarze i w czasie poniżej 5 s dostać werdykt; przy poprawnej odpowiedzi flaga zostaje przyznana raz na zawsze. Awaria oceny jest komunikowana jako awaria z możliwością ponowienia, a flaga już zdobyta blokuje ponowną ocenę.** — Archived 2026-10-08 → `context/archive/2026-10-08-answer-verification-earns-flag/`. Lesson: —.
+- **S-02: uczestnik może zobaczyć w hangarze wszystkie flagi z rozróżnieniem zdobytych i niezdobytych; flaga przyznana w S-01 od razu zmienia status na zdobytą.** — Archived 2026-10-10 → `context/archive/2026-10-10-hangar-flag-list/`. Lesson: —.
