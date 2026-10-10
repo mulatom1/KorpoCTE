@@ -1,10 +1,10 @@
 ---
 change_id: flag-activation
 title: Aktywacja flagi kodem w hangarze z trofeami
-status: implemented
+status: archived
 created: 2026-10-10
 updated: 2026-10-10
-archived_at: null
+archived_at: 2026-10-10T09:30:32Z
 ---
 
 ## Notes
