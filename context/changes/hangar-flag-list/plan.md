@@ -279,13 +279,13 @@ Brak migracji. Tabele `Courses.Flags` i `Courses.UserFlags` istnieją od S-01 (`
 - [x] 1.1 `dotnet format APPS.sln --verify-no-changes` przechodzi — 5066b03
 - [x] 1.2 `dotnet build APPS.sln` przechodzi bez ostrzeżeń `obsolete` — 5066b03
 - [x] 1.3 `dotnet test APPS.sln` przechodzi, w tym nowe `HangarFlags/EndpointTests.cs` oraz istniejące testy `HangarTasks` i `VerifyAnswer` bez zmian — 5066b03
-- [x] 1.5 Po zmianie 6 `dotnet format APPS.sln --verify-no-changes` i `dotnet build APPS.sln` przechodzą bez ostrzeżeń
-- [x] 1.6 Po zmianie 6 `dotnet test APPS.sln` przechodzi, w tym testy filtra, paginacji i 400
+- [x] 1.5 Po zmianie 6 `dotnet format APPS.sln --verify-no-changes` i `dotnet build APPS.sln` przechodzą bez ostrzeżeń — fa04be9
+- [x] 1.6 Po zmianie 6 `dotnet test APPS.sln` przechodzi, w tym testy filtra, paginacji i 400 — fa04be9
 
 #### Manual
 
 - [x] 1.4 Na lokalnej bazie z flagą bez kryteriów i flagą z kryteriami w opublikowanym kursie oraz wierszem `Courses.UserFlags` wstawionym SQL-em `GET api/courses/hangar-flags` (Swagger, JWT + `X-TOKEN`) zwraca obie flagi. Zdobyta ma `isEarned=true` i `earnedAt` z `Z`, a odpowiedź nie zawiera kodu ani kryteriów — 5066b03
-- [x] 1.7 W Swaggerze `GET api/courses/hangar-flags` z `filter=Earned`, `filter=Unearned` oraz `page=2&pageSize=1` zwraca odpowiednio przefiltrowaną i stronicowaną listę; `allCount` i `earnedCount` są takie same dla każdego filtra, a `filter=Foo` daje 400
+- [x] 1.7 W Swaggerze `GET api/courses/hangar-flags` z `filter=Earned`, `filter=Unearned` oraz `page=2&pageSize=1` zwraca odpowiednio przefiltrowaną i stronicowaną listę; `allCount` i `earnedCount` są takie same dla każdego filtra, a `filter=Foo` daje 400 — fa04be9
 
 ### Phase 2: Klient — strona Hangar
 

@@ -1,6 +1,8 @@
 import type { CoursesCourseTilesResponse } from "./contracts/courses-course-tiles-response";
 import type { CoursesCourseContentRequest } from "./contracts/courses-course-content-request";
 import type { CoursesCourseContentResponse } from "./contracts/courses-course-content-response";
+import type { CoursesHangarFlagsRequest } from "./contracts/courses-hangar-flags-request";
+import type { CoursesHangarFlagsResponse } from "./contracts/courses-hangar-flags-response";
 import type { CoursesHangarTasksResponse } from "./contracts/courses-hangar-tasks-response";
 import type { CoursesVerifyAnswerRequest } from "./contracts/courses-verify-answer-request";
 import type { CoursesVerifyAnswerResponse } from "./contracts/courses-verify-answer-response";
@@ -100,6 +102,35 @@ export class ApiCoursesService {
       throw new Error(
         getProblemMessage(errorData) ||
           `Błąd pobierania listy zadań: ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  // Strona listy flag hangaru ze statusem zdobycia (filtr + paginacja) –
+  // wymaga zalogowania (Bearer).
+  public async getHangarFlags(
+    request: CoursesHangarFlagsRequest,
+  ): Promise<CoursesHangarFlagsResponse> {
+    const params = new URLSearchParams();
+    params.append("filter", request.filter);
+    params.append("page", request.page.toString());
+    params.append("pageSize", request.pageSize.toString());
+
+    const response = await apiFetch(
+      `${this.apiUrl}/api/courses/hangar-flags?${params.toString()}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        getProblemMessage(errorData) ||
+          `Błąd pobierania listy flag: ${response.statusText}`,
       );
     }
 
