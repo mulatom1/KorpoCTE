@@ -291,14 +291,14 @@ Brak migracji. Tabele `Courses.Flags` i `Courses.UserFlags` istnieją od S-01 (`
 
 #### Automated
 
-- [x] 2.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`)
-- [x] 2.2 `npm run lint` przechodzi
-- [x] 2.3 `npm test` przechodzi, w tym `HangarPage.test.tsx` i istniejące testy stron kursów
-- [x] 2.4 `npm run build` przechodzi (`tsc -b`)
+- [x] 2.1 `npx prettier --check "src/**/*.{ts,tsx,css}"` przechodzi (z `src/client/app01`) — 987e134
+- [x] 2.2 `npm run lint` przechodzi — 987e134
+- [x] 2.3 `npm test` przechodzi, w tym `HangarPage.test.tsx` i istniejące testy stron kursów — 987e134
+- [x] 2.4 `npm run build` przechodzi (`tsc -b`) — 987e134
 
 #### Manual
 
-- [x] 2.5 Zalogowany użytkownik widzi „Hangar” w podmenu kursów (lista, szczegóły kursu, terminal). Strona `/hangar` pokazuje licznik i sekcje zgodne z danymi z bazy, a data zdobycia jest poprawna w lokalnej strefie
-- [x] 2.6 Po dodaniu SQL-em wiersza `Courses.UserFlags` i odświeżeniu strony flaga przechodzi z „Niezdobyte” do „Zdobyte”
-- [x] 2.7 Niezalogowany wchodzący na `/hangar` trafia do logowania; menu główne, terminal TOMO-AI-001, Apki i Gry działają bez zmian
-- [x] 2.8 Filtr Wszystkie / Zdobyte / Niezdobyte zmienia listę w tabeli, licznik się nie zmienia, a przy ponad 20 flagach działają Poprzednia / Następna; tabela przewija się w poziomie na telefonie
+- [x] 2.5 Zalogowany użytkownik widzi „Hangar” w podmenu kursów (lista, szczegóły kursu, terminal). Strona `/hangar` pokazuje licznik i sekcje zgodne z danymi z bazy, a data zdobycia jest poprawna w lokalnej strefie — 987e134
+- [x] 2.6 Po dodaniu SQL-em wiersza `Courses.UserFlags` i odświeżeniu strony flaga przechodzi z „Niezdobyte” do „Zdobyte” — 987e134
+- [x] 2.7 Niezalogowany wchodzący na `/hangar` trafia do logowania; menu główne, terminal TOMO-AI-001, Apki i Gry działają bez zmian — 987e134
+- [x] 2.8 Filtr Wszystkie / Zdobyte / Niezdobyte zmienia listę w tabeli, licznik się nie zmienia, a przy ponad 20 flagach działają Poprzednia / Następna; tabela przewija się w poziomie na telefonie — 987e134
