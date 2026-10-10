@@ -48,7 +48,7 @@ Kursy i bootcampy są statyczne: nic nie potwierdza, że uczestnik faktycznie wy
 | S-04 | course-content-reading        | zalogowany użytkownik czyta sformatowaną treść opublikowanego kursu                  | S-03          | FR-002, FR-003, FR-010, FR-012    | done |
 | S-05 | leaderboard                   | zalogowany użytkownik widzi listę zasłużonych według liczby zdobytych flag           | S-01          | US-01, FR-008                     | done |
 | S-06 | flag-activation               | uczestnik aktywuje zdobytą flagę przez formularz aktywacji w hangarze                | S-01          | FR-004                            | done |
-| S-07 | group-progress-dashboard      | zalogowany użytkownik widzi dashboard z czterema wskaźnikami postępu grupy           | S-01          | US-01, FR-009                     | in-progress |
+| S-07 | group-progress-dashboard      | zalogowany użytkownik widzi dashboard z czterema wskaźnikami postępu grupy           | S-01          | US-01, FR-009                     | done |
 
 ## Streams
 
@@ -178,7 +178,7 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **Unknowns:**
   - Kogo liczy wskaźnik „liczba użytkowników” — wszystkie konta portalu czy uczestników bootcampu? (ta sama decyzja co w S-05) — Owner: właściciel portalu. Block: no.
 - **Risk:** Nie jest częścią pełnej ścieżki z kryterium „Primary”, więc na końcu; przy braku czasu to pierwszy kandydat do przesunięcia.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -222,3 +222,4 @@ Fundamenty poniżej zakładają, że te warstwy istnieją, i NIE budują ich od 
 - **S-02: uczestnik może zobaczyć w hangarze wszystkie flagi z rozróżnieniem zdobytych i niezdobytych; flaga przyznana w S-01 od razu zmienia status na zdobytą.** — Archived 2026-10-10 → `context/archive/2026-10-10-hangar-flag-list/`. Lesson: —.
 - **S-06: uczestnik może aktywować zdobytą flagę przez formularz aktywacji w hangarze; flaga aktywowana drugi raz nie jest liczona ponownie.** — Archived 2026-10-10 → `context/archive/2026-10-10-flag-activation/`. Lesson: —.
 - **S-05: zalogowany użytkownik może zobaczyć ranking uczestników według liczby zdobytych flag — tej samej liczby, którą widzi w hangarze.** — Archived 2026-10-10 → `context/archive/2026-10-10-leaderboard/`. Lesson: —.
+- **S-07: zalogowany użytkownik może zobaczyć dashboard z czterema wskaźnikami na dany dzień: liczba użytkowników, liczba flag możliwych do zdobycia, liczba flag zdobytych przez grupę, procent zdobytych flag w grupie.** — Archived 2026-10-10 → `context/archive/2026-10-10-group-progress-dashboard/`. Lesson: —.
