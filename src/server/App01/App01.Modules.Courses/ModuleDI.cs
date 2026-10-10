@@ -31,6 +31,7 @@ public static class ModuleDI
         Features.HangarFlags.Endpoint.AddEndpoint(app);
         Features.ActivateFlag.Endpoint.AddEndpoint(app);
         Features.Leaderboard.Endpoint.AddEndpoint(app);
+        Features.GroupProgress.Endpoint.AddEndpoint(app);
 
         return app;
     }
