@@ -369,20 +369,20 @@ Brak zmian schematu i brak nowych migracji. Zmiana `GroupProgress` zmienia wynik
 
 #### Automated
 
-- [x] 3.1 Przed poprawką handlera test `FlagCountConsistency` czerwony z rozbieżnością na dashboardzie
-- [x] 3.2 Po poprawce `dotnet test APPS.sln` przechodzi w całości
-- [x] 3.3 `dotnet build APPS.sln` bez ostrzeżeń, `dotnet format APPS.sln --verify-no-changes` czysto
+- [x] 3.1 Przed poprawką handlera test `FlagCountConsistency` czerwony z rozbieżnością na dashboardzie — 40bdf96
+- [x] 3.2 Po poprawce `dotnet test APPS.sln` przechodzi w całości — 40bdf96
+- [x] 3.3 `dotnet build APPS.sln` bez ostrzeżeń, `dotnet format APPS.sln --verify-no-changes` czysto — 40bdf96
 
 #### Manual
 
-- [x] 3.4 Strona „Postęp grupy” dla dzisiejszej daty pokazuje spójne liczby (sanity check UI)
+- [x] 3.4 Strona „Postęp grupy” dla dzisiejszej daty pokazuje spójne liczby (sanity check UI) — 40bdf96
 
 ### Phase 4: Test-plan — cookbook, stack, bramka, backport
 
 #### Automated
 
-- [ ] 4.1 `grep -c "TBD — see §3 Phase 2" context/foundation/test-plan.md` zwraca 0
+- [x] 4.1 `grep -c "TBD — see §3 Phase 2" context/foundation/test-plan.md` zwraca 0
 
 #### Manual
 
-- [ ] 4.2 Przegląd §4–§6: instrukcja uruchomienia testów SQL jest kompletna
+- [x] 4.2 Przegląd §4–§6: instrukcja uruchomienia testów SQL jest kompletna

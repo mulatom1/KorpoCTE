@@ -51,8 +51,8 @@ przez #1 (autoryzacja/dostęp).
 | Risk | What would prove protection | Must challenge | Context `/10x-research` must ground | Likely cheapest layer | Anti-pattern to avoid |
 |------|-----------------------------|----------------|--------------------------------------|-----------------------|-----------------------|
 | #1 | Bez JWT żaden endpoint nie zwraca treści kursu; kurs z datą publikacji w przyszłości daje 404 (także na granicy równości dat); plik treści kursu nie jest osiągalny pod żadnym publicznym adresem hosta | „Treść leży poza `wwwroot`, więc jest bezpieczna” oraz „401 na endpoincie oznacza brak wycieku” | Wszystkie trasy zwracające treść, sposób rozwiązania ścieżki treści z konfiguracji, co serwuje middleware plików statycznych, porównanie daty publikacji (UTC, `TimeProvider`) | integracja (WebApplicationFactory + próba pobrania pliku statycznego) | Sprawdzanie samego kodu statusu bez treści odpowiedzi; test z treścią w katalogu, którego produkcja nigdy nie używa; pominięcie granicy dat |
-| #2 | Dwie równoległe aktywacje tej samej flagi przez tego samego uczestnika dają dokładnie jeden zapis; druga dostaje `AlreadyOwned`; ranking pokazuje 1 | „Unikalny indeks jest w konfiguracji EF, więc baza go wymusza” oraz „test na InMemory dowodzi jednokrotności” | Czy indeks istnieje w migracji, obsługa błędu zapisu przy konflikcie, możliwość uruchomienia testów na prawdziwym SQL Server (kontener / LocalDB) w lokalnym i CI, porównanie kodu bez rozróżniania wielkości liter na prawdziwym silniku | integracja na prawdziwym silniku SQL Server | SQLite jako zamiennik (inna semantyka porównań tekstu); symulowanie wyścigu przez mock zamiast realnych równoległych żądań |
-| #3 | Przy jednym zestawie danych (kursy opublikowane/nieopublikowane, granica daty, admin, kilku uczestników) liczba flag uczestnika w hangarze = jego liczba w rankingu, a suma na dashboardzie jest z nimi zgodna | „Każdy endpoint ma swój test, więc są spójne” | Reguły liczenia w hangarze, rankingu i dashboardzie; zachowanie `asOf` z przyszłości; oznaczanie dat jako UTC na prawdziwym silniku | integracja (jeden seed, trzy endpointy, porównanie krzyżowe) | Wyrocznia przepisana z obliczeń produkcyjnych; trzy osobne seedy dla trzech endpointów |
+| #2 | Dwie równoległe aktywacje tej samej flagi przez tego samego uczestnika dają dokładnie jeden zapis; druga dostaje `AlreadyOwned`; ranking pokazuje 1 | „Unikalny indeks jest w konfiguracji EF, więc baza go wymusza” oraz „test na InMemory dowodzi jednokrotności” | Czy indeks istnieje w migracji, obsługa błędu zapisu przy konflikcie, możliwość uruchomienia testów na prawdziwym SQL Server (kontener / LocalDB) w lokalnym i CI, porównanie kodu bez rozróżniania wielkości liter na prawdziwym silniku | integracja na prawdziwym silniku SQL Server (strażnik indeksu + wyścig); uzupełniająco hermetyczny test gałęzi `catch` (błąd zapisu bez konkurenta → nie `AlreadyOwned`) w zwykłym `dotnet test` | SQLite jako zamiennik (inna semantyka porównań tekstu); symulowanie wyścigu przez mock zamiast realnych równoległych żądań |
+| #3 | Przy jednym zestawie danych (kursy opublikowane/nieopublikowane, granica daty, admin, kilku uczestników) liczba flag uczestnika w hangarze = jego liczba w rankingu, a dashboard jest z nimi zgodny wg PRD: flagi możliwe = wszystkie flagi w hangarze, użytkownicy = liczba wierszy rankingu, zdobyte = liczba różnych flag zdobytych przez grupę (nie suma rankingu) | „Każdy endpoint ma swój test, więc są spójne” | Reguły liczenia w hangarze, rankingu i dashboardzie; zachowanie `asOf` z przyszłości; oznaczanie dat jako UTC na prawdziwym silniku | integracja (jeden seed, trzy endpointy, porównanie krzyżowe) | Wyrocznia przepisana z obliczeń produkcyjnych; trzy osobne seedy dla trzech endpointów |
 
 ## 3. Phased Rollout
 
@@ -63,14 +63,14 @@ aktualizuje go, gdy artefakty pojawiają się na dysku.
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Granica dostępu do treści kursów | Udowodnić, że treść kursu nie trafia do niezalogowanych, przed publikacją ani przez pliki statyczne | #1 | integracja | complete | testing-course-content-access |
-| 2 | Spójność flag na prawdziwym silniku | Udowodnić, że flaga liczy się raz na prawdziwej bazie, a hangar, ranking i dashboard pokazują tę samą liczbę | #2, #3 | integracja (SQL Server) + integracja (InMemory) | change opened | testing-flag-consistency |
+| 2 | Spójność flag na prawdziwym silniku | Udowodnić, że flaga liczy się raz na prawdziwej bazie, a hangar, ranking i dashboard pokazują tę samą liczbę | #2, #3 | integracja (SQL Server) + integracja (InMemory) | complete | testing-flag-consistency |
 
 ## 4. Stack
 
 | Layer | Tool | Version | Notes |
 |---|---|---|---|
 | unit + integration (serwer) | xUnit + `Microsoft.AspNetCore.Mvc.Testing` + Moq | 2.9.x / 10.0.x | Testy endpointów w `tests/server/App01/App01.Api.Tests/Features/<Moduł>/<Funkcja>/`; baza EF InMemory |
-| integration na prawdziwej bazie | none yet — see Phase 2 | — | SQL Server (kontener lub LocalDB) — wybór należy do research fazy 2; nie SQLite |
+| integration na prawdziwej bazie | SQL Server LocalDB (lokalnie) przez `APP01_SQLSERVER_TESTS` | 17.0 (LocalDB) | Baza per klasa: kolacja `SQL_Latin1_General_CP1_CI_AS`, compat 110, `Migrate()`; bez zmiennej testy pominięte; brak w CI (lokalnie brak Dockera, Testcontainers niewykonalne); nie SQLite — patrz §6.3 |
 | unit + component (klient) | Vitest + jsdom + Testing Library | 5.x | Testy obok pliku `<Nazwa>.test.ts(x)` |
 | API mocking | Moq (podmiana `IOpenRouterService`) | — | Nigdy prawdziwy OpenRouter w testach |
 | e2e | none — deliberately (§7) | — | — |
@@ -88,7 +88,7 @@ aktualizuje go, gdy artefakty pojawiają się na dysku.
 | format (`dotnet format --verify-no-changes`, prettier) | local + CI | required | dryf stylu |
 | lint + build/typecheck (`dotnet build`, `npm run lint`, `npm run build`) | local + CI | required | błędy składni i typów |
 | unit + integration (`dotnet test`, `npm test`) | local + CI | required | regresje logiki i kontraktów endpointów |
-| integration na prawdziwym SQL Server | local + CI | required after §3 Phase 2 | wyścigi zapisu, ograniczenia bazy, różnice InMemory vs SQL Server |
+| integration na prawdziwym SQL Server | local, ad hoc (skipped bez `APP01_SQLSERVER_TESTS`, także w CI) | ad hoc — uruchom przed zmianą schematu, `ActivateFlag` lub liczników flag (decyzja planu testing-flag-consistency, 2026-10-11) | wyścigi zapisu, ograniczenia bazy, różnice InMemory vs SQL Server |
 | dependency audit (`npm audit`, `dotnet list package --vulnerable`) | CI | required | podatne pakiety |
 
 ## 6. Cookbook Patterns
@@ -114,17 +114,30 @@ odpowiednia faza wdrażania zostanie dostarczona; wcześniej brzmi
 
 ### 6.3 Test na prawdziwym SQL Server
 
-- TBD — see §3 Phase 2 (wzorzec „flaga liczona raz przy równoległych aktywacjach”).
+- **Kiedy**: reguła zależy od ograniczeń bazy (indeks unikalny, FK, wyścig zapisów) — EF InMemory ich nie wymusza i test na nim przechodzi przy usuniętym indeksie. Nie SQLite (inna semantyka porównań tekstu).
+- **Location**: `tests/server/App01/App01.Api.Tests/Infrastructure/SqlServer/` (`SqlServerFactAttribute`, `SqlServerDatabaseFixture`, `SqlServerWebApplicationFactory`); testy obok funkcji jako `<Coś>SqlServerTests.cs`.
+- **Reference tests**: `Features/Courses/ActivateFlag/UserFlagUniquenessSqlServerTests.cs` (strażnik schematu), `Features/Courses/ActivateFlag/ActivateFlagRaceSqlServerTests.cs` (wyścig).
+- **Run locally** (PowerShell): `$env:APP01_SQLSERVER_TESTS = "Server=(localdb)\MSSQLLocalDB;Integrated Security=true;TrustServerCertificate=True"; dotnet test APPS.sln`. Connection string serwera BEZ `Database=`. Bez zmiennej testy są `Skipped` z komunikatem (lokalnie i w CI).
+- **Baza per klasa testów** (`IClassFixture<SqlServerDatabaseFixture>`): `CREATE DATABASE … COLLATE SQL_Latin1_General_CP1_CI_AS` przez `master`, `COMPATIBILITY_LEVEL = 110`, potem `Migrate()` — nie `EnsureCreated()`, bo tylko migracja dowodzi, że indeks jest w migracji. `DisposeAsync` czyści pule i usuwa bazę. Migracja seeduje admina — Id użytkowników bierz z bazy po zapisie, kody/e-maile z `Guid` (baza współdzielona przez testy klasy).
+- **Fabryka hosta nie podmienia `DbContext`**; connection string przez `UseSetting("ConnectionStrings:DefaultConnection", …)`, NIE `ConfigureAppConfiguration` — `SharedInfrastructureDI` czyta go przy rejestracji serwisów, a w środowisku `Test` brak connection stringu po cichu pomija rejestrację. Strażnik sprawdza `db.Database.IsSqlServer()` i nazwę bazy.
+- **Wzorzec „flaga liczona raz”**: (1) deterministyczny strażnik — `sys.indexes` ma indeks unikalny na dokładnie `(UserId, FlagId)` + bezpośredni duplikat dostaje `SqlException` 2601/2627; (2) wyścig — 10 żądań HTTP z jednej bramki (`TaskCompletionSource` + `Task.WhenAll`) po rozgrzaniu hosta; asercje: same 200, 1× `Activated`, 9× `AlreadyOwned`, 1 wiersz, **ranking** `flagCount = 1` (ranking liczy wiersze; hangar duplikat by ukrył); (3) brzeg — dwóch userów równolegle → po jednym zapisie; (4) gałąź, której silnik nie wywoła — hermetycznie: `SaveChangesInterceptor` rzuca `DbUpdateException` bez wiersza → 500, nie `AlreadyOwned` (`ActivateFlag/EndpointTests.cs`).
+- **Dowód czerwieni**: `unique: false` w migracji → strażnicy czerwoni; `catch` zawsze `throw` → wyścig czerwony 3/3 (dowód, że wyścig trafia w gałąź `catch`, a nie tylko w pre-check).
 
 ### 6.4 Test spójności liczników między endpointami
 
-- TBD — see §3 Phase 2 (wzorzec „jeden seed, hangar = ranking = dashboard”).
+- **Kiedy**: kilka endpointów liczy tę samą wielkość niezależnie (hangar, ranking, dashboard) — osobne testy per endpoint przypinają nawet sprzeczne reguły.
+- **Reference test**: `tests/server/App01/App01.Api.Tests/Features/Courses/FlagCountConsistency/EndpointTests.cs` (InMemory + `FixedTimeProvider`; reguły liczenia nie zależą od ograniczeń bazy).
+- **Jeden seed, klient z JWT per użytkownik**, wszystkie endpointy w jednym teście. Seed zawiera brzegi: kurs z `PublishDate == Now`, zdobycie z `EarnedAt == Now`, kurs nieopublikowany ze zdobyciem, admin, uczestnik bez flag, flaga bez kryteriów.
+- **Wyrocznia literalna, policzona ręcznie z PRD** (tabela w komentarzu), plus tożsamości krzyżowe: `ranking.flagCount(u) == hangar(u).earnedCount` (FR-008), `dashboard.available == hangar.allCount`, `dashboard.userCount == ranking.TotalCount`, `dashboard.earned ==` liczba różnych flag zdobytych w hangarach (`prd.md` — „różne flagi zdobyte przez grupę”). NIE porównuj sumy rankingu z dashboardem — to inna wielkość.
+- **Granica publikacji i zdobycia: włączna (`<=`) we wszystkich licznikach** (FR-003, FR-008; decyzja 2026-10-11, poprawka `GroupProgress`).
+- **Dowód czerwieni**: ostra granica tylko na `EarnedAt` w dashboardzie → czerwony; ostra granica w hangarze → czerwony.
 
 ### 6.5 Per-rollout-phase notes
 
 (Po każdej fazie `/10x-implement` dopisuje tu 2–3 linie o tym, czego faza nauczyła.)
 
 - **Phase 1 (testing-course-content-access, 2026-10-11):** API i filtr daty były szczelne; luka siedziała w testach (401 bez asercji ciała, granica zależna od strefy maszyny). Realna ścieżka wycieku jest operacyjna: `.md` w `wwwroot` jest serwowany jako `text/markdown` (potwierdzone testem z mutacją), a kod pilnuje tylko położenia `ContentPath` — zaakceptowane w §7.
+- **Phase 2 (testing-flag-consistency, 2026-10-11):** gwarancja „flaga raz” była poprawna w kodzie i schemacie, ale niewidoczna dla testów (InMemory) — teraz pilnują jej testy na LocalDB, uruchamiane ad hoc. Test krzyżowy znalazł realną sprzeczność: dashboard liczył granicę ostro (`<`), hangar i ranking włącznie — poprawione w `GroupProgress` na wyrocznię PRD. Pułapka infrastruktury: `ConfigureAppConfiguration` nie dociera do rejestracji `DbContext` — używaj `UseSetting`.
 
 ## 7. What We Deliberately Don't Test
 
