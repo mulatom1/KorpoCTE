@@ -77,7 +77,7 @@ Widzi, że moduł Kursy istnieje, i ma podgląd listy kursów. Nie jest personą
 ### Guardrails
 
 - Mniej niż **1%** sesji użytkowników kończy się nieoczekiwanym błędem krytycznym.
-- Uczestnik poznaje werdykt weryfikacji w czasie krótszym niż **5 sekund** od wysłania odpowiedzi.
+- Uczestnik poznaje werdykt weryfikacji w oczekiwanym czasie do **15 sekund** od wysłania odpowiedzi. Weryfikację wykonuje zewnętrzny model/API, więc przekroczenie limitu czasu jest dopuszczonym ryzykiem — kończy się komunikatem o awarii z możliwością ponowienia (US-01), nie oceną negatywną.
 - Logowanie do portalu, menu główne oraz moduły Apki i Gry działają dokładnie tak jak przed zmianą.
 - Flaga raz zdobyta nie znika i nie może zostać policzona drugi raz — bez tego ranking i wskaźniki postępu tracą znaczenie.
 - Treść kursów ani odpowiedzi uczestników nie są dostępne dla osób niezalogowanych; publiczne pozostają wyłącznie kafelki.

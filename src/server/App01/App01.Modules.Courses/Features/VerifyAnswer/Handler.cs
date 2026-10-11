@@ -19,7 +19,7 @@ namespace App01.Modules.Courses.Features.VerifyAnswer;
 
 public partial class VerifyAnswerHandler : IRequestHandler<Contracts.Request, Contracts.Response>
 {
-    private const int DefaultTimeoutSeconds = 4;
+    private const int DefaultTimeoutSeconds = 15;
 
     // Jeden komunikat dla każdego powodu niedostępności - nie zdradza istnienia flag ani kursów nieopublikowanych
     private const string NotFoundMessage = "Zadanie nie istnieje lub nie jest dostępne";
