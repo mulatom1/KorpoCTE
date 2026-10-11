@@ -68,6 +68,11 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
         }
 
         public override DateTimeOffset GetUtcNow() => _utcNow;
+
+        // Stała strefa lokalna różna od UTC: pomyłka "czas lokalny zamiast UTC" przesuwa granicę
+        // publikacji na każdej maszynie (także na agencie CI w UTC)
+        public override TimeZoneInfo LocalTimeZone { get; } =
+            TimeZoneInfo.CreateCustomTimeZone("Test+05:00", TimeSpan.FromHours(5), "Test+05:00", "Test+05:00");
     }
 
     private WebApplicationFactory<Program> CreateFactory(Action<AppDbContext>? seedData = null, string? webRoot = null)
@@ -252,38 +257,35 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
         Assert.DoesNotContain("description", json, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public async Task CourseContent_PublishDateEqualToNow_ReturnsOk()
+    // Wyrocznia (decyzja S-04): kurs widoczny od chwili PublishDate w UTC, równość = widoczny
+    [Theory]
+    [InlineData(-1L, true)]
+    [InlineData(0L, true)]
+    [InlineData(1L, false)]
+    public async Task CourseContent_PublishDateBoundary_VisibleOnlyFromPublishInstantUtc(long offsetTicks, bool expectVisible)
     {
-        // Arrange
-        WriteValidCourse("teraz");
+        // Arrange - data z bazy bez Kind (tak EF czyta datetime2)
+        WriteCourseWithSentinel("granica");
+        var publishDate = DateTime.SpecifyKind(Now.AddTicks(offsetTicks), DateTimeKind.Unspecified);
         var client = CreateClient(CreateFactory(db =>
-            db.Courses.Add(new Course { Id = 1, Slug = "teraz", PublishDate = Now })));
+            db.Courses.Add(new Course { Id = 1, Slug = "granica", PublishDate = publishDate })));
 
         // Act
-        var response = await client.GetAsync(UrlFor("teraz"));
+        var response = await client.GetAsync(UrlFor("granica"));
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var result = await response.Content.ReadFromJsonAsync<Contracts.Response>();
-        Assert.NotNull(result);
-        Assert.Equal("teraz", result.Slug);
-        Assert.StartsWith("# ", result.Content);
-    }
-
-    [Fact]
-    public async Task CourseContent_PublishDateInFuture_ReturnsNotFound()
-    {
-        // Arrange
-        WriteValidCourse("za-minute");
-        var client = CreateClient(CreateFactory(db =>
-            db.Courses.Add(new Course { Id = 1, Slug = "za-minute", PublishDate = Now.AddMinutes(1) })));
-
-        // Act
-        var response = await client.GetAsync(UrlFor("za-minute"));
-
-        // Assert
-        await AssertNotFound(response);
+        var body = await response.Content.ReadAsStringAsync();
+        if (expectVisible)
+        {
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains(ContentSentinel, body);
+        }
+        else
+        {
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Contains(NotFoundMessage, body);
+            Assert.DoesNotContain(ContentSentinel, body);
+        }
     }
 
     [Fact]

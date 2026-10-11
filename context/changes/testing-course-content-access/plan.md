@@ -244,24 +244,24 @@ Brak. Bez zmian w schemacie ani konfiguracji produkcyjnej.
 
 #### Automated
 
-- [x] 1.1 Testy fazy przechodzą: `dotnet test APPS.sln --filter "FullyQualifiedName~Courses.CourseContent"`
-- [x] 1.2 Build bez ostrzeżeń w zmienionym projekcie testów: `dotnet build APPS.sln`
-- [x] 1.3 Formatowanie: `dotnet format APPS.sln --verify-no-changes`
+- [x] 1.1 Testy fazy przechodzą: `dotnet test APPS.sln --filter "FullyQualifiedName~Courses.CourseContent"` — 5dc86ca
+- [x] 1.2 Build bez ostrzeżeń w zmienionym projekcie testów: `dotnet build APPS.sln` — 5dc86ca
+- [x] 1.3 Formatowanie: `dotnet format APPS.sln --verify-no-changes` — 5dc86ca
 
 #### Manual
 
-- [x] 1.4 Mutacja: usunięcie `.RequireAuthorization()` daje czerwone przypadki 401; po cofnięciu `git diff src/` pusty
+- [x] 1.4 Mutacja: usunięcie `.RequireAuthorization()` daje czerwone przypadki 401; po cofnięciu `git diff src/` pusty — 5dc86ca
 
 ### Phase 2: Granica publikacji odporna na strefę czasową
 
 #### Automated
 
-- [ ] 2.1 Testy fazy przechodzą: `dotnet test APPS.sln --filter "FullyQualifiedName~Courses.CourseContent"`
-- [ ] 2.2 Formatowanie: `dotnet format APPS.sln --verify-no-changes`
+- [x] 2.1 Testy fazy przechodzą: `dotnet test APPS.sln --filter "FullyQualifiedName~Courses.CourseContent"`
+- [x] 2.2 Formatowanie: `dotnet format APPS.sln --verify-no-changes`
 
 #### Manual
 
-- [ ] 2.3 Mutacje A (czas lokalny) i B (`<` zamiast `<=`) dają czerwień; po cofnięciu `git diff src/` pusty
+- [x] 2.3 Mutacje A (czas lokalny) i B (`<` zamiast `<=`) dają czerwień; po cofnięciu `git diff src/` pusty
 
 ### Phase 3: Plik treści nieosiągalny pod publicznym adresem hosta
 
