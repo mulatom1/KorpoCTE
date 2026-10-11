@@ -43,14 +43,14 @@ public class GroupProgressHandler : IRequestHandler<Contracts.Request, Contracts
         var requested = request.AsOf.HasValue ? ToUtc(request.AsOf.Value) : now;
         var asOf = requested < now ? requested : now;
 
-        // Flagi możliwe: kursy opublikowane ściśle przed asOf
+        // Flagi możliwe: kursy opublikowane do asOf włącznie - ta sama granica co hangar i ranking (FR-003, FR-008)
         var availableFlagCount = await _dbContext.Flags
-            .Where(f => f.Course.PublishDate < asOf)
+            .Where(f => f.Course.PublishDate <= asOf)
             .CountAsync(cancellationToken);
 
-        // Zdobycia przed asOf, liczone tylko dla flag z puli możliwych (zdobyte nigdy nie przekroczą możliwych)
+        // Zdobycia do asOf włącznie, liczone tylko dla flag z puli możliwych (zdobyte nigdy nie przekroczą możliwych)
         var earned = _dbContext.UserFlags
-            .Where(uf => uf.EarnedAt < asOf && uf.Flag.Course.PublishDate < asOf);
+            .Where(uf => uf.EarnedAt <= asOf && uf.Flag.Course.PublishDate <= asOf);
 
         var earnedFlagCount = await earned
             .Select(uf => uf.FlagId)

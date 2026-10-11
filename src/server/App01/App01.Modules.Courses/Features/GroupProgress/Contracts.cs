@@ -11,7 +11,7 @@ public class Contracts
         DateTime? AsOf = null
     ) : IRequest<Response>;
 
-    // Wskaźniki postępu grupy na moment AsOf (zdarzenia ściśle przed AsOf);
+    // Wskaźniki postępu grupy na moment AsOf (zdarzenia do AsOf włącznie);
     // EarnedPercent = null, gdy nie ma żadnej możliwej flagi
     public record Response(
         DateTime AsOf,

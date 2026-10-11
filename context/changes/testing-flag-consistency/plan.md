@@ -357,25 +357,25 @@ Brak zmian schematu i brak nowych migracji. Zmiana `GroupProgress` zmienia wynik
 
 #### Automated
 
-- [x] 2.1 Z `APP01_SQLSERVER_TESTS`: oba testy wyścigu przechodzą w 5 kolejnych przebiegach
-- [x] 2.2 `dotnet test APPS.sln` (bez zmiennej) przechodzi, w tym nowy test hermetyczny
-- [x] 2.3 `dotnet format APPS.sln --verify-no-changes` czysto
+- [x] 2.1 Z `APP01_SQLSERVER_TESTS`: oba testy wyścigu przechodzą w 5 kolejnych przebiegach — c22a500
+- [x] 2.2 `dotnet test APPS.sln` (bez zmiennej) przechodzi, w tym nowy test hermetyczny — c22a500
+- [x] 2.3 `dotnet format APPS.sln --verify-no-changes` czysto — c22a500
 
 #### Manual
 
-- [x] 2.4 Celowa zmiana `catch` na `return AlreadyOwned` bez ponownego zapytania czerwieni test hermetyczny; zmiana wycofana
+- [x] 2.4 Celowa zmiana `catch` na `return AlreadyOwned` bez ponownego zapytania czerwieni test hermetyczny; zmiana wycofana — c22a500
 
 ### Phase 3: Test krzyżowy hangar = ranking = dashboard (#3) + granica włączna
 
 #### Automated
 
-- [ ] 3.1 Przed poprawką handlera test `FlagCountConsistency` czerwony z rozbieżnością na dashboardzie
-- [ ] 3.2 Po poprawce `dotnet test APPS.sln` przechodzi w całości
-- [ ] 3.3 `dotnet build APPS.sln` bez ostrzeżeń, `dotnet format APPS.sln --verify-no-changes` czysto
+- [x] 3.1 Przed poprawką handlera test `FlagCountConsistency` czerwony z rozbieżnością na dashboardzie
+- [x] 3.2 Po poprawce `dotnet test APPS.sln` przechodzi w całości
+- [x] 3.3 `dotnet build APPS.sln` bez ostrzeżeń, `dotnet format APPS.sln --verify-no-changes` czysto
 
 #### Manual
 
-- [ ] 3.4 Strona „Postęp grupy” dla dzisiejszej daty pokazuje spójne liczby (sanity check UI)
+- [x] 3.4 Strona „Postęp grupy” dla dzisiejszej daty pokazuje spójne liczby (sanity check UI)
 
 ### Phase 4: Test-plan — cookbook, stack, bramka, backport
 

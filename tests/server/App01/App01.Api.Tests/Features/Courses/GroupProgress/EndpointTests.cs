@@ -282,7 +282,7 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GroupProgress_SkipsUnpublishedCourses()
     {
         // Arrange
-        // Kurs 1 opublikowany; kurs 2 z PublishDate == teraz (granica ostra - nieliczony); kurs 3 przyszły
+        // Kurs 1 opublikowany; kurs 2 z PublishDate == teraz (granica włączna - liczony, FR-003); kurs 3 przyszły
         var client = CreateClient(CreateFactory(db =>
         {
             AddCourse(db, 1, Now.AddDays(-30), firstFlagId: 1, flagCount: 2);
@@ -292,8 +292,9 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
             AddUser(db, 3, "b@example.com");
             AddUser(db, 4, "c@example.com");
             AddUserFlag(db, 2, 1, Now.AddDays(-1));
-            // Zdobycia flag kursów nieopublikowanych przed asOf nie są liczone
+            // Zdobycie flagi kursu opublikowanego dokładnie "teraz" jest liczone
             AddUserFlag(db, 3, 20, Now.AddHours(-1));
+            // Zdobycie flagi kursu nieopublikowanego nie jest liczone
             AddUserFlag(db, 4, 30, Now.AddHours(-1));
         }));
 
@@ -301,26 +302,26 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
         var result = await GetGroupProgressAsync(client);
 
         // Assert
-        Assert.Equal(1, result.UserCount);
-        Assert.Equal(2, result.AvailableFlagCount);
-        Assert.Equal(1, result.EarnedFlagCount);
-        Assert.Equal(50.0, result.EarnedPercent);
+        Assert.Equal(2, result.UserCount);
+        Assert.Equal(5, result.AvailableFlagCount);
+        Assert.Equal(2, result.EarnedFlagCount);
+        Assert.Equal(40.0, result.EarnedPercent);
     }
 
     [Fact]
-    public async Task GroupProgress_AsOfInPast_CountsOnlyEarlierEvents()
+    public async Task GroupProgress_AsOfInPast_CountsEventsUpToAsOfInclusive()
     {
         // Arrange
         var asOf = Now.AddDays(-2);
         var client = CreateClient(CreateFactory(db =>
         {
             AddCourse(db, 1, Now.AddDays(-30), firstFlagId: 1, flagCount: 4);
-            // Kurs opublikowany dokładnie w asOf - jeszcze niedostępny
+            // Kurs opublikowany dokładnie w asOf - już dostępny (granica włączna)
             AddCourse(db, 2, asOf, firstFlagId: 20, flagCount: 6);
             AddUser(db, 2, "a@example.com");
             AddUser(db, 3, "b@example.com");
             AddUser(db, 4, "c@example.com");
-            // Zdobycie dokładnie w asOf nie jest liczone
+            // Zdobycie dokładnie w asOf jest liczone
             AddUserFlag(db, 2, 1, asOf);
             // Zdobycie 1 tick przed asOf jest liczone
             AddUserFlag(db, 3, 2, asOf.AddTicks(-1));
@@ -333,10 +334,10 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert
         Assert.Equal(asOf, result.AsOf);
-        Assert.Equal(1, result.UserCount);
-        Assert.Equal(4, result.AvailableFlagCount);
-        Assert.Equal(1, result.EarnedFlagCount);
-        Assert.Equal(25.0, result.EarnedPercent);
+        Assert.Equal(2, result.UserCount);
+        Assert.Equal(10, result.AvailableFlagCount);
+        Assert.Equal(2, result.EarnedFlagCount);
+        Assert.Equal(20.0, result.EarnedPercent);
     }
 
     [Fact]
