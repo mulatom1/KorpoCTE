@@ -62,7 +62,7 @@ aktualizuje go, gdy artefakty pojawiają się na dysku.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Granica dostępu do treści kursów | Udowodnić, że treść kursu nie trafia do niezalogowanych, przed publikacją ani przez pliki statyczne | #1 | integracja | change opened | testing-course-content-access |
+| 1 | Granica dostępu do treści kursów | Udowodnić, że treść kursu nie trafia do niezalogowanych, przed publikacją ani przez pliki statyczne | #1 | integracja | complete | testing-course-content-access |
 | 2 | Spójność flag na prawdziwym silniku | Udowodnić, że flaga liczy się raz na prawdziwej bazie, a hangar, ranking i dashboard pokazują tę samą liczbę | #2, #3 | integracja (SQL Server) + integracja (InMemory) | not started | — |
 
 ## 4. Stack
@@ -102,11 +102,15 @@ odpowiednia faza wdrażania zostanie dostarczona; wcześniej brzmi
 - **Location**: `tests/server/App01/App01.Api.Tests/Features/Courses/<Funkcja>/EndpointTests.cs`.
 - **Reference test**: `tests/server/App01/App01.Api.Tests/Features/Courses/HangarFlags/EndpointTests.cs` (seed InMemory, `FixedTimeProvider`, surowy JSON).
 - **Run locally**: `dotnet test APPS.sln`.
-- Wzorzec granicy dostępu do treści (niezalogowany, przed publikacją, pliki statyczne): TBD — see §3 Phase 1.
+- Wzorzec granicy dostępu do treści (niezalogowany, przed publikacją, pliki statyczne): `tests/server/App01/App01.Api.Tests/Features/Courses/CourseContent/EndpointTests.cs` — `CourseContent_WithoutValidJwt_ReturnsUnauthorizedWithoutContent`, `CourseContent_PublishDateBoundary_VisibleOnlyFromPublishInstantUtc`, `CourseContentFile_IsNotReachableUnderPublicUrls` (patrz §6.2).
 
 ### 6.2 Test granicy dostępu i plików statycznych
 
-- TBD — see §3 Phase 1 (wzorzec „treść kursu niedostępna bez JWT / przed publikacją / pod publicznym adresem”).
+- **Wartownik + kontrola pozytywna.** Kurs zawiera unikalny `ContentSentinel` (tytuł i treść); test negatywny sprawdza jego brak w ciele odpowiedzi, a osobna kontrola pozytywna (ważny JWT → wartownik jest) dowodzi, że brak nie jest trywialny. Sam kod statusu nie jest dowodem braku wycieku.
+- **Pliki statyczne bez asercji statusu.** `MapFallbackToFile("index.html")` zwraca 200 z SPA, gdy `index.html` jest w webroocie — o wycieku decyduje ciało (wartownik) i `Content-Type: text/markdown`. Test działa w obu wariantach webroota i potwierdza, że webroot jest serwowany (miniatura → 200 `image/png`).
+- **Produkcyjny układ katalogów.** Webroot `<tmp>/wwwroot/media/courses/<slug>/` i treść jako katalog-rodzeństwo `<tmp>/content/<slug>/<slug>.md` przez klucz `Courses:ContentPath` (`UseSetting(WebHostDefaults.WebRootKey, …)` działa w TestServer).
+- **Granica publikacji.** Wyrocznia = chwila UTC, równość = widoczny (decyzja S-04; PRD FR-003 mówi „data” — implementacja jest ostrzejsza, nigdy nie pokazuje wcześniej). Testuj −1/0/+1 tick, seed z `Kind = Unspecified`, a `FixedTimeProvider` z jawną `LocalTimeZone` ≠ UTC, żeby pomyłka „czas lokalny” była czerwona także na CI w UTC.
+- **Dowód czerwieni** (Stryker.NET niezainstalowany): ręczna mutacja per test — zdjęcie `.RequireAuthorization()`, `GetLocalNow()` / `<` w filtrze daty, kopia `.md` do `wwwroot/media`.
 
 ### 6.3 Test na prawdziwym SQL Server
 
@@ -120,12 +124,16 @@ odpowiednia faza wdrażania zostanie dostarczona; wcześniej brzmi
 
 (Po każdej fazie `/10x-implement` dopisuje tu 2–3 linie o tym, czego faza nauczyła.)
 
+- **Phase 1 (testing-course-content-access, 2026-10-11):** API i filtr daty były szczelne; luka siedziała w testach (401 bez asercji ciała, granica zależna od strefy maszyny). Realna ścieżka wycieku jest operacyjna: `.md` w `wwwroot` jest serwowany jako `text/markdown` (potwierdzone testem z mutacją), a kod pilnuje tylko położenia `ContentPath` — zaakceptowane w §7.
+
 ## 7. What We Deliberately Don't Test
 
 - **Moduły Portal, Lotto, Flashcards i strony statyczne** — poza zakresem budżetu testów. Istniejące testy zostają w CI jako ochrona FR-012..FR-014; nie dopisujemy nowych. Re-evaluate, jeśli zmiana w Courses dotknie współdzielonego layoutu, logowania lub `Shared.*`. (Source: Phase 2 interview Q5.)
 - **Poufność kodu flagi** — uczestnik wylicza kod poza aplikacją (np. w zewnętrznym narzędziu AI), a PRD FR-004 akceptuje przekazywanie kodu. Re-evaluate, jeśli kod stanie się jedynym dowodem wykonania zadania. (Source: przegląd briefu, 2026-10-11.)
 - **Czas odpowiedzi i awarie modelu weryfikującego** — PRD Guardrails i `CLAUDE.md` (2026-10-11) przyjmują oczekiwany czas do 15 s i dopuszczają timeout zewnętrznego modelu/API jako ryzyko. Re-evaluate przy skargach uczestników. (Source: przegląd briefu, 2026-10-11.)
 - **Odporność promptu weryfikacji na wstrzyknięcie polecenia** — modele się zmieniają, więc wynik oceny szybko się dezaktualizuje. Re-evaluate, jeśli flaga zdobyta oszustwem zostanie zauważona w rankingu. (Source: przegląd briefu, 2026-10-11.)
+- **Kopia pliku `.md` kursu w `wwwroot/media/courses/<slug>/`** — taki plik jest serwowany publicznie (`text/markdown`, bez logowania i bez względu na `PublishDate`), a kod tego nie blokuje: bezpiecznik czytnika sprawdza tylko, czy `Courses:ContentPath` nie leży w webroocie. Zaakceptowane ryzyko operacyjne, bez blokady `.md` w `Program.cs`; mitygacja w rejestrze ryzyk `infrastructure.md`. Re-evaluate przy automatyzacji publikacji treści lub po incydencie wycieku. (Source: decyzja planu testing-course-content-access, 2026-10-11.)
+- **Media i załączniki kursów (`wwwroot/media/courses/<slug>/**`, także `data/*.docx|pdf|txt`)** — publiczne, również przed `PublishDate`, zgodnie z decyzją S-04 (chroniona jest tylko treść tekstowa `.md`). Re-evaluate, jeśli załącznik zadania zacznie zawierać rozwiązanie lub treść, która ma pozostać zamknięta. (Source: decyzja planu testing-course-content-access, 2026-10-11.)
 - **e2e w przeglądarce** — pełna ścieżka została sprawdzona ręcznie przy zamknięciu M-1, a pozostałe ryzyka łapie taniej integracja. Re-evaluate przy nowym milestonie zmieniającym przepływ uczestnika.
 
 ## 8. Freshness Ledger

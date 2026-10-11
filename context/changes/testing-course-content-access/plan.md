@@ -267,20 +267,20 @@ Brak. Bez zmian w schemacie ani konfiguracji produkcyjnej.
 
 #### Automated
 
-- [x] 3.1 Testy fazy przechodzą: `dotnet test APPS.sln --filter "FullyQualifiedName~Courses.CourseContent"`
-- [x] 3.2 Pełny zestaw testów przechodzi: `dotnet test APPS.sln`
-- [x] 3.3 Formatowanie: `dotnet format APPS.sln --verify-no-changes`
+- [x] 3.1 Testy fazy przechodzą: `dotnet test APPS.sln --filter "FullyQualifiedName~Courses.CourseContent"` — 47a0b95
+- [x] 3.2 Pełny zestaw testów przechodzi: `dotnet test APPS.sln` — 47a0b95
+- [x] 3.3 Formatowanie: `dotnet format APPS.sln --verify-no-changes` — 47a0b95
 
 #### Manual
 
-- [x] 3.4 Mutacja: kopia `<slug>.md` w `wwwroot/media/courses/<slug>/` daje czerwień w obu wariantach; po cofnięciu zielono
+- [x] 3.4 Mutacja: kopia `<slug>.md` w `wwwroot/media/courses/<slug>/` daje czerwień w obu wariantach; po cofnięciu zielono — 47a0b95
 
 ### Phase 4: Cookbook, zaakceptowane ryzyka i status fazy
 
 #### Automated
 
-- [ ] 4.1 Brak „TBD — see §3 Phase 1” w test-planie
+- [x] 4.1 Brak „TBD — see §3 Phase 1” w test-planie
 
 #### Manual
 
-- [ ] 4.2 Wpisy §7 i wiersz w `infrastructure.md` zgodne z Key Decisions
+- [x] 4.2 Wpisy §7 i wiersz w `infrastructure.md` zgodne z Key Decisions
