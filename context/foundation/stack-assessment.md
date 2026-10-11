@@ -96,7 +96,7 @@ Vitest 5 + jsdom + Testing Library działają, krok „Test frontend" jest w CI,
 
 ### Luka 4 — NOWA (zakres PRD): brak wzorca weryfikacji odpowiedzi przez LLM
 
-**Co brakuje.** FR-006 i US-01 wprowadzają pierwszą w portalu regułę domenową opartą o model: werdykt musi przyjść w < 5 s, awaria techniczna ma być komunikowana jako awaria (nie ocena negatywna), a próba techniczna nie może być liczona jako błędna. Obecny kod tego nie wspiera:
+**Co brakuje.** FR-006 i US-01 wprowadzają pierwszą w portalu regułę domenową opartą o model: werdykt powinien przyjść w oczekiwanym czasie do 15 s, awaria techniczna ma być komunikowana jako awaria (nie ocena negatywna), a próba techniczna nie może być liczona jako błędna. Obecny kod tego nie wspiera:
 - `OpenRouterService.ChatAsync` rzuca gołe `Exception` przy błędzie API i zwraca `string`.
 - `builder.Services.AddHttpClient()` — domyślny timeout `HttpClient` to 100 s.
 - `ExceptionHandlingMiddleware` mapuje nieobsłużone wyjątki (w tym `ApiException`, który nie ma własnej gałęzi) na 500, a w `Detail` zwraca treść wyjątku.
@@ -129,7 +129,7 @@ Nowe — do wklejenia w `CLAUDE.md` po sekcji „Bezpieczeństwo endpointów":
 ## Moduł Courses — weryfikacja odpowiedzi przez LLM
 
 - Weryfikację wykonuje handler w `App01.Modules.Courses` przez istniejący `IOpenRouterService`. NIE zmieniaj `OpenRouterService`, `AddHttpClient()` ani `ExceptionHandlingMiddleware` — używa ich Flashcards.
-- Limit czasu w handlerze: `using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken); cts.CancelAfter(TimeSpan.FromSeconds(<Courses:VerificationTimeoutSeconds>));` i przekaż `cts.Token` do `ChatAsync`. Wartość domyślna ≤ 4 s (PRD: werdykt < 5 s). Klucz dopisz do `appsettings.Example.json`.
+- Limit czasu w handlerze: `using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken); cts.CancelAfter(TimeSpan.FromSeconds(<Courses:VerificationTimeoutSeconds>));` i przekaż `cts.Token` do `ChatAsync`. Wartość domyślna 15 s (PRD: oczekiwany czas werdyktu do 15 s; timeout zewnętrznego modelu/API jest dopuszczonym ryzykiem i kończy się statusem `Unavailable`). Klucz dopisz do `appsettings.Example.json`.
 - Awaria techniczna (timeout, `HttpRequestException`, `Exception` z `OpenRouterService`, nieparsowalna odpowiedź modelu) NIE jest wyjątkiem do middleware. Złap ją w handlerze, zaloguj i zwróć 200 z `Response(Status: "Unavailable", ...)`. Kontrakt: `Status` ∈ `Correct | Incorrect | Unavailable | AlreadyOwned`. Klient pokazuje `Unavailable` jako awarię z przyciskiem „Spróbuj ponownie", nie jako ocenę negatywną.
 - Próby `Incorrect` i `Unavailable` nie zużywają niczego i nie są liczone w rankingu ani wskaźnikach.
 - Kolejność w `Handle`: walidacja → pobranie userId z JWT (`IJwtService`) → sprawdzenie, czy flaga już zdobyta (jeśli tak: `AlreadyOwned`, model NIE jest wołany) → wywołanie modelu → zapis flagi.

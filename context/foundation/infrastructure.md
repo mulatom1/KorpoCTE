@@ -76,7 +76,7 @@ Najlepsze DX i MCP GA, ale SQL Server jako samodzielnie utrzymywany kontener (pa
 1. **.NET 10 deklarowany, ale jeszcze nieuruchomiony na tym koncie** — Webio podaje „ASP.NET Core 1.0 – 10.x" we wszystkich planach, lecz produkcja działa na .NET 8; zainstalowany patch runtime starszy niż wymagany przez build dałby `HTTP Error 500.31` dopiero przy wdrożeniu.
 2. **SQL Server 2012 (EOL 07.2022) vs EF Core 10** — `UseCompatibilityLevel(110)` wyłącza część tłumaczeń (np. `OPENJSON`), ale każde nowe zapytanie Courses (ranking, wskaźniki) może trafić w składnię nieobsługiwaną przez 2012; testy na EF InMemory tego nie wykryją.
 3. **Brak rollbacku i atomowości wdrożenia** — przerwany upload FTP zostawia pół-wdrożoną aplikację; zablokowane DLL wymagają `app_offline.htm`; każdy hotfix = pełny redeploy.
-4. **Nieudokumentowane limity CPU/RAM puli na hostingu współdzielonym** — recykling puli restartuje workery; sąsiedzi mogą zjeść budżet werdyktu < 5 s (wywołanie OpenRoutera + zapis flagi).
+4. **Nieudokumentowane limity CPU/RAM puli na hostingu współdzielonym** — recykling puli restartuje workery; sąsiedzi mogą zjeść budżet werdyktu (do 15 s) (wywołanie OpenRoutera + zapis flagi).
 5. **Poświadczenia Web Deploy/FTP = klucz do całej witryny** — brak scope'owania tokenów wbrew zasadzie minimalnych uprawnień; jedyna kontrola to GitHub Secrets + environment protection.
 
 ### Pre-Mortem — How This Could Fail
@@ -108,7 +108,7 @@ Zespół został na Webio, bo „działa od lat". Pierwszy deploy .NET 10 poszed
 | `DeleteExistingFiles=true` kasuje treść kursów, `Logs/`, `TMP/LOTTO/*` | Unknown unknowns | H | H | `Courses:ContentPath` poza katalogiem wdrożenia; reguły skip msdeploy (`Logs`, `TMP`, `appsettings.json`, katalog kursów); w FTPS — sync bez usuwania tych ścieżek |
 | Przerwany upload FTP = pół-wdrożona aplikacja, brak rollbacku | Devil's advocate | M | M | Preferować Web Deploy (transakcyjny per plik) nad FTP; `app_offline.htm` na czas wdrożenia; rollback przez ponowny workflow z poprzednim tagiem |
 | Limit rozmiaru bazy w planie (250 MB / 1 GB) | Unknown unknowns | M | H | Sprawdzić zajęcie bazy teraz; w razie potrzeby podnieść plan przed startem bootcampu |
-| Recykling/limity puli restartują workery lub spowalniają werdykt | Devil's advocate | L | M | Workery odporne na restart; timeout LLM ≤ 4 s w handlerze (już w `CLAUDE.md`); monitorować czasy w logach Serilog |
+| Recykling/limity puli restartują workery lub spowalniają werdykt | Devil's advocate | L | M | Workery odporne na restart; timeout LLM 15 s w handlerze (już w `CLAUDE.md`); monitorować czasy w logach Serilog |
 | Poświadczenia Web Deploy/FTP bez scope'owania | Devil's advocate | M | H | Tylko w GitHub Secrets środowiska `production` z required reviewer; osobne konto FTP read-only do logów; nigdy w repo ani w konwersacji |
 | Brak natywnych operacji dla agenta (logi/rollback tylko przez FTP/workflow) | Research finding | H | L | Workflow `deploy.yml` + `gh` jako jedyny interfejs agenta; logi Serilog przez FTPS; rozważyć lekki endpoint health (np. istniejący `GetApiVersion`) do weryfikacji po wdrożeniu |
 | Ciche uzależnienie od lokalnej strefy czasowej serwera | Unknown unknowns | L | M | Udokumentować w planie wyjścia; przy migracji ustawić `TZ=Europe/Warsaw` / `WEBSITE_TIME_ZONE` |
@@ -160,7 +160,7 @@ Zachowany dla audytu decyzji i jako lista kontrolna na wypadek uruchomienia plan
 1. Kod zapisuje do katalogu aplikacji (`AppDomain.BaseDirectory/TMP/LOTTO/*`, Serilog `Logs/`); przy `WEBSITE_RUN_FROM_PACKAGE=1` `wwwroot` jest read-only → `IOException` w `LottoWorker02/03`.
 2. Workery liczą czas lokalny (`DateTime.Now`); App Service Linux działa w UTC → przesunięte harmonogramy.
 3. B1 bez slotów: rollback = redeploy (minuty), każde wdrożenie restartuje workery; sloty od S1.
-4. Azure SQL serverless (darmowa oferta) z auto-pause: wybudzenie do > 1 min łamie werdykt < 5 s; Basic 5 DTU może dławić przy importach Lotto.
+4. Azure SQL serverless (darmowa oferta) z auto-pause: wybudzenie do > 1 min łamie werdykt w czasie do 15 s; Basic 5 DTU może dławić przy importach Lotto.
 5. Migracja danych z Webio SQL 2012 (bacpac) + przepięcie DNS tomsoft1.pl — ręczne kroki w oknie 5 tygodni.
 
 **Pre-mortem (skrót)** — serverless SQL usypiał i poranne weryfikacje kończyły się `Unavailable`; import Lotto uruchamiał się o złej godzinie (UTC); run-from-package cicho psuł zapisy archiwum i logów; hotfix bez slotów restartował aplikację w trakcie zajęć; rachunek 3× wyższy niż Webio. Źródło porażki: założenie „to ten sam IIS, tylko w chmurze".

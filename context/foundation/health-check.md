@@ -137,7 +137,7 @@ Agent readiness (from stack-assess): ready-with-compensation
 
 ### 1. Klient bez limitu czasu i bez stanu „awaria" dla weryfikacji odpowiedzi
 
-**Impact**: PRD (US-01) wymaga werdyktu w < 5 s i komunikatu o awarii odróżnionego od oceny negatywnej. `apiFetch` (`src/services/api-fetch.ts`) woła `fetch` bez `signal` — przy zawieszonym połączeniu formularz „Do sprawdzenia" czeka bez końca, a agent budujący `ApiCoursesService` nie ma wzorca, który to obsługuje.
+**Impact**: PRD (US-01) wymaga werdyktu w oczekiwanym czasie do 15 s i komunikatu o awarii odróżnionego od oceny negatywnej. `apiFetch` (`src/services/api-fetch.ts`) woła `fetch` bez `signal` — przy zawieszonym połączeniu formularz „Do sprawdzenia" czeka bez końca, a agent budujący `ApiCoursesService` nie ma wzorca, który to obsługuje.
 **Severity**: medium
 **Effort**: moderate (15–30 min)
 **Fix**:
@@ -149,7 +149,7 @@ const response = await apiFetch(url, {
   method: "POST",
   headers,
   body: JSON.stringify(request),
-  signal: AbortSignal.timeout(6000), // serwer ucina model po ≤ 4 s
+  signal: AbortSignal.timeout(20000), // serwer ucina model po 15 s
 });
 ```
 
