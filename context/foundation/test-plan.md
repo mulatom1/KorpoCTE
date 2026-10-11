@@ -63,7 +63,7 @@ aktualizuje go, gdy artefakty pojawiają się na dysku.
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Granica dostępu do treści kursów | Udowodnić, że treść kursu nie trafia do niezalogowanych, przed publikacją ani przez pliki statyczne | #1 | integracja | complete | testing-course-content-access |
-| 2 | Spójność flag na prawdziwym silniku | Udowodnić, że flaga liczy się raz na prawdziwej bazie, a hangar, ranking i dashboard pokazują tę samą liczbę | #2, #3 | integracja (SQL Server) + integracja (InMemory) | not started | — |
+| 2 | Spójność flag na prawdziwym silniku | Udowodnić, że flaga liczy się raz na prawdziwej bazie, a hangar, ranking i dashboard pokazują tę samą liczbę | #2, #3 | integracja (SQL Server) + integracja (InMemory) | change opened | testing-flag-consistency |
 
 ## 4. Stack
 
