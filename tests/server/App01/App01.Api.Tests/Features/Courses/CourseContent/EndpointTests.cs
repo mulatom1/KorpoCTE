@@ -202,6 +202,26 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
         WriteCourseFile(slug, $"---\ntitle: Kurs {slug}\ndescription: Opis {slug}\n---\n\n# Treść {slug}\n");
     }
 
+    private const string SpaIndexMarker = "SPA-INDEX-MARKER";
+
+    // Układ jak na hoście: <tmp>/wwwroot/media/courses/<slug>/ z mediami i katalog-rodzeństwo <tmp>/content
+    // z <slug>/<slug>.md (ContentPath = ../courses-content poza katalogiem witryny). Zwraca ścieżkę webroota.
+    private string CreateProductionLayout(string slug, bool withSpaIndex)
+    {
+        var webRoot = Path.Combine(_tempRoot, "wwwroot");
+        var mediaDir = Path.Combine(webRoot, "media", "courses", slug);
+        Directory.CreateDirectory(mediaDir);
+        File.WriteAllBytes(Path.Combine(mediaDir, "thumbnail.png"), [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+
+        if (withSpaIndex)
+        {
+            File.WriteAllText(Path.Combine(webRoot, "index.html"), $"<!doctype html><div id=\"root\">{SpaIndexMarker}</div>");
+        }
+
+        WriteCourseWithSentinel(slug);
+        return webRoot;
+    }
+
     // Kurs z wartownikiem w tytule i w treści Markdown
     private void WriteCourseWithSentinel(string slug)
     {
@@ -485,5 +505,57 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CourseContentFile_IsNotReachableUnderPublicUrls(bool withSpaIndex)
+    {
+        // Arrange - produkcyjny układ katalogów; webroot z index.html SPA albo bez niego
+        const string slug = "kurs-a";
+        var webRoot = CreateProductionLayout(slug, withSpaIndex);
+        var factory = CreateFactory(
+            db => db.Courses.Add(new Course { Id = 1, Slug = slug, PublishDate = Now.AddDays(-1) }),
+            webRoot: webRoot);
+        var anonymousClient = CreateClient(factory, withXToken: false, withJwt: false);
+
+        // Kandydackie adresy pliku treści; '..' zakodowane, bo HttpClient normalizuje segmenty kropek
+        string[] candidateUrls =
+        [
+            $"/media/courses/{slug}/{slug}.md",
+            $"/{slug}/{slug}.md",
+            $"/content/{slug}/{slug}.md",
+            $"/courses-content/{slug}/{slug}.md",
+            $"/media/courses/{slug}/",
+            $"/media/courses/%2e%2e/%2e%2e/content/{slug}/{slug}.md"
+        ];
+
+        // Act & Assert - o wycieku decyduje ciało i typ treści, nie status (fallback SPA może dać 200)
+        foreach (var url in candidateUrls)
+        {
+            var response = await anonymousClient.GetAsync(url);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.False(body.Contains(ContentSentinel), $"Treść kursu wyciekła pod adresem {url} (status {(int)response.StatusCode})");
+            Assert.NotEqual("text/markdown", response.Content.Headers.ContentType?.MediaType);
+        }
+
+        // Kontrola pozytywna: webroot jest naprawdę serwowany
+        var thumbnail = await anonymousClient.GetAsync($"/media/courses/{slug}/thumbnail.png");
+        Assert.Equal(HttpStatusCode.OK, thumbnail.StatusCode);
+        Assert.Equal("image/png", thumbnail.Content.Headers.ContentType?.MediaType);
+
+        // Kontrola pozytywna: fallback SPA jest aktywny, gdy index.html istnieje
+        if (withSpaIndex)
+        {
+            var spa = await anonymousClient.GetAsync("/nie-istnieje");
+            Assert.Equal(HttpStatusCode.OK, spa.StatusCode);
+            Assert.Contains(SpaIndexMarker, await spa.Content.ReadAsStringAsync());
+        }
+
+        // Kontrola pozytywna: ten sam ContentPath jest używany przez API (z JWT i X-TOKEN)
+        var apiResponse = await CreateClient(factory).GetAsync(UrlFor(slug));
+        Assert.Equal(HttpStatusCode.OK, apiResponse.StatusCode);
+        Assert.Contains(ContentSentinel, await apiResponse.Content.ReadAsStringAsync());
     }
 }

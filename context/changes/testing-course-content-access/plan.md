@@ -256,24 +256,24 @@ Brak. Bez zmian w schemacie ani konfiguracji produkcyjnej.
 
 #### Automated
 
-- [x] 2.1 Testy fazy przechodzą: `dotnet test APPS.sln --filter "FullyQualifiedName~Courses.CourseContent"`
-- [x] 2.2 Formatowanie: `dotnet format APPS.sln --verify-no-changes`
+- [x] 2.1 Testy fazy przechodzą: `dotnet test APPS.sln --filter "FullyQualifiedName~Courses.CourseContent"` — ec71626
+- [x] 2.2 Formatowanie: `dotnet format APPS.sln --verify-no-changes` — ec71626
 
 #### Manual
 
-- [x] 2.3 Mutacje A (czas lokalny) i B (`<` zamiast `<=`) dają czerwień; po cofnięciu `git diff src/` pusty
+- [x] 2.3 Mutacje A (czas lokalny) i B (`<` zamiast `<=`) dają czerwień; po cofnięciu `git diff src/` pusty — ec71626
 
 ### Phase 3: Plik treści nieosiągalny pod publicznym adresem hosta
 
 #### Automated
 
-- [ ] 3.1 Testy fazy przechodzą: `dotnet test APPS.sln --filter "FullyQualifiedName~Courses.CourseContent"`
-- [ ] 3.2 Pełny zestaw testów przechodzi: `dotnet test APPS.sln`
-- [ ] 3.3 Formatowanie: `dotnet format APPS.sln --verify-no-changes`
+- [x] 3.1 Testy fazy przechodzą: `dotnet test APPS.sln --filter "FullyQualifiedName~Courses.CourseContent"`
+- [x] 3.2 Pełny zestaw testów przechodzi: `dotnet test APPS.sln`
+- [x] 3.3 Formatowanie: `dotnet format APPS.sln --verify-no-changes`
 
 #### Manual
 
-- [ ] 3.4 Mutacja: kopia `<slug>.md` w `wwwroot/media/courses/<slug>/` daje czerwień w obu wariantach; po cofnięciu zielono
+- [x] 3.4 Mutacja: kopia `<slug>.md` w `wwwroot/media/courses/<slug>/` daje czerwień w obu wariantach; po cofnięciu zielono
 
 ### Phase 4: Cookbook, zaakceptowane ryzyka i status fazy
 
