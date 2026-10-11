@@ -12,6 +12,7 @@ using App01.Shared.Infrastructure.Repositories;
 
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -65,7 +66,24 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
         public override DateTimeOffset GetUtcNow() => _utcNow;
     }
 
-    private WebApplicationFactory<Program> CreateFactory()
+    // Symuluje błąd zapisu, który NIE jest konfliktem z równoległym requestem (np. klucz obcy):
+    // SaveChanges rzuca DbUpdateException, a żaden wiersz UserFlag nie powstaje
+    private sealed class FailingUserFlagSaveInterceptor : SaveChangesInterceptor
+    {
+        public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
+            DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+        {
+            var addsUserFlag = eventData.Context!.ChangeTracker.Entries<UserFlag>()
+                .Any(e => e.State == EntityState.Added);
+            if (addsUserFlag)
+            {
+                throw new DbUpdateException("Symulowany błąd zapisu UserFlag (np. naruszenie klucza obcego)");
+            }
+            return base.SavingChangesAsync(eventData, result, cancellationToken);
+        }
+    }
+
+    private WebApplicationFactory<Program> CreateFactory(IInterceptor? saveInterceptor = null)
     {
         // Stała nazwa bazy na fabrykę - seed, żądania i asercje widzą te same dane
         var dbName = $"TestDb_{Guid.NewGuid()}";
@@ -111,6 +129,10 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
                 services.AddDbContext<AppDbContext>(options =>
                 {
                     options.UseInMemoryDatabase(dbName);
+                    if (saveInterceptor != null)
+                    {
+                        options.AddInterceptors(saveInterceptor);
+                    }
                 });
 
                 services.RemoveAll<TimeProvider>();
@@ -293,6 +315,29 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>
         // Assert
         Assert.Equal(Contracts.Statuses.Activated, result.Status);
         Assert.Single(GetCurrentUserFlags(factory), uf => uf.FlagId == PublishedFlagId);
+    }
+
+    // ===== Błąd zapisu =====
+
+    // Gałąź catch(DbUpdateException): AlreadyOwned tylko, gdy wiersz faktycznie zapisał równoległy request.
+    // Inny błąd zapisu (brak wiersza po ponownym sprawdzeniu) idzie do middleware jako 500 - nie może
+    // udawać, że uczestnik już ma flagę. Ścieżkę AlreadyOwned po konflikcie dowodzi ActivateFlagRaceSqlServerTests.
+    [Fact]
+    public async Task ActivateFlag_SaveFailsWithoutConcurrentRow_ReturnsServerError()
+    {
+        // Arrange
+        var factory = CreateFactory(new FailingUserFlagSaveInterceptor());
+        var client = CreateClient(factory);
+
+        // Act
+        var response = await client.PostAsJsonAsync(Url, new Contracts.Request(PublishedCode));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain(Contracts.Statuses.AlreadyOwned, body);
+        Assert.DoesNotContain(Contracts.Statuses.Activated, body);
+        Assert.DoesNotContain(GetCurrentUserFlags(factory), uf => uf.FlagId == PublishedFlagId);
     }
 
     // ===== Invalid =====

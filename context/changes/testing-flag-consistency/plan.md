@@ -344,26 +344,26 @@ Brak zmian schematu i brak nowych migracji. Zmiana `GroupProgress` zmienia wynik
 
 #### Automated
 
-- [x] 1.1 `dotnet build APPS.sln` bez błędów i nowych ostrzeżeń
-- [x] 1.2 Bez `APP01_SQLSERVER_TESTS`: `dotnet test APPS.sln` przechodzi, testy SQL raportowane jako skipped z powodem
-- [x] 1.3 Z `APP01_SQLSERVER_TESTS` (LocalDB): testy strażnika przechodzą, po przebiegu nie zostaje baza `App01Tests_*`
-- [x] 1.4 `dotnet format APPS.sln --verify-no-changes` czysto
+- [x] 1.1 `dotnet build APPS.sln` bez błędów i nowych ostrzeżeń — 3c25335
+- [x] 1.2 Bez `APP01_SQLSERVER_TESTS`: `dotnet test APPS.sln` przechodzi, testy SQL raportowane jako skipped z powodem — 3c25335
+- [x] 1.3 Z `APP01_SQLSERVER_TESTS` (LocalDB): testy strażnika przechodzą, po przebiegu nie zostaje baza `App01Tests_*` — 3c25335
+- [x] 1.4 `dotnet format APPS.sln --verify-no-changes` czysto — 3c25335
 
 #### Manual
 
-- [x] 1.5 Celowe usunięcie `.IsUnique()` + świeża migracja lokalnie czerwieni test strażnika; zmiana wycofana
+- [x] 1.5 Celowe usunięcie `.IsUnique()` + świeża migracja lokalnie czerwieni test strażnika; zmiana wycofana — 3c25335
 
 ### Phase 2: Wyścig aktywacji (#2) + gałąź hermetyczna
 
 #### Automated
 
-- [ ] 2.1 Z `APP01_SQLSERVER_TESTS`: oba testy wyścigu przechodzą w 5 kolejnych przebiegach
-- [ ] 2.2 `dotnet test APPS.sln` (bez zmiennej) przechodzi, w tym nowy test hermetyczny
-- [ ] 2.3 `dotnet format APPS.sln --verify-no-changes` czysto
+- [x] 2.1 Z `APP01_SQLSERVER_TESTS`: oba testy wyścigu przechodzą w 5 kolejnych przebiegach
+- [x] 2.2 `dotnet test APPS.sln` (bez zmiennej) przechodzi, w tym nowy test hermetyczny
+- [x] 2.3 `dotnet format APPS.sln --verify-no-changes` czysto
 
 #### Manual
 
-- [ ] 2.4 Celowa zmiana `catch` na `return AlreadyOwned` bez ponownego zapytania czerwieni test hermetyczny; zmiana wycofana
+- [x] 2.4 Celowa zmiana `catch` na `return AlreadyOwned` bez ponownego zapytania czerwieni test hermetyczny; zmiana wycofana
 
 ### Phase 3: Test krzyżowy hangar = ranking = dashboard (#3) + granica włączna
 
