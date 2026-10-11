@@ -1,7 +1,7 @@
 ---
 change_id: testing-course-content-access
 title: Testy granicy dostępu do treści kursów (rollout Phase 1, ryzyko #1)
-status: implementing
+status: implemented
 created: 2026-10-11
 updated: 2026-10-11
 archived_at: null

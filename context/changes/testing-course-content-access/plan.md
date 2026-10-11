@@ -279,8 +279,8 @@ Brak. Bez zmian w schemacie ani konfiguracji produkcyjnej.
 
 #### Automated
 
-- [x] 4.1 Brak „TBD — see §3 Phase 1” w test-planie
+- [x] 4.1 Brak „TBD — see §3 Phase 1” w test-planie — 14a34de
 
 #### Manual
 
-- [x] 4.2 Wpisy §7 i wiersz w `infrastructure.md` zgodne z Key Decisions
+- [x] 4.2 Wpisy §7 i wiersz w `infrastructure.md` zgodne z Key Decisions — 14a34de
