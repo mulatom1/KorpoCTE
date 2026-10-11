@@ -381,8 +381,8 @@ Brak zmian schematu i brak nowych migracji. Zmiana `GroupProgress` zmienia wynik
 
 #### Automated
 
-- [x] 4.1 `grep -c "TBD — see §3 Phase 2" context/foundation/test-plan.md` zwraca 0
+- [x] 4.1 `grep -c "TBD — see §3 Phase 2" context/foundation/test-plan.md` zwraca 0 — 08deb3f
 
 #### Manual
 
-- [x] 4.2 Przegląd §4–§6: instrukcja uruchomienia testów SQL jest kompletna
+- [x] 4.2 Przegląd §4–§6: instrukcja uruchomienia testów SQL jest kompletna — 08deb3f

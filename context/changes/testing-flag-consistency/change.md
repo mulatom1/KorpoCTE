@@ -1,7 +1,7 @@
 ---
 change_id: testing-flag-consistency
 title: Spójność flag na prawdziwym silniku (test-plan faza 2, ryzyka #2 i #3)
-status: implementing
+status: implemented
 created: 2026-10-11
 updated: 2026-10-11
 archived_at: null
