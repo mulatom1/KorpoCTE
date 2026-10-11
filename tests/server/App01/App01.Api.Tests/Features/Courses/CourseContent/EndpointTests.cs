@@ -35,6 +35,9 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
     private const string MediaUrlBase = "/media/courses/";
     private const string NotFoundMessage = "Kurs nie istnieje lub nie jest jeszcze opublikowany";
 
+    // Unikalny znacznik treści kursu - jego obecność w odpowiedzi oznacza wyciek treści
+    private const string ContentSentinel = "WARTOWNIK-TRESCI-7f3c9a1e";
+
     // Stała chwila "teraz" dla testów
     private static readonly DateTime Now = new(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc);
 
@@ -139,7 +142,7 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
         });
     }
 
-    private static string GenerateJwtToken(int userId, string email, bool isAdmin)
+    private static string GenerateJwtToken(int userId, string email, bool isAdmin, bool expired = false)
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -156,7 +159,9 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
             issuer: JwtIssuer,
             audience: JwtAudience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
+            // Walidacja JWT używa zegara rzeczywistego (ClockSkew = 0), nie TimeProvider
+            notBefore: expired ? DateTime.UtcNow.AddHours(-2) : null,
+            expires: expired ? DateTime.UtcNow.AddHours(-1) : DateTime.UtcNow.AddHours(1),
             signingCredentials: credentials
         );
 
@@ -190,6 +195,13 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
     private void WriteValidCourse(string slug)
     {
         WriteCourseFile(slug, $"---\ntitle: Kurs {slug}\ndescription: Opis {slug}\n---\n\n# Treść {slug}\n");
+    }
+
+    // Kurs z wartownikiem w tytule i w treści Markdown
+    private void WriteCourseWithSentinel(string slug)
+    {
+        WriteCourseFile(slug,
+            $"---\ntitle: Kurs {slug} {ContentSentinel}\ndescription: Opis {slug}\n---\n\n# Treść {slug}\n\n{ContentSentinel}\n");
     }
 
     private static async Task AssertNotFound(HttpResponseMessage response)
@@ -367,35 +379,58 @@ public class EndpointTests : IClassFixture<WebApplicationFactory<Program>>, IDis
         Assert.Contains("Identyfikator kursu jest wymagany", body);
     }
 
-    [Fact]
-    public async Task CourseContent_WithoutJwtToken_ReturnsUnauthorized()
+    [Theory]
+    [InlineData("brak", true)]
+    [InlineData("brak", false)]
+    [InlineData("nieprawidlowy", true)]
+    [InlineData("nieprawidlowy", false)]
+    [InlineData("wygasly", true)]
+    [InlineData("wygasly", false)]
+    public async Task CourseContent_WithoutValidJwt_ReturnsUnauthorizedWithoutContent(string tokenVariant, bool published)
     {
-        // Arrange
-        WriteValidCourse("kurs-a");
+        // Arrange - kurs opublikowany albo z datą publikacji w przyszłości, plik z wartownikiem istnieje
+        WriteCourseWithSentinel("kurs-a");
+        var publishDate = published ? Now.AddDays(-1) : Now.AddDays(1);
         var client = CreateClient(CreateFactory(db =>
-            db.Courses.Add(new Course { Id = 1, Slug = "kurs-a", PublishDate = Now.AddDays(-1) })), withJwt: false);
+            db.Courses.Add(new Course { Id = 1, Slug = "kurs-a", PublishDate = publishDate })), withJwt: false);
+        var token = tokenVariant switch
+        {
+            "brak" => null,
+            "nieprawidlowy" => "invalid-token",
+            "wygasly" => GenerateJwtToken(2, "user1@example.com", isAdmin: false, expired: true),
+            _ => throw new ArgumentOutOfRangeException(nameof(tokenVariant))
+        };
+        if (token is not null)
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
 
         // Act
         var response = await client.GetAsync(UrlFor("kurs-a"));
 
-        // Assert
+        // Assert - sam status nie wystarcza: ciało nie może zawierać treści ani tytułu kursu
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain(ContentSentinel, body);
     }
 
     [Fact]
-    public async Task CourseContent_WithInvalidJwtToken_ReturnsUnauthorized()
+    public async Task CourseContent_WithValidJwt_ReturnsSentinelContent()
     {
-        // Arrange
-        WriteValidCourse("kurs-a");
+        // Arrange - kontrola pozytywna dla testu 401: ten sam seed z ważnym JWT zwraca wartownika
+        WriteCourseWithSentinel("kurs-a");
         var client = CreateClient(CreateFactory(db =>
-            db.Courses.Add(new Course { Id = 1, Slug = "kurs-a", PublishDate = Now.AddDays(-1) })), withJwt: false);
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "invalid-token");
+            db.Courses.Add(new Course { Id = 1, Slug = "kurs-a", PublishDate = Now.AddDays(-1) })));
 
         // Act
         var response = await client.GetAsync(UrlFor("kurs-a"));
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<Contracts.Response>();
+        Assert.NotNull(result);
+        Assert.Contains(ContentSentinel, result.Content);
+        Assert.Contains(ContentSentinel, result.Title);
     }
 
     [Fact]
