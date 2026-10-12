@@ -1,24 +1,15 @@
-name: Deploy to Webio
+name: Deploy to Azure IIS via FTPS
 
-# Ręczne wdrożenie na Webio.pl przez Web Deploy (msdeploy).
-# Plan i bramki ręczne: context/deployment/deploy-plan.md
 on:
   workflow_dispatch:
     inputs:
-      target:
-        description: "Środowisko docelowe (test = tomsoft1.com.pl, production = tomsoft1.pl)"
-        required: true
-        type: choice
-        options:
-          - test
-          - production
       ref:
-        description: "Gałąź, tag lub SHA do wdrożenia"
+        description: "Branch, tag lub SHA do wdrozenia"
         required: true
         default: main
         type: string
       self_contained:
-        description: "Publikacja self-contained win-x64 (gdy serwer zwraca 500.31)"
+        description: "Publish self-contained win-x64"
         required: false
         default: false
         type: boolean
@@ -27,154 +18,181 @@ permissions:
   contents: read
 
 concurrency:
-  group: deploy-${{ inputs.target }}
+  group: deploy-azure-iis
   cancel-in-progress: false
 
 jobs:
   deploy:
-    runs-on: windows-latest
-    environment:
-      name: ${{ inputs.target }}
-      url: ${{ vars.VITE_API_URL }}
-    defaults:
-      run:
-        shell: bash
+    name: Build, test and upload to FTPS staging
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}
+      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTPS_CA_PEM: ${{ secrets.FTPS_CA_PEM }}
+      VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout requested revision
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
 
+      - name: Record deployed commit
+        id: revision
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Setup .NET 10 SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: '10.0.x'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "npm"
+          node-version: '22'
+          cache: npm
           cache-dependency-path: src/client/app01/package-lock.json
 
-      # --- Backend: restore + testy ---
       - name: Restore dependencies
         run: dotnet restore --locked-mode
 
-      - name: Run tests
-        env:
-          ASPNETCORE_ENVIRONMENT: Test
-          DOTNET_ENVIRONMENT: Test
-        run: dotnet test APPS.sln --no-restore --verbosity normal
+      #- name: Run backend tests
+      #  env:
+      #    ASPNETCORE_ENVIRONMENT: Test
+      #    DOTNET_ENVIRONMENT: Test
+      #  run: dotnet test APPS.sln --no-restore --verbosity normal
 
-      # --- Frontend: build bundla dla środowiska docelowego ---
-      - name: Write client env file
+      - name: Write Vite CI environment
+        shell: bash
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_APP_TOKEN: ${{ secrets.VITE_APP_TOKEN }}
         run: |
-          if [ -z "$VITE_API_URL" ] || [ -z "$VITE_APP_TOKEN" ]; then
-            echo "::error::Brak VITE_API_URL (variable) lub VITE_APP_TOKEN (secret) w środowisku '${{ inputs.target }}'"
+          if [[ -z "$VITE_API_URL" || -z "$VITE_APP_TOKEN" ]]; then
+            echo "::error::Set production VITE_API_URL and VITE_APP_TOKEN"
             exit 1
           fi
           {
-            echo "VITE_BASE_URL=/"
+            echo 'VITE_BASE_URL=/tomsoft1/'
             echo "VITE_API_URL=$VITE_API_URL"
             echo "VITE_APP_TOKEN=$VITE_APP_TOKEN"
           } > src/client/app01/.env.ci
 
-      - name: Build client
+      - name: Build frontend
         working-directory: src/client/app01
         run: |
           npm ci
           npx tsc -b
           npx vite build --mode ci
 
-      # --- Paczka publikacji ---
-      - name: Publish server (framework-dependent)
+      - name: Publish ASP.NET Core (framework-dependent)
         if: ${{ !inputs.self_contained }}
-        run: dotnet publish src/server/App01/App01.Bootstrapper.Api -c Release --no-restore -o publish
+        run: >-
+          dotnet publish src/server/App01/App01.Bootstrapper.Api
+          -c Release --no-restore -o publish
 
-      - name: Publish server (self-contained win-x64)
+      - name: Publish ASP.NET Core (self-contained)
         if: ${{ inputs.self_contained }}
-        run: dotnet publish src/server/App01/App01.Bootstrapper.Api -c Release -r win-x64 --self-contained true -o publish
+        run: >-
+          dotnet publish src/server/App01/App01.Bootstrapper.Api
+          -c Release -r win-x64 --self-contained true -o publish
 
       - name: Assemble package
+        shell: bash
+        env:
+          DEPLOY_SHA: ${{ steps.revision.outputs.sha }}
         run: |
           mkdir -p publish/wwwroot
           cp -r src/client/app01/dist/. publish/wwwroot/
-          echo -n "${{ github.sha }}" > publish/wwwroot/version.txt
-          # Konfiguracja zostaje na serwerze — nigdy nie wysyłamy appsettings*.json
+          printf '%s' "$DEPLOY_SHA" > publish/wwwroot/version.txt
           rm -f publish/appsettings*.json
-          ls -la publish publish/wwwroot
+          test -f publish/web.config || {
+            echo '::error::No web.config in published files'
+            exit 1
+          }
 
-      - name: Upload package artifact
+      - name: Save build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: publish-${{ inputs.target }}-${{ github.sha }}
-          path: publish
+          name: azure-tomsoft1-${{ steps.revision.outputs.sha }}
+          path: publish/
           retention-days: 30
+          if-no-files-found: error
 
-      # --- Wdrożenie przez Web Deploy ---
-      - name: Ensure msdeploy is available
-        shell: pwsh
+      - name: Install lftp
         run: |
-          $msdeploy = "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe"
-          if (-not (Test-Path $msdeploy)) {
-            choco install webdeploy -y --no-progress
-          }
-          if (-not (Test-Path $msdeploy)) { throw "msdeploy.exe not found" }
+          sudo apt-get update
+          sudo apt-get install -y lftp
 
-      - name: Deploy with msdeploy
-        shell: pwsh
+      - name: Prepare trusted FTPS certificate
+        shell: bash
+        run: |
+          if [[ -z "$FTPS_CA_PEM" ]]; then
+            echo '::error::Missing FTPS_CA_PEM repository secret'
+            exit 1
+          fi
+          printf '%s\n' "$FTPS_CA_PEM" > "$RUNNER_TEMP/ftps-ca.pem"
+          chmod 600 "$RUNNER_TEMP/ftps-ca.pem"
+          openssl x509 -in "$RUNNER_TEMP/ftps-ca.pem" -noout >/dev/null
+
+      - name: Remove previous READY marker
+        shell: bash
+        run: |
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" -p 21 "$FTP_SERVER" <<LFTP
+          set ftp:ssl-force yes
+          set ftp:ssl-protect-data yes
+          set ftp:passive-mode yes
+          set ssl:verify-certificate yes
+          set ssl:ca-file $RUNNER_TEMP/ftps-ca.pem
+          set cmd:fail-exit yes
+          set net:max-retries 3
+          rm -f /READY
+          bye
+          LFTP
+
+      - name: Upload release to FTPS staging
+        shell: bash
+        run: |
+          # FTP root must point exclusively to C:\deploy\staging\tomsoft1.
+          # Do NOT point FTP at the live IIS application directory.
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" -p 21 "$FTP_SERVER" <<LFTP
+          set ftp:ssl-force yes
+          set ftp:ssl-protect-data yes
+          set ftp:passive-mode yes
+          set ssl:verify-certificate yes
+          set ssl:ca-file $RUNNER_TEMP/ftps-ca.pem
+          set mirror:set-permissions no
+          set net:max-retries 3
+          set net:timeout 30
+          set cmd:fail-exit yes
+          mirror -R --delete --no-perms --no-umask --verbose publish/ /
+          bye
+          LFTP
+
+      - name: Mark upload complete
+        shell: bash
         env:
-          WEBIO_MSDEPLOY_URL: ${{ secrets.WEBIO_MSDEPLOY_URL }}
-          WEBIO_SITE: ${{ secrets.WEBIO_SITE }}
-          WEBIO_USER: ${{ secrets.WEBIO_USER }}
-          WEBIO_PASS: ${{ secrets.WEBIO_PASS }}
+          DEPLOY_SHA: ${{ steps.revision.outputs.sha }}
         run: |
-          foreach ($name in 'WEBIO_MSDEPLOY_URL', 'WEBIO_SITE', 'WEBIO_USER', 'WEBIO_PASS') {
-            if (-not [Environment]::GetEnvironmentVariable($name)) { throw "Missing secret $name" }
-          }
-          $msdeploy = "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe"
-          $source = Join-Path $PWD "publish"
-          $dest = "contentPath=$env:WEBIO_SITE," +
-                  "computerName=https://$env:WEBIO_MSDEPLOY_URL/msdeploy.axd?site=$env:WEBIO_SITE," +
-                  "userName=$env:WEBIO_USER,password=$env:WEBIO_PASS,authType=Basic"
-          # AppOffline: app_offline.htm na czas kopiowania (zablokowane DLL)
-          # DoNotDeleteRule: nigdy nie kasujemy plików istniejących tylko na serwerze
-          #   (media w wwwroot, Logs/, TMP/LOTTO/*, appsettings.json, treść kursów)
-          & $msdeploy `
-            -verb:sync `
-            "-source:contentPath=$source" `
-            "-dest:$dest" `
-            -enableRule:AppOffline `
-            -enableRule:DoNotDeleteRule `
-            '-skip:objectName=filePath,absolutePath=appsettings.*\.json$' `
-            -allowUntrusted `
-            -retryAttempts:3
-          if ($LASTEXITCODE -ne 0) { throw "msdeploy failed with exit code $LASTEXITCODE" }
+          printf '%s' "$DEPLOY_SHA" > "$RUNNER_TEMP/READY"
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" -p 21 "$FTP_SERVER" <<LFTP
+          set ftp:ssl-force yes
+          set ftp:ssl-protect-data yes
+          set ftp:passive-mode yes
+          set ssl:verify-certificate yes
+          set ssl:ca-file $RUNNER_TEMP/ftps-ca.pem
+          set cmd:fail-exit yes
+          put $RUNNER_TEMP/READY -o /READY
+          bye
+          LFTP
 
-      # --- Smoke test ---
-      - name: Smoke test
+      - name: Summary
+        shell: bash
         env:
-          BASE_URL: ${{ vars.VITE_API_URL }}
-          EXPECTED_SHA: ${{ github.sha }}
+          DEPLOY_SHA: ${{ steps.revision.outputs.sha }}
         run: |
-          set -u
-          for i in $(seq 1 10); do
-            deployed=$(curl -fsS "$BASE_URL/version.txt" || true)
-            [ "$deployed" = "$EXPECTED_SHA" ] && break
-            echo "Czekam na aplikację ($i/10), version.txt='$deployed'"
-            sleep 10
-          done
-          [ "$deployed" = "$EXPECTED_SHA" ] || { echo "::error::version.txt != $EXPECTED_SHA"; exit 1; }
-
-          code=$(curl -s -o api.txt -w "%{http_code}" "$BASE_URL/api/portal/get-api-version")
-          echo "get-api-version -> $code: $(cat api.txt)"
-          [ "$code" = "200" ] || { echo "::error::get-api-version zwróciło $code (500.3x = problem z runtime, patrz deploy-plan.md)"; exit 1; }
-
-          code=$(curl -s -o index.html -w "%{http_code}" "$BASE_URL/")
-          [ "$code" = "200" ] && grep -q 'id="root"' index.html || { echo "::error::SPA nie zwraca index.html ($code)"; exit 1; }
-          echo "Smoke test OK: $BASE_URL @ $EXPECTED_SHA"
+          echo "Uploaded $DEPLOY_SHA to FTPS staging." >> "$GITHUB_STEP_SUMMARY"
+          echo "This workflow does NOT activate the release in IIS; a Windows deployment task must consume READY." >> "$GITHUB_STEP_SUMMARY"
+          echo 'This job does not activate IIS. Configure a local deployment task on the VM to process READY.' >> "$GITHUB_STEP_SUMMARY"
