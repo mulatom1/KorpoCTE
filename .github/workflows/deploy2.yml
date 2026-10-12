@@ -75,7 +75,7 @@ jobs:
             exit 1
           fi
           {
-            echo 'VITE_BASE_URL=/tosmoft1/'
+            echo 'VITE_BASE_URL=/tomsoft1/'
             echo "VITE_API_URL=$VITE_API_URL"
             echo "VITE_APP_TOKEN=$VITE_APP_TOKEN"
           } > src/client/app01/.env.ci
@@ -116,7 +116,7 @@ jobs:
       - name: Save build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: azure-tosmoft1-${{ steps.revision.outputs.sha }}
+          name: azure-tomsoft1-${{ steps.revision.outputs.sha }}
           path: publish/
           retention-days: 30
           if-no-files-found: error
@@ -137,10 +137,25 @@ jobs:
           chmod 600 "$RUNNER_TEMP/ftps-ca.pem"
           openssl x509 -in "$RUNNER_TEMP/ftps-ca.pem" -noout >/dev/null
 
+      - name: Remove previous READY marker
+        shell: bash
+        run: |
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" -p 21 "$FTP_SERVER" <<LFTP
+          set ftp:ssl-force yes
+          set ftp:ssl-protect-data yes
+          set ftp:passive-mode yes
+          set ssl:verify-certificate yes
+          set ssl:ca-file $RUNNER_TEMP/ftps-ca.pem
+          set cmd:fail-exit yes
+          set net:max-retries 3
+          rm -f /READY
+          bye
+          LFTP
+
       - name: Upload release to FTPS staging
         shell: bash
         run: |
-          # FTP root must point exclusively to C:\deploy\staging\my-app.
+          # FTP root must point exclusively to C:\deploy\staging\tomsoft1.
           # Do NOT point FTP at the live IIS application directory.
           lftp -u "$FTP_USERNAME","$FTP_PASSWORD" -p 21 "$FTP_SERVER" <<LFTP
           set ftp:ssl-force yes
@@ -178,4 +193,5 @@ jobs:
           DEPLOY_SHA: ${{ steps.revision.outputs.sha }}
         run: |
           echo "Uploaded $DEPLOY_SHA to FTPS staging." >> "$GITHUB_STEP_SUMMARY"
+          echo "This workflow does NOT activate the release in IIS; a Windows deployment task must consume READY." >> "$GITHUB_STEP_SUMMARY"
           echo 'This job does not activate IIS. Configure a local deployment task on the VM to process READY.' >> "$GITHUB_STEP_SUMMARY"
