@@ -16,7 +16,11 @@ function ApkiPage() {
   useEffect(() => {
     document.title = "Aplikacje | tomsoft1 workspace";
 
-    fetch("/data/apps.json?today=" + new Date().toISOString().split("T")[0])
+    fetch(
+      import.meta.env.BASE_URL +
+        "data/apps.json?today=" +
+        new Date().toISOString().split("T")[0],
+    )
       .then((res) => res.json())
       .then((data) => setApps(data))
       .catch((err) => console.error("Błąd ładowania aplikacji:", err));

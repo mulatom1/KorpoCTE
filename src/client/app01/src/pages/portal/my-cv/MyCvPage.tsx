@@ -172,7 +172,7 @@ function MyCvPage() {
             {/* Zdjęcie */}
             <div className="sm:w-1/4 flex-shrink-0">
               <img
-                src="images/face.png"
+                src={import.meta.env.BASE_URL + "images/face.png"}
                 alt="Tomasz Mularczyk"
                 className="w-full h-auto rounded-xl object-cover border border-cyan-500/30"
               />

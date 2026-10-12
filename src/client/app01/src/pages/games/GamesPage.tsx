@@ -15,7 +15,11 @@ function GryPage() {
   useEffect(() => {
     document.title = "Gry | tomsoft1 workspace";
 
-    fetch("/data/games.json?today=" + new Date().toISOString().split("T")[0])
+    fetch(
+      import.meta.env.BASE_URL +
+        "data/games.json?today=" +
+        new Date().toISOString().split("T")[0],
+    )
       .then((res) => res.json())
       .then((data) => setGames(data))
       .catch((err) => console.error("Błąd ładowania gier:", err));

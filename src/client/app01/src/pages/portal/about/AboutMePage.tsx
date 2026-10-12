@@ -22,13 +22,15 @@ function OMniePage() {
     document.title = "O mnie | tomsoft1 workspace";
 
     fetch(
-      "/data/certificates.json?today=" + new Date().toISOString().split("T")[0],
+      import.meta.env.BASE_URL +
+        "data/certificates.json?today=" +
+        new Date().toISOString().split("T")[0],
     )
       .then((res) => res.json())
       .then((data: Certificate[]) => setCertificates(data))
       .catch((err) => console.error("Błąd ładowania certyfikatów:", err));
 
-    fetch("/data/skills.json")
+    fetch(import.meta.env.BASE_URL + "data/skills.json")
       .then((res) => res.json())
       .then((data) => setSkills(data))
       .catch((err) => console.error("Błąd ładowania umiejętności:", err));
@@ -74,7 +76,7 @@ function OMniePage() {
             style={{ transitionDelay: isVisible ? "300ms" : "0ms" }}
           >
             <img
-              src="images/face.png"
+              src={import.meta.env.BASE_URL + "images/face.png"}
               alt="Tomasz Mularczyk"
               className="w-full h-full min-h-48 rounded-2xl object-cover border border-cyan-500/30"
             />
