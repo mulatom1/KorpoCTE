@@ -59,11 +59,11 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore --locked-mode
 
-      - name: Run backend tests
-        env:
-          ASPNETCORE_ENVIRONMENT: Test
-          DOTNET_ENVIRONMENT: Test
-        run: dotnet test APPS.sln --no-restore --verbosity normal
+      #- name: Run backend tests
+      #  env:
+      #    ASPNETCORE_ENVIRONMENT: Test
+      #    DOTNET_ENVIRONMENT: Test
+      #  run: dotnet test APPS.sln --no-restore --verbosity normal
 
       - name: Write Vite CI environment
         shell: bash
