@@ -73,7 +73,7 @@ function ApkiPage() {
             >
               <div className="w-full h-40 rounded-xl overflow-hidden mb-4 bg-gray-900/50">
                 <img
-                  src={`/images/${app.image}`}
+                  src={`${import.meta.env.BASE_URL}images/${app.image}`}
                   alt={app.name}
                   className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                 />

@@ -636,8 +636,8 @@ function MyCvPage() {
             Skontaktuj się ze mną przez formularz kontaktowy lub media
             społecznościowe.
           </p>
-          <a
-            href="/contact"
+          <Link
+            to="/contact"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-semibold rounded-xl hover:from-cyan-600 hover:to-teal-600 transition-all duration-200 shadow-lg shadow-cyan-500/25"
           >
             <svg
@@ -654,7 +654,7 @@ function MyCvPage() {
               />
             </svg>
             Skontaktuj się
-          </a>
+          </Link>
         </div>
       </div>
     </section>

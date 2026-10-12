@@ -193,7 +193,7 @@ function OMniePage() {
               >
                 {cert.image ? (
                   <img
-                    src={cert.image}
+                    src={import.meta.env.BASE_URL + cert.image}
                     alt={cert.name || ""}
                     className="w-full h-auto rounded-lg mb-3"
                   />
@@ -213,7 +213,11 @@ function OMniePage() {
 
       <ImageModal
         isOpen={selectedCertificate !== null}
-        imageUrl={selectedCertificate?.image ?? ""}
+        imageUrl={
+          selectedCertificate?.image
+            ? import.meta.env.BASE_URL + selectedCertificate.image
+            : ""
+        }
         title={selectedCertificate?.name ?? ""}
         onClose={() => setSelectedCertificate(null)}
       />

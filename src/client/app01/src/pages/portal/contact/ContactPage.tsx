@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { Link } from "react-router";
 import { ApiPortalService } from "../../../services/api-portal-service";
 import { getIsAdminFromToken } from "../../../utils/jwt";
 import type { MailListDto } from "../../../services/contracts/mail-from-client-list-response";
@@ -292,8 +293,8 @@ function ContactPage() {
             </div>
 
             {/* CV View */}
-            <a
-              href="/my-cv"
+            <Link
+              to="/my-cv"
               className="block bg-gray-800/50 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50 hover:border-cyan-500/30 transition-all duration-300 group"
             >
               <div className="flex items-center gap-3 mb-2">
@@ -321,7 +322,7 @@ function ContactPage() {
                 <span className="text-white font-medium">Moje CV</span>
               </div>
               <p className="text-cyan-400 text-sm">Wyświetl moje CV</p>
-            </a>
+            </Link>
 
             {/* Social Links */}
             <div className="flex gap-3">

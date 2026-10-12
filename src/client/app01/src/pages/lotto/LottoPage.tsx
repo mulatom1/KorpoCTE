@@ -118,7 +118,7 @@ function LottoPage() {
           >
             <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-cyan-500/20 border border-gray-700/50">
               <img
-                src="/images/Lotto.png"
+                src={import.meta.env.BASE_URL + "images/Lotto.png"}
                 alt="System wspomagający graczy Lotto"
                 className="w-full h-auto object-cover"
               />

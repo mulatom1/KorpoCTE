@@ -82,7 +82,7 @@ function GryPage() {
             >
               <div className="w-full h-40 rounded-xl overflow-hidden mb-4 bg-gray-900/50">
                 <img
-                  src={`/images/${game.image}`}
+                  src={`${import.meta.env.BASE_URL}images/${game.image}`}
                   alt={game.name}
                   className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                 />

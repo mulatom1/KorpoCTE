@@ -335,7 +335,7 @@ function Navigation() {
             }`}
           >
             <img
-              src="/images/logo.png"
+              src={import.meta.env.BASE_URL + "images/logo.png"}
               alt="Tomsoft1 Logo"
               className="h-10 w-auto"
             />

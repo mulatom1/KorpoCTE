@@ -165,7 +165,7 @@
   }
 
   /* Przycisk kontaktu przy druku */
-  a[href="/contact"] {
+  a[href$="/contact"] {
     background: #0891b2 !important;
     color: white !important;
     -webkit-print-color-adjust: exact;
