@@ -163,10 +163,11 @@ jobs:
           set ftp:passive-mode yes
           set ssl:verify-certificate yes
           set ssl:ca-file $RUNNER_TEMP/ftps-ca.pem
+          set mirror:set-permissions no
           set net:max-retries 3
           set net:timeout 30
           set cmd:fail-exit yes
-          mirror -R --delete --no-perms --verbose publish/ /
+          mirror -R --delete --no-perms --no-umask --verbose publish/ /
           bye
           LFTP
 
