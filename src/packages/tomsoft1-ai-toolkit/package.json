@@ -1,0 +1,37 @@
+{
+  "name": "@mulatom1/tomsoft1-ai-toolkit",
+  "version": "0.1.3",
+  "description": "Tomsoft1 AI Toolkit - reusable AI skills and rules for Claude Code and GitHub Copilot",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mulatom1/ai-toolkit.git"
+  },
+  "bin": {
+    "ai-toolkit": "dist/bin/ai-toolkit.js"
+  },
+  "files": [
+    "dist/bin",
+    "dist/src",
+    "skills",
+    "rules",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "npm run build && node --test \"dist/test/**/*.test.js\"",
+    "prepack": "npm run build",
+    "pack:check": "npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^7.0.2"
+  }
+}

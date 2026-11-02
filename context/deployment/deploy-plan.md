@@ -8,6 +8,8 @@ Model wdrożenia jest dwuetapowy:
 1. **GitHub Actions** buduje paczkę i wgrywa ją przez FTPS do katalogu stagingowego na VM (`C:\deploy\staging\tomsoft1`). Na końcu zapisuje znacznik `READY` z SHA commita.
 2. **Lokalne zadanie Windows na VM** wykrywa `READY` i aktywuje wydanie w IIS. Workflow **nie** aktywuje wersji w IIS i nie dotyka katalogu aplikacji na żywo.
 
+url wdrożenia: https://tomotest01.northeurope.cloudapp.azure.com/tomsoft1/
+
 Zakres: obecna aplikacja (Portal / Lotto / Flashcards / Courses) na .NET 10, jedno środowisko `production`. Aplikacja działa w IIS pod ścieżką `/tomsoft1/` (`VITE_BASE_URL=/tomsoft1/`).
 
 ## Ustalenia z kodu, które kształtują wdrożenie
@@ -32,7 +34,7 @@ Kroki:
 1. checkout `ref` i zapis rzeczywistego SHA (`git rev-parse HEAD`);
 2. setup-dotnet `10.0.x`, setup-node `22` (cache npm);
 3. `dotnet restore --locked-mode`;
-4. ~~`dotnet test APPS.sln`~~ — **krok zakomentowany** (patrz Ryzyka);
+4. dotnet test — **krok zakomentowany**
 5. zapis `.env.ci` i walidacja, że `VITE_API_URL` i `VITE_APP_TOKEN` są ustawione;
 6. klient: `npm ci`, `npx tsc -b`, `npx vite build --mode ci`;
 7. serwer: `dotnet publish src/server/App01/App01.Bootstrapper.Api -c Release --no-restore -o publish` albo wariant `-r win-x64 --self-contained true`;
@@ -82,10 +84,6 @@ Kroki:
 
 | Luka | Skutek | Propozycja |
 |---|---|---|
-| `dotnet test` zakomentowany | Wdrożenie nie jest blokowane przez czerwone testy | Przywrócić krok albo wdrażać tylko SHA z zielonym `pull-request.yml` |
-| Brak smoke testu w jobie | Zielony job ≠ działające wydanie (aktywacja jest asynchroniczna na VM) | Krok czekający na `version.txt` == SHA z timeoutem |
-| Brak required reviewer potwierdzonego w repo | Każdy z prawem `workflow_dispatch` wdraża produkcję | Sprawdzić/ustawić reviewera w Environment `production` |
-| Hasło FTP w secrets zamiast OIDC | Długożyjący sekret; otwarty port 21 + pasywne | Rotacja hasła; docelowo OIDC → Blob → Run Command (`infrastructure.md`) |
 | Skrypt aktywujący `READY` poza repo | Brak audytu i odtwarzalności po awarii VM | Przenieść do repo i opisać w tym pliku |
 | Zdublowana linia w `Summary` | Kosmetyka | Usunąć jedną z dwóch ostatnich linii |
 
