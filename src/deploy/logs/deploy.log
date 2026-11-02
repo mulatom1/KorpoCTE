@@ -1,0 +1,110 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20261102173207
+Username: tomotest01\tomsoft1deployuser
+RunAs User: tomotest01\tomsoft1deployuser
+Configuration Name: 
+Machine: tomotest01 (Microsoft Windows NT 10.0.26100.0)
+Host Application: powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\deploy\scripts\deploy-tomsoft1.ps1
+Process ID: 196
+PSVersion: 5.1.26100.33438
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.33438
+BuildVersion: 10.0.26100.33438
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is C:\deploy\logs\deploy.log
+=== START DEPLOY ===
+Date: 11/02/2026 17:32:07
+User: tomotest01\tomsoft1deployuser
+Working directory: C:\deploy\scripts
+**********************
+Windows PowerShell transcript end
+End time: 20261102173207
+**********************
+**********************
+Windows PowerShell transcript start
+Start time: 20261102173307
+Username: tomotest01\tomsoft1deployuser
+RunAs User: tomotest01\tomsoft1deployuser
+Configuration Name: 
+Machine: tomotest01 (Microsoft Windows NT 10.0.26100.0)
+Host Application: powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\deploy\scripts\deploy-tomsoft1.ps1
+Process ID: 6140
+PSVersion: 5.1.26100.33438
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.33438
+BuildVersion: 10.0.26100.33438
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is C:\deploy\logs\deploy.log
+=== START DEPLOY ===
+Date: 11/02/2026 17:33:07
+User: tomotest01\tomsoft1deployuser
+Working directory: C:\deploy\scripts
+Deployment files installed: c4ec5cbd610ec27ef76058c892a0c20a94094967
+=== END DEPLOY ===
+**********************
+Windows PowerShell transcript end
+End time: 20261102173319
+**********************
+**********************
+Windows PowerShell transcript start
+Start time: 20261102173407
+Username: tomotest01\tomsoft1deployuser
+RunAs User: tomotest01\tomsoft1deployuser
+Configuration Name: 
+Machine: tomotest01 (Microsoft Windows NT 10.0.26100.0)
+Host Application: powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\deploy\scripts\deploy-tomsoft1.ps1
+Process ID: 4460
+PSVersion: 5.1.26100.33438
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.33438
+BuildVersion: 10.0.26100.33438
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is C:\deploy\logs\deploy.log
+=== START DEPLOY ===
+Date: 11/02/2026 17:34:07
+User: tomotest01\tomsoft1deployuser
+Working directory: C:\deploy\scripts
+**********************
+Windows PowerShell transcript end
+End time: 20261102173407
+**********************
+**********************
+Windows PowerShell transcript start
+Start time: 20261102173507
+Username: tomotest01\tomsoft1deployuser
+RunAs User: tomotest01\tomsoft1deployuser
+Configuration Name: 
+Machine: tomotest01 (Microsoft Windows NT 10.0.26100.0)
+Host Application: powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\deploy\scripts\deploy-tomsoft1.ps1
+Process ID: 8392
+PSVersion: 5.1.26100.33438
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.33438
+BuildVersion: 10.0.26100.33438
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is C:\deploy\logs\deploy.log
+=== START DEPLOY ===
+Date: 11/02/2026 17:35:07
+User: tomotest01\tomsoft1deployuser
+Working directory: C:\deploy\scripts
+**********************
+Windows PowerShell transcript end
+End time: 20261102173507
+**********************
