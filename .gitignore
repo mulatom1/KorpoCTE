@@ -14,6 +14,11 @@ nul
 # Ignoruj lokalne, osobiste ustawienia Claude.
 .claude
 
+.github/config-templates
+.github/prompts
+.github/skills
+
+.10x-cli-manifest.json
 
 # Ignoruj lokalne, osobiste ustawienia Agents.
 .agents
